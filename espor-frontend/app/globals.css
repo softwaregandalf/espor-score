@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@source "../components"; /* Tailwind v4'e components klasörünü okumasını söylüyoruz */
+
+/* Tailwind v4 class tabanlı karanlık mod desteği */
+@variant dark (&:where(.dark, .dark *));
+
+body {
+  /* Gündüz ve Gece modu için ana renklerimizi belirliyoruz */
+  @apply bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-200 transition-colors duration-300;
+}
+
+/* Kaydırma çubuğunu gizler ama kaydırma özelliğini korur */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
