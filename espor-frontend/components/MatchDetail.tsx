@@ -1,189 +1,177 @@
-// Middle Side Bar.
 "use client";
 
 import { useState } from "react";
-import { ArrowLeft, Star, X, PlayCircle, Trophy, BarChart3, Users, Crosshair, Shield } from "lucide-react";
 
-type MatchDetailProps = {
-  selectedMatch: any;
-  setSelectedMatch: (match: any) => void;
-};
-
-export default function MatchDetail({ selectedMatch, setSelectedMatch }: MatchDetailProps) {
+export default function MatchDetail({ selectedMatch }: { selectedMatch: any, setSelectedMatch: any }) {
   const [activeTab, setActiveTab] = useState("Detay");
 
   if (!selectedMatch) {
     return (
-      <div className="w-full lg:w-5/12 xl:w-6/12 flex-col gap-4 hidden lg:flex">
-        <div className="bg-slate-800/40 border border-slate-700/50 rounded-lg p-4 h-full min-h-[500px]">
-          <div className="flex items-center justify-between border-b border-slate-700/50 pb-3 mb-4">
-            <div className="flex gap-4">
-              <button className="text-xs font-bold text-red-500 border-b-2 border-red-500 pb-3 -mb-[13px]">GÜNDEM</button>
-            </div>
-          </div>
-          <div className="bg-slate-800/80 rounded-lg border border-slate-700/50 p-4 hover:border-slate-600 transition-colors cursor-pointer">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-xs font-bold text-white flex items-center gap-2">
-                <span className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-[10px]">E</span>
-                Espor Arena Akışı
-              </div>
-              <button className="text-[10px] bg-slate-700 hover:bg-slate-600 text-slate-300 px-2 py-1 rounded transition-colors">Detay &gt;</button>
-            </div>
-            <p className="text-sm text-slate-300">PGL Major 2026 finalleri yaklaşıyor! Canlı skorları ve turnuva ağacını sol menüden takip edebilirsiniz.</p>
-          </div>
-        </div>
+      <div className="w-full lg:w-6/12 bg-slate-900/40 border border-slate-800 rounded-lg p-6 flex items-center justify-center min-h-[500px]">
+        <span className="text-slate-500 text-sm italic">Detaylarını görmek istediğiniz maçı sol menüden seçiniz.</span>
       </div>
     );
   }
 
+  // Dinamik verileri güvenle okuyoruz
+  const details = selectedMatch.gameDetails || {};
+  const gameType = details.type?.toLowerCase(); // 'cs2', 'valorant', 'lol'
+  const gameData = details.data || {};
+
   return (
-    <div className="w-full lg:w-5/12 xl:w-6/12 flex flex-col gap-4">
-      <div className="bg-[#1a1d24] border border-slate-700/50 rounded-lg overflow-hidden flex flex-col shadow-2xl">
+    <div className="w-full lg:w-6/12 bg-slate-900/60 border border-slate-800 rounded-lg flex flex-col shadow-xl overflow-hidden">
+      
+      {/* ÜST SKOR TABLOSU */}
+      <div className="bg-gradient-to-b from-slate-800/50 to-transparent p-6 border-b border-slate-800/50">
+        <div className="flex justify-between items-center max-w-md mx-auto">
+          <div className="flex flex-col items-center gap-2 w-1/3">
+            <span className="text-white font-black text-sm text-center">{selectedMatch.team1?.name}</span>
+          </div>
+          <div className="flex flex-col items-center gap-1 w-1/3">
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${selectedMatch.status === 'Live' ? 'bg-red-500/20 text-red-400 animate-pulse' : selectedMatch.status === 'Finished' ? 'bg-green-500/20 text-green-400' : 'bg-slate-700/50 text-slate-400'}`}>
+              {selectedMatch.status}
+            </span>
+            <span className="text-3xl font-black text-white tracking-widest">
+              {selectedMatch.team1Score} - {selectedMatch.team2Score}
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-2 w-1/3">
+            <span className="text-white font-black text-sm text-center">{selectedMatch.team2?.name}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* SEKMELER */}
+      <div className="flex border-b border-slate-800 px-4 gap-4 bg-slate-950/30">
+        {["Detay", "Kadro", "İstatistik"].map((tab) => (
+          <button key={tab} onClick={() => setActiveTab(tab)} className={`py-3 text-xs font-bold transition-colors relative ${activeTab === tab ? "text-blue-500" : "text-slate-400 hover:text-white"}`}>
+            {tab}
+            {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-500" />}
+          </button>
+        ))}
+      </div>
+
+      <div className="p-4 flex-1 overflow-y-auto min-h-[400px]">
         
-        {/* Üst Bar */}
-        <div className="flex justify-between items-center px-4 py-3 bg-[#22262f] border-b border-slate-700">
-          <button onClick={() => setSelectedMatch(null)} className="lg:hidden text-slate-400 flex items-center gap-1 text-xs"><ArrowLeft size={16} /> Geri</button>
-          <button onClick={() => setSelectedMatch(null)} className="hidden lg:flex text-slate-400 hover:text-white bg-slate-800 p-1 rounded transition-colors"><X size={16} /></button>
-          <span className="text-[10px] bg-red-600 text-white font-bold px-3 py-1 rounded-sm">Detaylı Görünüm</span>
-          <Star size={16} className="text-slate-400 cursor-pointer hover:text-yellow-500 transition-colors" />
-        </div>
-
-        {/* Skor Alanı */}
-        <div className="p-6 flex items-center justify-between relative overflow-hidden">
-          {/* Arka plan süslemesi */}
-          <div className="absolute inset-0 opacity-5 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-          
-          <div className="flex flex-col items-center gap-2 w-1/3 z-10">
-            <div className="w-14 h-14 bg-slate-800 rounded-full border-2 border-slate-700 flex items-center justify-center font-black text-2xl text-white shadow-lg">
-              {selectedMatch?.team1?.acronym?.charAt(0)}
-            </div>
-            <span className="text-sm font-bold text-white text-center">{selectedMatch?.team1?.acronym}</span>
-          </div>
-
-          <div className="flex flex-col items-center w-1/3 z-10">
-            <span className="text-[10px] text-red-500 font-bold mb-1 animate-pulse">CANLI</span>
-            <div className="text-4xl font-black text-white tracking-widest bg-slate-900/50 px-4 py-2 rounded-xl border border-slate-700/50">
-              {selectedMatch?.team1Score ?? "-"} <span className="text-slate-600">-</span> {selectedMatch?.team2Score ?? "-"}
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center gap-2 w-1/3 z-10">
-            <div className="w-14 h-14 bg-slate-800 rounded-full border-2 border-slate-700 flex items-center justify-center font-black text-2xl text-white shadow-lg">
-              {selectedMatch?.team2?.acronym?.charAt(0)}
-            </div>
-            <span className="text-sm font-bold text-white text-center">{selectedMatch?.team2?.acronym}</span>
-          </div>
-        </div>
-
-        {/* Tab Menü */}
-        <div className="flex items-center gap-6 px-4 bg-[#22262f] border-y border-slate-700 overflow-x-auto hide-scrollbar">
-          {["Detay", "Kadro", "İstatistik"].map(tab => (
-            <button 
-              key={tab} 
-              onClick={() => setActiveTab(tab)} 
-              className={`text-xs font-bold whitespace-nowrap py-3 transition-colors ${activeTab === tab ? 'text-red-500 border-b-2 border-red-500' : 'text-slate-400 hover:text-slate-200 border-b-2 border-transparent'}`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {/* --- TAB İÇERİKLERİ --- */}
-        <div className="bg-[#1a1d24] flex-1 min-h-[400px]">
-          
-          {/* 1. DETAY SEKMESİ */}
-          {activeTab === "Detay" && (
-            <div className="p-4 flex flex-col gap-4">
-              {/* MVP Kartı */}
-              <div className="rounded-xl overflow-hidden relative border border-purple-500/30 p-4 bg-gradient-to-r from-purple-900/80 to-blue-900/80 shadow-lg">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-white italic font-black text-sm uppercase tracking-wider">Maçın Oyuncusu</span>
-                  <Trophy size={20} className="text-yellow-400 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]" />
-                </div>
+        {/* DETAY SEKMESİ */}
+        {activeTab === "Detay" && (
+          <div className="space-y-4">
+            {selectedMatch.status === "Finished" && (
+              <div className="bg-gradient-to-r from-blue-900/40 to-slate-800/40 border border-blue-500/30 rounded-xl p-4 flex items-center justify-between shadow-lg">
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-slate-800 rounded-full border-2 border-yellow-400 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(250,204,21,0.3)]">👤</div>
-                  <div>
-                    <div className="text-white font-bold text-xl">Aleksib</div>
-                    <div className="flex items-center gap-2 text-xs mt-1.5">
-                      <span className="bg-green-500 text-black px-2 py-0.5 rounded font-bold">1.32 Rtg</span>
-                      <span className="text-slate-300 font-medium">24 Kill / 12 Death</span>
-                    </div>
+                  <div className="w-14 h-14 bg-slate-800 rounded-full border-2 border-yellow-500 flex items-center justify-center text-2xl shadow-inner">👤</div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] uppercase font-black text-yellow-500 tracking-widest flex items-center gap-1">👑 MAÇIN OYUNCUSU (MVP)</span>
+                    <span className="text-lg font-black text-white tracking-tight">{selectedMatch.mvpNickname}</span>
                   </div>
                 </div>
-              </div>
-              {/* Video Player Yeri */}
-              <div className="w-full aspect-video bg-black relative flex items-center justify-center group border border-slate-700/50 rounded-xl overflow-hidden cursor-pointer shadow-lg">
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity"></div>
-                <PlayCircle size={64} className="text-red-600 bg-white rounded-full z-10 group-hover:scale-110 transition-transform shadow-[0_0_20px_rgba(220,38,38,0.5)]" />
-                <div className="absolute bottom-3 left-4 z-10 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                  <span className="text-white text-xs font-bold text-shadow">Canlı Yayını İzle</span>
+                <div className="bg-yellow-500 text-slate-950 font-black text-sm px-3 py-2 rounded-lg shadow flex flex-col items-center">
+                  <span>{selectedMatch.mvpRating}</span>
+                  <span className="text-[8px] tracking-tighter uppercase font-bold -mt-0.5">Rating</span>
                 </div>
               </div>
+            )}
+            <div className="relative aspect-video w-full bg-black rounded-lg overflow-hidden border border-slate-800 group shadow-2xl flex items-center justify-center">
+              <div className="absolute inset-0 bg-slate-800 opacity-40 filter blur-sm" />
+              <button className="z-10 w-16 h-16 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-lg hover:scale-105 transition-all">▶</button>
+              <span className="absolute bottom-3 left-3 text-[10px] text-slate-400 font-bold bg-slate-950/80 px-2 py-1 rounded border border-slate-800">🔴 Canlı Yayını İzle</span>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* 2. KADRO SEKMESİ (5v5 E-spor Tasarımı) */}
-          {activeTab === "Kadro" && (
-            <div className="flex w-full h-full">
-              {/* Sol Takım */}
-              <div className="w-1/2 border-r border-slate-700/50 p-2 space-y-1">
-                <div className="text-center pb-2 mb-2 border-b border-slate-700/50 font-bold text-white text-sm">{selectedMatch?.team1?.acronym}</div>
-                {[1, 2, 3, 4, 5].map((player) => (
-                  <div key={`t1-${player}`} className="flex items-center gap-3 p-2 hover:bg-slate-800/50 rounded-lg transition-colors cursor-pointer">
-                    <div className="w-8 h-8 bg-slate-800 rounded border border-slate-700 flex items-center justify-center text-xs text-slate-500">P{player}</div>
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-white">Oyuncu {player}</span>
-                      <span className="text-[10px] text-slate-400">KDA: 12/5/4</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {/* Sağ Takım */}
-              <div className="w-1/2 p-2 space-y-1">
-                <div className="text-center pb-2 mb-2 border-b border-slate-700/50 font-bold text-white text-sm">{selectedMatch?.team2?.acronym}</div>
-                {[1, 2, 3, 4, 5].map((player) => (
-                  <div key={`t2-${player}`} className="flex items-center justify-end gap-3 p-2 hover:bg-slate-800/50 rounded-lg transition-colors cursor-pointer">
-                    <div className="flex flex-col items-end">
-                      <span className="text-xs font-bold text-white">Oyuncu {player}</span>
-                      <span className="text-[10px] text-slate-400">KDA: 9/8/2</span>
-                    </div>
-                    <div className="w-8 h-8 bg-slate-800 rounded border border-slate-700 flex items-center justify-center text-xs text-slate-500">P{player}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+        {/* KADRO SEKMESİ */}
+        {activeTab === "Kadro" && (
+          <div className="text-center text-slate-500 text-xs py-10 italic">Kadro verileri sistemde mevcuttur.</div>
+        )}
 
-          {/* 3. İSTATİSTİK SEKMESİ (Karşılaştırma Barları) */}
-          {activeTab === "İstatistik" && (
-            <div className="p-6 flex flex-col gap-6">
-              {[
-                { label: "Toplam Öldürme", t1: 54, t2: 42, t1Win: true },
-                { label: "İlk Kan (First Blood)", t1: 8, t2: 12, t1Win: false },
-                { label: "Ekonomi Puanı", t1: 24500, t2: 18000, t1Win: true },
-                { label: "Kazanılan Round Serisi", t1: 3, t2: 3, t1Win: false }
-              ].map((stat, i) => (
-                <div key={i} className="flex flex-col gap-2">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className={stat.t1Win ? "text-white" : "text-slate-500"}>{stat.t1}</span>
-                    <span className="text-slate-400">{stat.label}</span>
-                    <span className={!stat.t1Win && stat.t1 !== stat.t2 ? "text-white" : "text-slate-500"}>{stat.t2}</span>
-                  </div>
-                  <div className="flex gap-1 h-2">
-                    <div className="flex-1 bg-slate-800 rounded-l-full overflow-hidden flex justify-end">
-                      <div className={`h-full rounded-l-full ${stat.t1Win ? 'bg-blue-500' : 'bg-slate-600'}`} style={{ width: `${(stat.t1 / (stat.t1 + stat.t2)) * 100}%` }}></div>
+        {/* 🏆 AKILLI İSTATİSTİK SEKMESİ (OYUNA ÖZEL) */}
+        {activeTab === "İstatistik" && (
+          <div className="space-y-6">
+            
+            {/* --- CS2 İSTATİSTİKLERİ --- */}
+            {gameType === "cs2" && (
+              <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+                <h4 className="text-white text-xs font-black uppercase tracking-widest mb-3 border-b border-slate-700/50 pb-2 flex items-center gap-2">🔫 Harita Skorları (CS2)</h4>
+                <div className="space-y-2">
+                  {gameData.maps?.map((map: any, idx: number) => (
+                    <div key={idx} className="flex items-center justify-between bg-slate-900/80 p-2.5 rounded border border-slate-800">
+                      <span className="text-white text-xs font-bold capitalize w-1/3">{map.mapName}</span>
+                      <span className="bg-slate-950 border border-slate-800 px-3 py-1 rounded text-xs font-black text-white">{map.team1Score} - {map.team2Score}</span>
+                      <span className="text-slate-500 text-[10px] font-bold uppercase w-1/3 text-right">Tamamlandı</span>
                     </div>
-                    <div className="flex-1 bg-slate-800 rounded-r-full overflow-hidden">
-                      <div className={`h-full rounded-r-full ${!stat.t1Win && stat.t1 !== stat.t2 ? 'bg-purple-500' : 'bg-slate-600'}`} style={{ width: `${(stat.t2 / (stat.t1 + stat.t2)) * 100}%` }}></div>
-                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* --- VALORANT İSTATİSTİKLERİ --- */}
+            {gameType === "valorant" && (
+              <div className="space-y-4">
+                <div className="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+                  <h4 className="text-red-400 text-xs font-black uppercase tracking-widest mb-3 border-b border-slate-700/50 pb-2">🎯 Harita Skorları (Valorant)</h4>
+                  <div className="space-y-2">
+                    {gameData.maps?.map((map: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between bg-slate-900/80 p-2.5 rounded border border-slate-800">
+                        <span className="text-white text-xs font-bold capitalize w-1/3">{map.mapName}</span>
+                        <span className="bg-slate-950 border border-red-500/30 px-3 py-1 rounded text-xs font-black text-white">{map.team1Score} - {map.team2Score}</span>
+                        <span className="text-slate-500 text-[10px] font-bold uppercase w-1/3 text-right">Tamamlandı</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+                {gameData.topFragger && (
+                  <div className="bg-gradient-to-r from-red-900/20 to-slate-900 border border-red-500/20 rounded-lg p-4 flex justify-between items-center">
+                    <div>
+                      <div className="text-[10px] text-red-400 font-bold uppercase tracking-wider mb-1">Maçın En Çok Vuranı</div>
+                      <div className="text-white font-black text-sm">{gameData.topFragger.nickname} <span className="text-slate-500 font-normal ml-1">({gameData.topFragger.agent})</span></div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-white font-bold text-xs">{gameData.topFragger.kda} <span className="text-[9px] text-slate-500 uppercase ml-1">KDA</span></div>
+                      <div className="text-slate-400 text-[10px]">ACS: <span className="text-white font-bold">{gameData.topFragger.combatScore}</span></div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
-        </div>
+            {/* --- LEAGUE OF LEGENDS İSTATİSTİKLERİ --- */}
+            {gameType === "lol" && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Maç Süresi</span>
+                  <span className="text-white font-black text-sm bg-slate-900 px-3 py-1 rounded border border-slate-800">{gameData.matchDuration || "34:12"}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-blue-900/10 border border-blue-500/20 rounded-lg p-4 space-y-3">
+                    <h4 className="text-blue-400 text-[10px] font-black uppercase text-center border-b border-blue-500/20 pb-2">{selectedMatch.team1?.name}</h4>
+                    <div className="flex justify-between text-xs"><span className="text-slate-400">Altın:</span> <span className="text-white font-bold">{gameData.team1Stats?.gold}</span></div>
+                    <div className="flex justify-between text-xs"><span className="text-slate-400">Kule:</span> <span className="text-white font-bold">{gameData.team1Stats?.towers}</span></div>
+                    <div className="flex justify-between text-xs"><span className="text-slate-400">Ejder/Baron:</span> <span className="text-white font-bold">{gameData.team1Stats?.dragons} / {gameData.team1Stats?.barons}</span></div>
+                  </div>
+                  <div className="bg-red-900/10 border border-red-500/20 rounded-lg p-4 space-y-3">
+                    <h4 className="text-red-400 text-[10px] font-black uppercase text-center border-b border-red-500/20 pb-2">{selectedMatch.team2?.name}</h4>
+                    <div className="flex justify-between text-xs"><span className="text-slate-400">Altın:</span> <span className="text-white font-bold">{gameData.team2Stats?.gold}</span></div>
+                    <div className="flex justify-between text-xs"><span className="text-slate-400">Kule:</span> <span className="text-white font-bold">{gameData.team2Stats?.towers}</span></div>
+                    <div className="flex justify-between text-xs"><span className="text-slate-400">Ejder/Baron:</span> <span className="text-white font-bold">{gameData.team2Stats?.dragons} / {gameData.team2Stats?.barons}</span></div>
+                  </div>
+                </div>
+
+                {gameData.mvpPlayer && (
+                  <div className="bg-gradient-to-r from-yellow-900/20 to-slate-900 border border-yellow-500/20 rounded-lg p-4 flex justify-between items-center">
+                     <div>
+                      <div className="text-[10px] text-yellow-500 font-bold uppercase tracking-wider mb-1">Vadi'nin Yıldızı (MVP)</div>
+                      <div className="text-white font-black text-sm">{gameData.mvpPlayer.nickname} <span className="text-slate-500 font-normal ml-1">({gameData.mvpPlayer.champion})</span></div>
+                    </div>
+                    <div className="text-right text-white font-bold text-xs">{gameData.mvpPlayer.kda} <span className="text-[9px] text-slate-500 uppercase ml-1">KDA</span></div>
+                  </div>
+                )}
+              </div>
+            )}
+
+          </div>
+        )}
+
       </div>
     </div>
   );
