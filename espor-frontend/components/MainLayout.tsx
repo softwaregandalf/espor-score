@@ -1,14 +1,15 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import LiveEventToast from "./LiveEventToast";
 import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import {
-  Trophy, MonitorPlay, Swords, Newspaper, Users, Settings, Bell, Search, 
-  ChevronDown, BarChart2, Radio, Gamepad2, X, Menu,
+  Trophy, MonitorPlay, Swords, Newspaper, Users, Settings,
+  Bell, Search, ChevronDown, BarChart2, Radio, Gamepad2, X, Menu
 } from "lucide-react";
 
-// Dinamik Next.js Menü Öğeleri
+// --- SABİT VERİLER ---
 const NAV_ITEMS = [
   { icon: MonitorPlay, label: "Canlı Maçlar", path: "/", accent: "#4D7CFE" },
   { icon: Trophy, label: "Turnuvalar", path: "/tournaments", accent: "#7C3AED" },
@@ -19,80 +20,72 @@ const NAV_ITEMS = [
 ];
 
 const GAMES = [
-  { id: "cs2", name: "Counter-Strike 2", short: "CS2" },
-  { id: "valorant", name: "VALORANT", short: "VAL" },
-  { id: "lol", name: "League of Legends", short: "LoL" },
-  { id: "dota2", name: "Dota 2", short: "DOTA" }
+  { id: 'lol', name: 'League of Legends', short: 'LoL' },
+  { id: 'val', name: 'VALORANT', short: 'VAL' },
+  { id: 'cs2', name: 'Counter-Strike 2', short: 'CS2' },
+  { id: 'dota2', name: 'Dota 2', short: 'DOTA' },
 ];
 
+// OYUNLARA ÖZEL RENK PALETİ
 const GAME_COLORS: Record<string, string> = {
-  lol: '#C89B3C', valorant: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C'
+  lol: '#C89B3C', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', default: '#4D7CFE'
 };
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  // SİHRİN GERÇEKLEŞTİĞİ YER: Aktif temayı belirliyoruz
+  const themeColor = selectedGame ? GAME_COLORS[selectedGame] : GAME_COLORS.default;
+
   return (
-    <div className="flex h-screen w-full overflow-hidden" style={{ background: 'var(--es-bg)', color: 'var(--es-text-1)' }}>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--es-bg)' }}>
       
-      {/* 👈 SOL MENÜ (NAV SIDEBAR) */}
+      {/* --- SOL NAVİGASYON (SIDEBAR) --- */}
       <aside
         className="flex flex-col shrink-0 transition-all duration-300 relative z-20"
         style={{
-          width: sidebarCollapsed ? '72px' : '240px',
+          width: sidebarCollapsed ? '64px' : '240px',
           background: 'var(--es-bg-2)',
           borderRight: '1px solid var(--es-border)',
         }}
       >
         {/* Logo Alanı */}
-        <div className="h-[70px] flex items-center justify-between px-4 shrink-0" style={{ borderBottom: '1px solid var(--es-border)' }}>
-          {!sidebarCollapsed && (
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/')}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #4D7CFE, #7C3AED)' }}>
+        <div className="h-[70px] flex items-center justify-between px-5 shrink-0 border-b border-white/5">
+          {!sidebarCollapsed ? (
+            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => router.push('/')}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-700" style={{ background: themeColor }}>
                 <Radio className="w-4 h-4 text-white" />
               </div>
-              <span className="font-black text-xl tracking-tight text-white font-['Rajdhani',sans-serif]">NEXUS</span>
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase" style={{ background: 'var(--es-blue)', color: 'white' }}>PRO</span>
+              <span className="font-black text-xl tracking-tight text-white">NEXUS</span>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors duration-700" style={{ background: `${themeColor}20`, color: themeColor }}>PRO</span>
             </div>
-          )}
-          {sidebarCollapsed && (
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto cursor-pointer" style={{ background: 'linear-gradient(135deg, #4D7CFE, #7C3AED)' }} onClick={() => router.push('/')}>
+          ) : (
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto cursor-pointer transition-colors duration-700" style={{ background: themeColor }} onClick={() => router.push('/')}>
               <Radio className="w-4 h-4 text-white" />
             </div>
           )}
           {!sidebarCollapsed && (
-            <button onClick={() => setSidebarCollapsed(true)} className="p-1.5 rounded-lg transition-colors hover:bg-white/5" style={{ color: 'var(--es-text-3)' }}>
+            <button onClick={() => setSidebarCollapsed(true)} className="p-1.5 rounded-lg transition-colors hover:bg-white/5 text-slate-500">
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
         {sidebarCollapsed && (
-          <button onClick={() => setSidebarCollapsed(false)} className="mx-auto mt-4 p-2 rounded-lg transition-colors hover:bg-white/5" style={{ color: 'var(--es-text-3)' }}>
-            <Menu className="w-5 h-5" />
+          <button onClick={() => setSidebarCollapsed(false)} className="mx-auto mt-4 p-2 rounded-lg transition-colors hover:bg-white/5 text-slate-500">
+            <Menu className="w-4 h-4" />
           </button>
         )}
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar py-6 flex flex-col gap-8">
-          {/* Canlı Maç Sayacı */}
-          {!sidebarCollapsed && (
-            <div className="px-4">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
-                <div className="relative flex items-center justify-center w-2 h-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                </div>
-                <span className="text-xs font-bold text-red-400 font-['Rajdhani',sans-serif] uppercase tracking-wider">3 Canlı Yayın</span>
-              </div>
-            </div>
-          )}
-
-          {/* Ana Navigasyon */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar py-4 flex flex-col gap-6">
+          {/* Menü Linkleri */}
           <nav className="flex flex-col gap-1 px-3">
-            {!sidebarCollapsed && <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2" style={{ color: 'var(--es-text-3)' }}>Navigasyon</div>}
+            {!sidebarCollapsed && <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2 text-slate-500">Menü</div>}
             
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.path;
@@ -101,114 +94,129 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                   key={item.label}
                   href={item.path}
                   title={sidebarCollapsed ? item.label : undefined}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${sidebarCollapsed ? 'justify-center' : ''} ${isActive ? 'text-white' : 'text-[#64748B] hover:text-white'}`}
-                  style={isActive ? { background: `${item.accent}15`, color: item.accent } : {}}
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${sidebarCollapsed ? 'justify-center' : ''} ${isActive ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+                  style={isActive ? { background: `${themeColor}15`, color: themeColor } : {}}
                 >
-                  {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full" style={{ background: item.accent }} />}
-                  <item.icon className="w-4.5 h-4.5 shrink-0 transition-transform group-hover:scale-110" style={isActive ? { color: item.accent } : {}} />
-                  {!sidebarCollapsed && <span className="text-sm font-bold tracking-wide">{item.label}</span>}
+                  {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full transition-colors duration-700" style={{ background: themeColor }} />}
+                  <item.icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" style={isActive ? { color: themeColor } : {}} />
+                  {!sidebarCollapsed && <span className="text-sm font-semibold">{item.label}</span>}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Oyun Filtreleri */}
+          {/* E-Spor Oyunları (Tema Değiştiriciler) */}
           {!sidebarCollapsed && (
             <div className="flex flex-col gap-1 px-3">
-              <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2 flex justify-between items-center" style={{ color: 'var(--es-text-3)' }}>
+              <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2 flex justify-between items-center text-slate-500">
                 <span>Oyunlar</span>
                 <Settings className="w-3 h-3 cursor-pointer hover:text-white transition-colors" />
               </div>
-              {GAMES.map((game) => (
-                <button
-                  key={game.id}
-                  onClick={() => setSelectedGame(selectedGame === game.id ? null : game.id)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200 w-full text-left group hover:bg-white/5"
-                  style={{
-                    background: selectedGame === game.id ? `${GAME_COLORS[game.id]}15` : undefined,
-                    color: selectedGame === game.id ? GAME_COLORS[game.id] : 'var(--es-text-3)',
-                  }}
-                >
-                  <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: GAME_COLORS[game.id], boxShadow: selectedGame === game.id ? `0 0 8px ${GAME_COLORS[game.id]}` : undefined }} />
-                  <span className="text-sm font-bold flex-1 group-hover:text-white transition-colors">{game.name}</span>
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded" style={{ background: 'var(--es-surface)', color: 'var(--es-text-3)' }}>{game.short}</span>
-                </button>
-              ))}
+              {GAMES.map((game) => {
+                const isSelected = selectedGame === game.id;
+                return (
+                  <button
+                    key={game.id}
+                    onClick={() => setSelectedGame(isSelected ? null : game.id)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 w-full text-left group"
+                    style={{
+                      background: isSelected ? `${GAME_COLORS[game.id]}15` : 'transparent',
+                      color: isSelected ? GAME_COLORS[game.id] : 'var(--es-text-3)',
+                    }}
+                  >
+                    <div 
+                      className="w-2 h-2 rounded-full shrink-0 transition-all duration-500"
+                      style={{ background: GAME_COLORS[game.id], boxShadow: isSelected ? `0 0 10px ${GAME_COLORS[game.id]}` : 'none' }}
+                    />
+                    <span className="text-sm font-semibold flex-1 group-hover:text-white transition-colors">{game.name}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
 
-        {/* Kullanıcı Profili (Alt Kısım) */}
-        <div className="p-4 shrink-0" style={{ borderTop: '1px solid var(--es-border)' }}>
+        {/* Profil Alanı */}
+        <div className="p-4 border-t border-white/5">
           {!sidebarCollapsed ? (
             <button className="flex items-center gap-3 w-full hover:bg-white/5 p-2 rounded-xl transition-colors">
-              <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-700">
-                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=64" alt="User" className="w-full h-full object-cover" />
+              <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white">
+                AD
               </div>
               <div className="flex flex-col text-left flex-1 min-w-0">
-                <span className="text-sm font-black text-white">Yönetici</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-blue)' }}>Pro Üye</span>
+                <span className="text-sm font-bold text-white">Admin User</span>
+                <span className="text-[10px] font-semibold text-slate-400">PRO Üye</span>
               </div>
-              <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'var(--es-text-3)' }} />
+              <ChevronDown className="w-4 h-4 shrink-0 text-slate-500" />
             </button>
           ) : (
-            <div className="flex justify-center w-full">
-              <div className="w-9 h-9 rounded-full overflow-hidden border border-slate-700">
-                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=64" alt="User" className="w-full h-full object-cover" />
-              </div>
+            <div className="w-9 h-9 mx-auto rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white">
+              AD
             </div>
           )}
         </div>
       </aside>
 
-      {/* 📺 SAĞ BÖLÜM (MAIN AREA) */}
+      {/* --- SAĞ TARAF (ANA İÇERİK VE ÜST BAR) --- */}
       <main className="flex-1 flex flex-col overflow-hidden relative z-10">
         
-        {/* Üst Arama & Bildirim Barı */}
-        <header className="h-[70px] flex items-center justify-between px-8 z-30 shrink-0 glass" style={{ borderBottom: '1px solid var(--es-border)' }}>
-          <div className="flex items-center gap-4 w-full max-w-md">
+        {/* 🌟 DİNAMİK AMBİYANS IŞIKLARI (TÜM SAYFAYI KAPLAR) 🌟 */}
+        <div
+          className="absolute top-[-10%] left-[10%] w-[600px] h-[600px] rounded-full pointer-events-none transition-colors duration-1000 ease-in-out opacity-40"
+          style={{ background: `radial-gradient(circle, ${themeColor}20 0%, transparent 60%)`, filter: 'blur(60px)' }}
+        />
+        <div
+          className="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] rounded-full pointer-events-none transition-colors duration-1000 ease-in-out delay-75 opacity-30"
+          style={{ background: `radial-gradient(circle, ${themeColor}15 0%, transparent 60%)`, filter: 'blur(50px)' }}
+        />
+
+        {/* Üst Header */}
+        <header className="h-[70px] flex items-center justify-between px-8 z-30 shrink-0 border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
+          <div className="flex items-center gap-4 flex-1 max-w-xl">
             <div className="relative group w-full">
-              <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 transition-colors" style={{ color: searchQuery ? 'var(--es-blue)' : 'var(--es-text-3)' }} />
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Takım, turnuva veya oyuncu ara..."
-                className="w-full py-2.5 pl-11 pr-4 rounded-xl text-sm outline-none transition-all placeholder:text-slate-500 font-bold"
-                style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }}
-                onFocus={(e) => { e.target.style.borderColor = 'var(--es-blue)'; e.target.style.boxShadow = '0 0 0 3px rgba(77, 124, 254, 0.1)'; }}
-                onBlur={(e) => { e.target.style.borderColor = 'var(--es-border)'; e.target.style.boxShadow = 'none'; }}
+                className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all bg-slate-800/50 border border-slate-700 text-white placeholder:text-slate-500"
+                onFocus={(e) => {
+                  e.target.style.borderColor = themeColor;
+                  e.target.style.boxShadow = `0 0 0 3px ${themeColor}25`;
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255,255,255,0.1)';
+                  e.target.style.boxShadow = 'none';
+                }}
               />
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1">
-                <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded font-bold" style={{ background: 'var(--es-bg)', color: 'var(--es-text-3)', border: '1px solid var(--es-border)' }}>⌘K</kbd>
-              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button className="relative p-2 rounded-xl transition-colors hover:bg-white/10" style={{ color: 'var(--es-text-2)' }}>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-xs font-bold text-red-400">3 CANLI</span>
+            </div>
+            <button className="p-2 rounded-xl transition-colors hover:bg-white/10 text-slate-400 relative">
               <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: 'var(--es-red)', border: '2px solid var(--es-bg-2)' }} />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border-2 border-slate-900" />
             </button>
-            <button className="p-2 rounded-xl transition-colors hover:bg-white/10" style={{ color: 'var(--es-text-2)' }}>
+            <button className="p-2 rounded-xl transition-colors hover:bg-white/10 text-slate-400">
               <Gamepad2 className="w-5 h-5" />
             </button>
           </div>
         </header>
 
-        {/* Dinamik İçerik (Orta Alan) */}
-        <div className="flex-1 overflow-hidden relative flex">
-          {/* Fütüristik Arka Plan Glow Efektleri */}
-          <div className="absolute top-0 left-1/4 w-[600px] h-[300px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(77, 124, 254, 0.05) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[400px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(ellipse, rgba(124, 58, 237, 0.05) 0%, transparent 70%)', filter: 'blur(40px)' }} />
-
-          {/* Sayfaların Geleceği Ana Kapsayıcı */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col p-6 relative z-10">
-            {children}
-          </div>
+        {/* Dinamik Değişen Sayfa İçeriği - SADECE BİR KERE YAZILMALI */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col relative z-10">
+          {children}
         </div>
-      </main>
+        
+        {/* 🚀 CANLI OLAY BİLDİRİMLERİ BURAYA EKLENDİ */}
+        <LiveEventToast />
 
+      </main>
     </div>
   );
 }
