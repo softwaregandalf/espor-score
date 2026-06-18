@@ -1,79 +1,193 @@
-// Left Side Bar.
 "use client";
 
-import { Star } from "lucide-react";
+import { useState } from "react";
+import { Search, ChevronDown } from "lucide-react";
 
-type MatchListProps = {
-  matches: any[];
-  selectedGame: string;
-  setSelectedGame: (game: string) => void;
-  selectedMatch: any;
-  setSelectedMatch: (match: any) => void;
+// Dinamik Oyun Renkleri
+const GAME_COLORS: Record<string, string> = {
+  "lol": "#C89B3C",
+  "valorant": "#FF4655",
+  "cs2": "#F59E0B"
 };
 
-export default function MatchList({ matches, selectedGame, setSelectedGame, selectedMatch, setSelectedMatch }: MatchListProps) {
-  const games = [
-    { label: 'Tümü', dbName: 'Tümü', icon: '🎮' },
-    { label: 'CS2', dbName: 'Counter-Strike 2', icon: '🔫' },
-    { label: 'Valorant', dbName: 'Valorant', icon: '🎯' },
-    { label: 'LoL', dbName: 'League of Legends', icon: '🪄' },
-    { label: 'DOTA 2', dbName: 'DOTA 2', icon: '🛡️' }
+function GameBadge({ gameType, small }: { gameType: string; small?: boolean }) {
+  const color = GAME_COLORS[gameType.toLowerCase()] || '#A0AEC0';
+  return (
+    <span
+      className={`font-bold rounded ${small ? 'text-[9px] px-1 py-0.5' : 'text-[10px] px-1.5 py-0.5'}`}
+      style={{ background: `${color}20`, color, border: `1px solid ${color}30` }}
+    >
+      {gameType.toUpperCase()}
+    </span>
+  );
+}
+
+// 1. Zırhlanmış Logo Bileşeni (Asla taşmaz)
+function TeamLogo({ logoUrl, name, color, size = 'sm' }: { logoUrl?: string, name: string; color: string; size?: 'xs' | 'sm' | 'md' | 'lg' }) {
+  // Kesin piksel değerleri
+  const sizePx = size === 'xs' ? '16px' : size === 'sm' ? '24px' : size === 'md' ? '40px' : '64px';
+  
+  return (
+    <div
+      className="flex items-center justify-center font-black text-white shrink-0 overflow-hidden bg-slate-900 border border-slate-800 rounded-lg"
+      style={{ 
+        width: sizePx, height: sizePx, 
+        minWidth: sizePx, minHeight: sizePx, // Küçülmeyi ve büyümeyi engeller
+        boxShadow: `0 0 5px ${color}30` 
+      }}
+    >
+      {logoUrl ? (
+        // object-contain ve p-0.5 resmi tam kutunun içine sığdırır
+        <img src={logoUrl} alt={name} className="w-full h-full object-contain p-0.5" /> 
+      ) : (
+        <span style={{ fontSize: size === 'xs' ? '8px' : '10px' }}>{name?.slice(0, 3).toUpperCase()}</span>
+      )}
+    </div>
+  );
+}
+
+// 2. Taşmayı Engelleyen Kart Bileşeni
+function MatchListItem({ match, isSelected, onClick }: { match: any, isSelected: boolean, onClick: () => void }) {
+  const gameType = match.gameDetails?.type?.toLowerCase() || 'cs2';
+  const gameColor = GAME_COLORS[gameType] || '#A0AEC0';
+  const isLive = match.status === 'Live';
+  const isCompleted = match.status === 'Finished';
+
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full text-left px-3 py-2.5 transition-all rounded-lg mb-1 block overflow-hidden ${isSelected ? 'bg-white/5' : 'hover:bg-white/5'}`}
+      style={{ borderLeft: isSelected ? `2px solid ${gameColor}` : '2px solid transparent' }}
+    >
+      <div className="flex items-start gap-2.5 w-full">
+        {/* Time / Status */}
+        <div className="flex flex-col items-center gap-1 pt-0.5 w-10 shrink-0">
+          {isLive ? (
+            <>
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[9px] font-bold text-red-400">CANLI</span>
+            </>
+          ) : isCompleted ? (
+            <span className="text-[9px] font-semibold text-slate-500">BİTTİ</span>
+          ) : (
+            <span className="text-[10px] font-semibold text-slate-400">YAKLAŞAN</span>
+          )}
+        </div>
+
+        {/* Teams - min-w-0 eklenmesi metin taşmalarını önler */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <TeamLogo logoUrl={match.team1?.logoUrl} name={match.team1?.name} color={gameColor} size="xs" />
+              <span className="text-xs font-semibold truncate text-white">
+                {match.team1?.name}
+              </span>
+            </div>
+            <span className="text-xs font-black text-white shrink-0 ml-2">{isCompleted || isLive ? match.team1Score : '-'}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <TeamLogo logoUrl={match.team2?.logoUrl} name={match.team2?.name} color={gameColor} size="xs" />
+              <span className="text-xs font-semibold truncate text-white">
+                {match.team2?.name}
+              </span>
+            </div>
+            <span className="text-xs font-black text-white shrink-0 ml-2">{isCompleted || isLive ? match.team2Score : '-'}</span>
+          </div>
+          <div className="mt-1 flex items-center gap-1.5">
+            <GameBadge gameType={gameType} small />
+            <span className="text-[10px] truncate text-slate-500">{match.tournament?.name}</span>
+          </div>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+type FilterSection = 'Live' | 'Upcoming' | 'Finished';
+
+export default function MatchList({ matches, selectedGame, setSelectedGame, selectedMatch, setSelectedMatch }: any) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedSections, setExpandedSections] = useState<FilterSection[]>(['Live', 'Upcoming', 'Finished']);
+
+  const toggleSection = (section: FilterSection) => {
+    setExpandedSections(prev => prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]);
+  };
+
+  const SECTIONS: { label: FilterSection; title: string; filter: string; color: string }[] = [
+    { label: 'Live', title: 'CANLI', filter: 'Live', color: '#EF4444' },
+    { label: 'Upcoming', title: 'YAKLAŞAN', filter: 'Upcoming', color: '#4D7CFE' },
+    { label: 'Finished', title: 'SONUÇLAR', filter: 'Finished', color: 'var(--es-text-3)' },
   ];
 
   return (
-    <div className={`w-full lg:w-4/12 xl:w-3/12 flex-col gap-3 ${selectedMatch ? 'hidden lg:flex' : 'flex'}`}>
-      
-      {/* Oyun Filtreleri */}
-      <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar bg-slate-800/40 p-2 rounded-lg border border-slate-700/50">
-        {games.map((game) => (
-          <button 
-            key={game.label}
-            onClick={() => { setSelectedGame(game.dbName); setSelectedMatch(null); }}
-            className={`shrink-0 px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
-              selectedGame === game.dbName 
-              ? 'bg-slate-700 text-white shadow-sm' 
-              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-            }`}
-          >
-            <span>{game.icon}</span>{game.label}
-          </button>
-        ))}
+    <div className="w-full flex flex-col h-full rounded-xl overflow-hidden shadow-lg border" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
+      {/* Search */}
+      <div className="p-3" style={{ borderBottom: '1px solid var(--es-border)' }}>
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--es-text-3)' }} />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Takım ara..."
+            className="w-full pl-7 pr-3 py-2 rounded-lg text-xs outline-none"
+            style={{
+              background: 'var(--es-surface)',
+              border: '1px solid var(--es-border)',
+              color: 'white',
+              fontFamily: 'var(--font-family)',
+            }}
+          />
+        </div>
       </div>
 
-      {/* Maç Kartları */}
-      <div className="flex flex-col gap-3">
-        {matches.length === 0 ? (
-          <div className="bg-slate-800/30 border border-slate-700/50 rounded-lg p-6 text-center text-sm text-slate-400">Maç bulunamadı.</div>
-        ) : (
-          matches.map((match: any) => (
-            <div key={match.id} className="bg-slate-800/40 rounded-lg border border-slate-700/50 overflow-hidden">
-              <div className="bg-slate-800/80 px-3 py-2 border-b border-slate-700/50 flex justify-between items-center">
-                <span className="text-[11px] font-bold text-slate-300">{match?.tournament?.name || "Bilinmeyen Turnuva"}</span>
-              </div>
-              <div 
-                onClick={() => setSelectedMatch(match)}
-                className={`p-3 flex items-center justify-between cursor-pointer transition-all ${
-                  selectedMatch?.id === match.id ? 'bg-slate-700/50 border-l-4 border-l-blue-500' : 'hover:bg-slate-700/30 border-l-4 border-l-transparent'
-                }`}
+      {/* Match List (Accordion) */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        {SECTIONS.map(({ label, title, filter, color }) => {
+          const isExpanded = expandedSections.includes(label);
+          const filteredMatches = matches.filter((m: any) => {
+             const statusMatch = m.status === filter;
+             const searchMatch = !searchQuery || 
+                m.team1?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                m.team2?.name.toLowerCase().includes(searchQuery.toLowerCase());
+             return statusMatch && searchMatch;
+          });
+
+          if (filteredMatches.length === 0) return null;
+
+          return (
+            <div key={label}>
+              <button
+                onClick={() => toggleSection(label)}
+                className="w-full flex items-center justify-between px-3 py-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:bg-white/5"
+                style={{ color }}
               >
-                <div className="flex flex-col gap-1.5 w-full">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-200">{match?.team1?.acronym || "TBA"}</span>
-                    <span className="font-bold text-sm text-white">{match?.team1Score ?? "-"}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-200">{match?.team2?.acronym || "TBA"}</span>
-                    <span className="font-bold text-sm text-white">{match?.team2Score ?? "-"}</span>
-                  </div>
+                <div className="flex items-center gap-2">
+                  {label === 'Live' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+                  {title}
+                  <span className="text-[9px] px-1 py-0.5 rounded font-bold" style={{ background: `${color}20`, color }}>
+                    {filteredMatches.length}
+                  </span>
                 </div>
-                <div className="flex flex-col items-end justify-between ml-4 h-full border-l border-slate-700/50 pl-3">
-                  <Star size={14} className="text-slate-600 hover:text-yellow-500 transition-colors" />
-                  {match?.status === "LIVE" && <span className="text-[9px] text-red-500 font-bold animate-pulse mt-2">MS</span>}
+                <ChevronDown className="w-3.5 h-3.5 transition-transform" style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
+              </button>
+
+              {isExpanded && (
+                <div className="flex flex-col px-2 pb-2 mt-1">
+                  {filteredMatches.map((match: any) => (
+                    <MatchListItem
+                      key={match.id}
+                      match={match}
+                      isSelected={selectedMatch?.id === match.id}
+                      onClick={() => setSelectedMatch(match)}
+                    />
+                  ))}
                 </div>
-              </div>
+              )}
             </div>
-          ))
-        )}
+          );
+        })}
       </div>
     </div>
   );

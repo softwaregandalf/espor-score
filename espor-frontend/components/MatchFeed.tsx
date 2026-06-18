@@ -25,18 +25,14 @@ export default function MatchFeed({ initialMatches, rankings }: { initialMatches
     return () => { socket.disconnect(); };
   }, []);
 
-  // 🚀 AKILLI FİLTRELEME: Buton ismi ne olursa olsun doğru veritabanı tipini bulur
   const filteredMatches = matches.filter((match: any) => {
     if (selectedGame === "Tümü") return statusFilter ? match.status === statusFilter : true;
     
     const target = selectedGame.toLowerCase().trim();
     let mappedTarget = target;
     
-    // UI'dan "CS:GO", "CS 2", "Counter" ne gelirse gelsin 'cs2' ile eşleştir
     if (target.includes("cs") || target.includes("counter")) mappedTarget = "cs2";
-    // UI'dan "League of Legends", "LoL" ne gelirse gelsin 'lol' ile eşleştir
     if (target.includes("lol") || target.includes("league")) mappedTarget = "lol";
-    // Valorant eşleştirmesi
     if (target.includes("val")) mappedTarget = "valorant";
 
     const matchType = match.gameDetails?.type?.toLowerCase() || "";
@@ -47,16 +43,34 @@ export default function MatchFeed({ initialMatches, rankings }: { initialMatches
   });
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 max-w-[1600px] mx-auto">
-      <MatchList 
-        matches={filteredMatches} 
-        selectedGame={selectedGame} 
-        setSelectedGame={setSelectedGame}
-        selectedMatch={selectedMatch}
-        setSelectedMatch={setSelectedMatch}
-      />
-      <MatchDetail selectedMatch={selectedMatch} setSelectedMatch={setSelectedMatch} />
-      <RightSidebar rankings={rankings} />
+    // Mobilde alt alta (flex-col) ve serbest yükseklik (h-auto)
+    // Masaüstünde (xl) yan yana (flex-row) ve ekrana tam oturan yükseklik
+    <div className="flex flex-col xl:flex-row gap-6 w-full max-w-[1800px] mx-auto h-auto xl:h-[calc(100vh-100px)] min-h-0">
+      
+      {/* SOL MENÜ: Maç Listesi */}
+      <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col min-h-[500px] xl:min-h-0">
+        <MatchList 
+          matches={filteredMatches} 
+          selectedGame={selectedGame} 
+          setSelectedGame={setSelectedGame}
+          selectedMatch={selectedMatch}
+          setSelectedMatch={setSelectedMatch} 
+        />
+      </div>
+
+      {/* ORTA EKRAN: Detay Paneli */}
+      <div className="flex-1 flex flex-col min-w-0 min-h-[600px] xl:min-h-0">
+        <MatchDetail 
+          selectedMatch={selectedMatch} 
+          setSelectedMatch={setSelectedMatch} 
+        />
+      </div>
+
+      {/* SAĞ MENÜ: Mobilde ekranı çok uzatmamak için gizlenir, masaüstünde (xl) geri gelir */}
+      <div className="w-full xl:w-[300px] flex-shrink-0 flex-col min-h-0 hidden xl:flex">
+        <RightSidebar rankings={rankings} />
+      </div>
+
     </div>
   );
 }

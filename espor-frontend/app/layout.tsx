@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Rajdhani, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import Navbar from "@/components/Navbar";
-import MobileNav from "@/components/MobileNav"; // Mobil menüyü içe aktardık
+import MainLayout from "@/components/MainLayout";
 
-const inter = Inter({ subsets: ["latin"] });
+// Özel Fontlarımızı Yüklüyoruz
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const rajdhani = Rajdhani({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-rajdhani" });
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
-  title: "Espor Arena",
-  description: "Global Canlı Espor Skorları",
+  title: "NEXUS PRO | Espor Arena",
+  description: "Global Canlı Espor Skorları ve İstatistikleri",
 };
 
 export default function RootLayout({
@@ -18,13 +20,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning eklendi
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    // Font değişkenlerini HTML etiketine gömüyoruz
+    <html lang="tr" suppressHydrationWarning className={`${inter.variable} ${rajdhani.variable} ${jetbrainsMono.variable}`}>
+      <body className="font-sans antialiased text-white selection:bg-cyan-500/30 selection:text-cyan-200" style={{ background: 'var(--es-bg)' }}>
         <ThemeProvider attribute="class" defaultTheme="dark">
-          <Navbar />
-          {children}
-          <MobileNav /> {/* Mobil menüyü ekledik */}
+          <MainLayout>
+            {children}
+          </MainLayout>
         </ThemeProvider>
       </body>
     </html>

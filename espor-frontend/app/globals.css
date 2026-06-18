@@ -1,19 +1,69 @@
 @import "tailwindcss";
-@source "../components"; /* Tailwind v4'e components klasörünü okumasını söylüyoruz */
 
-/* Tailwind v4 class tabanlı karanlık mod desteği */
-@variant dark (&:where(.dark, .dark *));
+/* NEXUS PRO TAILWIND v4 TEMA AYARLARI */
+@theme {
+  --color-es-bg: #0B0F1A;
+  --color-es-bg-2: #121826;
+  --color-es-card: #171F31;
+  --color-es-surface: #1E2740;
+  --color-es-surface-2: #242E47;
+  --color-es-blue: #4D7CFE;
+  --color-es-purple: #7C3AED;
+  --color-es-cyan: #00D4FF;
+  --color-es-green: #22C55E;
+  --color-es-orange: #F59E0B;
+  --color-es-red: #EF4444;
+  --color-es-text-1: #FFFFFF;
+  --color-es-text-2: #A0AEC0;
+  --color-es-text-3: #64748B;
+  --color-es-border: rgba(255, 255, 255, 0.07);
+
+  --font-rajdhani: var(--font-rajdhani), sans-serif;
+  --font-mono: var(--font-mono), monospace;
+}
+
+/* CSS DEĞİŞKENLERİ (Bileşenlerin Okuyabilmesi İçin) */
+:root {
+  --es-bg: #0B0F1A;
+  --es-bg-2: #121826;
+  --es-card: #171F31;
+  --es-surface: #1E2740;
+  --es-surface-2: #242E47;
+  --es-blue: #4D7CFE;
+  --es-purple: #7C3AED;
+  --es-cyan: #00D4FF;
+  --es-green: #22C55E;
+  --es-orange: #F59E0B;
+  --es-red: #EF4444;
+  --es-text-1: #FFFFFF;
+  --es-text-2: #A0AEC0;
+  --es-text-3: #64748B;
+  --es-border: rgba(255, 255, 255, 0.07);
+}
 
 body {
-  /* Gündüz ve Gece modu için ana renklerimizi belirliyoruz */
-  @apply bg-slate-50 text-slate-900 dark:bg-[#0f172a] dark:text-slate-200 transition-colors duration-300;
+  background-color: var(--es-bg);
+  color: var(--es-text-1);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
-/* Kaydırma çubuğunu gizler ama kaydırma özelliğini korur */
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
+/* ÖZEL EFEKTLER VE SCROLLBAR */
+.custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+.cyber-grid {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
 }
-.hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+.score-display {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }

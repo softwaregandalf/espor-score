@@ -17,7 +17,7 @@ model Game {
 }
 
 model Tournament {
-  id        Int      @id
+  id        Int      @id @default(autoincrement())
   gameId    Int
   game      Game     @relation(fields: [gameId], references: [id])
   name      String
@@ -28,7 +28,7 @@ model Tournament {
 }
 
 model Team {
-  id             Int      @id
+  id             Int      @id @default(autoincrement())
   gameId         Int
   game           Game     @relation(fields: [gameId], references: [id])
   name           String
@@ -40,7 +40,7 @@ model Team {
 }
 
 model Player {
-  id          Int               @id
+  id          Int               @id @default(autoincrement())
   teamId      Int
   team        Team              @relation(fields: [teamId], references: [id])
   gameId      Int
@@ -54,29 +54,28 @@ model Player {
 }
 
 model Match {
-  id              Int               @id
-  tournamentId    Int
-  tournament      Tournament        @relation(fields: [tournamentId], references: [id])
-  team1Id         Int
-  team1           Team              @relation("Team1Matches", fields: [team1Id], references: [id])
-  team2Id         Int
-  team2           Team              @relation("Team2Matches", fields: [team2Id], references: [id])
-  status          String
-  team1Score      Int               @default(0)
-  team2Score      Int               @default(0)
-  startTime       DateTime
+  id           Int               @id @default(autoincrement())
+  tournamentId Int
+  tournament   Tournament        @relation(fields: [tournamentId], references: [id])
+  team1Id      Int
+  team1        Team              @relation("Team1Matches", fields: [team1Id], references: [id])
+  team2Id      Int
+  team2        Team              @relation("Team2Matches", fields: [team2Id], references: [id])
+  status       String
+  team1Score   Int               @default(0)
+  team2Score   Int               @default(0)
+  startTime    DateTime
 
-  // Evrensel MVP Alanları (Her oyunda ortak olduğu için sabit bıraktık)
-  mvpNickname     String?           @default("Belirlenmedi")
-  mvpRating       Float?            @default(1.0)
-  mvpKills        Int?              @default(0)
-  mvpDeaths       Int?              @default(0)
+  // Evrensel MVP Alanları
+  mvpNickname  String?           @default("Belirlenmedi")
+  mvpRating    Float?            @default(1.0)
+  mvpKills     Int?              @default(0)
+  mvpDeaths    Int?              @default(0)
 
-  // 🏆 YENİ: Dinamik Oyun İstatistikleri (JSON)
-  // CS2 haritaları, Valorant ajanları, LoL şampiyonları burada tutulacak!
-  gameDetails     Json?
+  // Dinamik Oyun İstatistikleri (JSON)
+  gameDetails  Json?
 
-  playerStats     PlayerMatchStat[]
+  playerStats  PlayerMatchStat[]
 }
 
 model PlayerMatchStat {
