@@ -1,214 +1,139 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Trophy, Calendar, Users, MapPin, ChevronRight, Star } from "lucide-react";
+import { Search, MapPin, Calendar, DollarSign, Trophy, Users, Shield, ArrowRight, PlayCircle } from "lucide-react";
+import TournamentDetail from "./TournamentDetail"; // 🚀 YENİ DETAY BİLEŞENİ
 
-// --- TASARIM İÇİN ÖRNEK VERİLER (İleride Backend'den Gelecek) ---
-const GAME_COLORS: Record<string, string> = { lol: '#C89B3C', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
-const GAMES = [{ id: 'lol', short: 'LoL' }, { id: 'val', short: 'VAL' }, { id: 'cs2', short: 'CS2' }];
-
-const TOURNAMENTS = [
-  { id: 'vct-masters', name: 'VCT Masters Shanghai', game: 'val', gameLabel: 'VALORANT', stage: 'Grand Finals', prizePool: '$1,000,000', startDate: 'Jun 10', endDate: 'Jun 25', location: 'Shanghai, China', teams: 12, status: 'live', featured: true },
-  { id: 'worlds-2026', name: 'Worlds 2026', game: 'lol', gameLabel: 'League of Legends', stage: 'Group Stage', prizePool: '$2,225,000', startDate: 'Sep 28', endDate: 'Nov 2', location: 'Seoul, South Korea', teams: 24, status: 'upcoming', featured: true },
-  { id: 'iem-dallas', name: 'IEM Dallas 2026', game: 'cs2', gameLabel: 'CS2', stage: 'Quarterfinals', prizePool: '$250,000', startDate: 'Jun 15', endDate: 'Jun 22', location: 'Dallas, USA', teams: 16, status: 'live' },
-  { id: 'blast-paris', name: 'BLAST Premier Spring', game: 'cs2', gameLabel: 'CS2', stage: 'Finals', prizePool: '$500,000', startDate: 'Jun 1', endDate: 'Jun 8', location: 'Paris, France', teams: 12, status: 'completed' },
+// --- 🟢 API SİMÜLASYONU ---
+const MOCK_TOURNAMENTS = [
+  { id: 't1', name: 'VCT 2026: Masters Shanghai', game: 'val', tier: 'S-Tier', location: 'Shanghai, China', prizePool: '$1,000,000', startDate: '23 Mayıs', endDate: '9 Haz 2026', status: 'live', teamsCount: 12 },
+  { id: 't2', name: 'LCK Summer 2026', game: 'lol', tier: 'A-Tier', location: 'Seoul, South Korea', prizePool: '$300,000', startDate: '12 Haz', endDate: '8 Eyl 2026', status: 'live', teamsCount: 10 },
+  { id: 't3', name: 'IEM Dallas 2026', game: 'cs2', tier: 'S-Tier', location: 'Dallas, USA', prizePool: '$250,000', startDate: '27 Mayıs', endDate: '2 Haz 2026', status: 'completed', teamsCount: 16, 
+    results: { winner: { name: 'NRG', short: 'NRG', color: '#FF4655', prize: '$100,000' }, runnerUp: { name: 'Cloud9', short: 'C9', color: '#00D4FF', prize: '$42,000' } } 
+  },
+  { id: 't4', name: 'LEC Spring 2026', game: 'lol', tier: 'A-Tier', location: 'Berlin, Germany', prizePool: '€80,000', startDate: '9 Mar', endDate: '14 Nis 2026', status: 'completed', teamsCount: 10, 
+    results: { winner: { name: 'G2 Esports', short: 'G2', color: '#1E293B', prize: '€40,000' }, runnerUp: { name: 'Fnatic', short: 'FNC', color: '#F97316', prize: '€20,000' } } 
+  },
+  { id: 't5', name: 'The International 2026', game: 'dota2', tier: 'S-Tier', location: 'Seattle, USA', prizePool: 'TBD (Kitle Fonlaması)', startDate: '15 Eki', endDate: '29 Eki 2026', status: 'upcoming', teamsCount: 20 },
+  { id: 't6', name: 'VALORANT Champions 2026', game: 'val', tier: 'S-Tier', location: 'Paris, Germany', prizePool: '$2,250,000', startDate: '1 Ağu', endDate: '25 Ağu 2026', status: 'upcoming', teamsCount: 16 },
 ];
 
-// --- ALT BİLEŞEN: TURNUVA KARTI ---
-function TournamentCard({ tournament, featured }: { tournament: any; featured?: boolean }) {
-  const router = useRouter();
-  const color = GAME_COLORS[tournament.game] || '#A0AEC0';
-  const isLive = tournament.status === 'live';
+const GAMES = [ { id: 'lol', short: 'LoL' }, { id: 'val', short: 'VAL' }, { id: 'cs2', short: 'CS2' }, { id: 'dota2', short: 'DOTA' } ];
+const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
-  return (
-    <div
-      className={`rounded-2xl overflow-hidden cursor-pointer transition-all hover:brightness-110 hover:scale-[1.01] ${featured ? 'lg:col-span-2' : ''}`}
-      style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}
-      onClick={() => router.push('/')} // Tıklayınca ana sayfadaki maç detayına atar
-    >
-      <div className="relative p-5 overflow-hidden" style={{ background: `linear-gradient(135deg, ${color}20, var(--es-surface))`, borderBottom: '1px solid var(--es-border)', minHeight: featured ? '140px' : '100px' }}>
-        <div className="absolute inset-0 cyber-grid opacity-20" />
-        <div className="relative flex items-start justify-between">
-          <div className="flex flex-col gap-2">
-            {isLive && (
-              <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-red-400">CANLI YAYIN</span>
-              </div>
-            )}
-            {tournament.featured && !isLive && (
-              <div className="flex items-center gap-1.5">
-                <Star className="w-3 h-3" style={{ color: '#F59E0B' }} />
-                <span className="text-[10px] font-bold" style={{ color: '#F59E0B' }}>ÖNE ÇIKAN</span>
-              </div>
-            )}
-            <h3 className={`font-black text-white ${featured ? 'text-xl' : 'text-base'}`}>{tournament.name}</h3>
-            {featured && <p className="text-sm" style={{ color: 'var(--es-text-3)' }}>{tournament.stage}</p>}
-          </div>
-
-          <div className="flex flex-col items-end gap-2">
-            <span className="text-[10px] font-bold px-2 py-1 rounded" style={{ background: `${color}20`, color, border: `1px solid ${color}30` }}>{tournament.gameLabel}</span>
-            <span className="text-[10px] font-semibold px-2 py-1 rounded" style={{
-              background: tournament.status === 'live' ? 'rgba(239,68,68,0.15)' : tournament.status === 'upcoming' ? 'rgba(77,124,254,0.15)' : 'var(--es-surface)',
-              color: tournament.status === 'live' ? '#EF4444' : tournament.status === 'upcoming' ? '#4D7CFE' : 'var(--es-text-3)',
-            }}>
-              {tournament.status === 'live' ? 'DEVAM EDİYOR' : tournament.status === 'upcoming' ? 'YAKLAŞAN' : 'BİTTİ'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="p-4">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-3.5 h-3.5 shrink-0" style={{ color: '#F59E0B' }} />
-            <div>
-              <div className="text-[10px]" style={{ color: 'var(--es-text-3)' }}>Ödül Havuzu</div>
-              <div className="text-xs font-bold text-white">{tournament.prizePool}</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Users className="w-3.5 h-3.5 shrink-0" style={{ color: color }} />
-            <div>
-              <div className="text-[10px]" style={{ color: 'var(--es-text-3)' }}>Takımlar</div>
-              <div className="text-xs font-bold text-white">{tournament.teams}</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--es-blue)' }} />
-            <div>
-              <div className="text-[10px]" style={{ color: 'var(--es-text-3)' }}>Tarih</div>
-              <div className="text-xs font-bold text-white">{tournament.startDate} — {tournament.endDate}</div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 shrink-0" style={{ color: '#22C55E' }} />
-            <div>
-              <div className="text-[10px]" style={{ color: 'var(--es-text-3)' }}>Konum</div>
-              <div className="text-xs font-bold text-white truncate max-w-[100px]">{tournament.location}</div>
-            </div>
-          </div>
-        </div>
-
-        <button className="w-full mt-4 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all hover:brightness-110" style={{ background: `${color}15`, color, border: `1px solid ${color}25` }}>
-          Detayları Gör <ChevronRight className="w-3.5 h-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// --- ANA BİLEŞEN ---
 export default function TournamentsView() {
-  const [activeGame, setActiveGame] = useState<string>('all');
-  const [activeStatus, setActiveStatus] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGame, setSelectedGame] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'live' | 'upcoming' | 'completed'>('live');
 
-  const filteredTournaments = TOURNAMENTS.filter(t => {
-    const gameMatch = activeGame === 'all' || t.game === activeGame;
-    const statusMatch = activeStatus === 'all' || t.status === activeStatus;
-    return gameMatch && statusMatch;
+  // 🟢 YENİ: Görünüm Modu ve Seçili Turnuva
+  const [viewMode, setViewMode] = useState<'list' | 'detail'>('list');
+  const [selectedTournament, setSelectedTournament] = useState<any>(null);
+
+  const filteredTournaments = MOCK_TOURNAMENTS.filter(tournament => {
+    const matchSearch = tournament.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchGame = selectedGame === 'all' || tournament.game === selectedGame;
+    const matchTab = tournament.status === activeTab;
+    return matchSearch && matchGame && matchTab;
   });
 
-  const featuredTournaments = filteredTournaments.filter(t => t.featured);
-  const regularTournaments = filteredTournaments.filter(t => !t.featured);
+  // 🚀 DETAY EKRANI RENDERI
+  if (viewMode === 'detail' && selectedTournament) {
+    return <TournamentDetail tournament={selectedTournament} onBack={() => { setViewMode('list'); setSelectedTournament(null); }} />;
+  }
 
+  // 🏠 LİSTE EKRANI RENDERI (Önceki Halinin Aynısı)
   return (
-    <div className="flex-1 w-full max-w-[1200px] mx-auto animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-black text-white flex items-center gap-2 tracking-tight">
-            <Trophy className="w-6 h-6" style={{ color: '#F59E0B' }} />
-            Turnuvalar
-          </h2>
-          <p className="text-xs mt-1" style={{ color: 'var(--es-text-3)' }}>
-            {TOURNAMENTS.filter(t => t.status === 'live').length} canlı • {TOURNAMENTS.filter(t => t.status === 'upcoming').length} yaklaşan
-          </p>
+    <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in bg-es-bg">
+      <div className="shrink-0 p-8 border-b border-white/5 bg-es-bg-2 relative overflow-hidden">
+        <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+        <div className="relative z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-black text-white tracking-tight mb-1">E-Spor Turnuvaları</h1>
+              <p className="text-sm text-slate-400">Dünya çapındaki resmi ligleri, şampiyonaları ve eleme aşamalarını takip edin.</p>
+            </div>
+            <div className="relative group w-72">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-es-cyan transition-colors" />
+              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Turnuva ara (Örn: VCT, IEM)..." className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all bg-slate-900 border border-slate-700 text-white focus:border-es-cyan shadow-lg" />
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800">
+              <button onClick={() => setSelectedGame('all')} className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${selectedGame === 'all' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white'}`}>Tümü</button>
+              {GAMES.map(game => (
+                <button key={game.id} onClick={() => setSelectedGame(game.id)} className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${selectedGame === game.id ? 'text-white shadow-lg' : 'text-slate-500 hover:text-white'}`} style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent' }}>
+                  <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800">
+              {[ { id: 'live', label: 'Devam Edenler', icon: PlayCircle, color: '#EF4444' }, { id: 'upcoming', label: 'Yaklaşanlar', icon: Calendar, color: '#4D7CFE' }, { id: 'completed', label: 'Sonuçlananlar', icon: Trophy, color: '#F59E0B' } ].map(tab => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === tab.id ? 'text-white shadow-lg' : 'text-slate-500 hover:text-white'}`} style={{ background: activeTab === tab.id ? `${tab.color}20` : 'transparent', color: activeTab === tab.id ? tab.color : '' }}>
+                  <tab.icon className="w-4 h-4" /> {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Filtreler */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
-        <div className="flex items-center rounded-xl p-1 gap-1" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-          {[
-            { value: 'all', label: 'Tümü' },
-            { value: 'live', label: '🔴 Canlı' },
-            { value: 'upcoming', label: 'Yaklaşan' },
-            { value: 'completed', label: 'Biten' },
-          ].map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => setActiveStatus(value)}
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={activeStatus === value ? { background: 'var(--es-blue)', color: 'white' } : { color: 'var(--es-text-3)' }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setActiveGame('all')}
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={activeGame === 'all' ? { background: 'rgba(77, 124, 254, 0.2)', color: '#4D7CFE', border: '1px solid rgba(77, 124, 254, 0.3)' } : { background: 'var(--es-card)', color: 'var(--es-text-3)', border: '1px solid var(--es-border)' }}
-          >
-            Tüm Oyunlar
-          </button>
-          {GAMES.map((game) => {
-            const color = GAME_COLORS[game.id];
-            const isActive = activeGame === game.id;
-            return (
-              <button
-                key={game.id}
-                onClick={() => setActiveGame(game.id)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                style={isActive ? { background: `${color}20`, color, border: `1px solid ${color}40` } : { background: 'var(--es-card)', color: 'var(--es-text-3)', border: '1px solid var(--es-border)' }}
-              >
-                {game.short}
-              </button>
-            );
-          })}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+        <div className="max-w-7xl mx-auto">
+          {filteredTournaments.length === 0 ? (
+             <div className="text-center py-32 flex flex-col items-center justify-center opacity-50">
+               <Shield className="w-16 h-16 text-slate-500 mb-4" />
+               <h3 className="text-xl font-black text-white uppercase tracking-widest">Turnuva Bulunamadı</h3>
+               <p className="text-slate-400 mt-2">Bu kriterlere uygun bir etkinlik veritabanında yer almıyor.</p>
+             </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredTournaments.map(tournament => {
+                const color = GAME_COLORS[tournament.game];
+                return (
+                  <div key={tournament.id} className="rounded-2xl overflow-hidden flex flex-col shadow-xl transition-transform hover:-translate-y-1 group" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
+                    <div className="h-24 p-5 relative overflow-hidden flex flex-col justify-between" style={{ background: `${color}15`, borderBottom: `1px solid ${color}30` }}>
+                      <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-2xl opacity-40" style={{ background: color }} />
+                      <div className="flex items-center justify-between relative z-10">
+                        <span className="px-2.5 py-1 rounded text-[10px] font-black tracking-widest text-white shadow-sm" style={{ background: color }}>{tournament.game.toUpperCase()}</span>
+                        <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-300 bg-slate-900/50 px-2 py-1 rounded border border-white/10"><Shield className="w-3 h-3" style={{ color }}/> {tournament.tier}</span>
+                      </div>
+                      <h3 className="text-lg font-black text-white truncate relative z-10">{tournament.name}</h3>
+                    </div>
+                    <div className="p-5 flex-1 flex flex-col gap-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><MapPin className="w-3 h-3"/> Konum</span><span className="text-xs font-semibold text-white truncate">{tournament.location}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><Calendar className="w-3 h-3"/> Tarih</span><span className="text-xs font-semibold text-white truncate">{tournament.startDate} - {tournament.endDate}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><DollarSign className="w-3 h-3 text-green-500"/> Ödül Havuzu</span><span className="text-xs font-bold text-green-400 truncate">{tournament.prizePool}</span></div>
+                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1"><Users className="w-3 h-3"/> Takım Sayısı</span><span className="text-xs font-semibold text-white truncate">{tournament.teamsCount} Takım</span></div>
+                      </div>
+                      {activeTab === 'completed' && tournament.results && (
+                        <div className="mt-2 pt-4 border-t border-dashed border-white/10 space-y-2">
+                          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">Podyum Dağılımı</div>
+                          <div className="flex items-center justify-between p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+                            <div className="flex items-center gap-2"><Trophy className="w-4 h-4 text-yellow-500" /><div className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-black text-white" style={{ background: tournament.results.winner.color }}>{tournament.results.winner.short}</div><span className="text-xs font-bold text-white">{tournament.results.winner.name}</span></div>
+                            <span className="text-xs font-black text-yellow-500">{tournament.results.winner.prize}</span>
+                          </div>
+                          <div className="flex items-center justify-between p-2 rounded-lg bg-slate-800 border border-slate-700">
+                            <div className="flex items-center gap-2"><span className="w-4 h-4 flex items-center justify-center text-[10px] font-black text-slate-400">2.</span><div className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-black text-white" style={{ background: tournament.results.runnerUp.color }}>{tournament.results.runnerUp.short}</div><span className="text-xs font-bold text-white">{tournament.results.runnerUp.name}</span></div>
+                            <span className="text-xs font-black text-slate-400">{tournament.results.runnerUp.prize}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4 border-t border-white/5 bg-slate-900/30">
+                       {/* 🚀 BUTONA TIKLAMA OLAYI EKLENDİ */}
+                       <button onClick={() => { setSelectedTournament(tournament); setViewMode('detail'); }} className="w-full py-2.5 rounded-lg text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white group-hover:border-es-cyan/50 border border-transparent">
+                         Turnuva Detayları <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                       </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Öne Çıkan Turnuvalar */}
-      {featuredTournaments.length > 0 && (
-        <section className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Star className="w-4 h-4" style={{ color: '#F59E0B' }} />
-            <h3 className="text-sm font-bold text-white uppercase tracking-widest">Öne Çıkan Turnuvalar</h3>
-          </div>
-          <div className="grid lg:grid-cols-3 gap-5">
-            {featuredTournaments.map((t, i) => (
-              <TournamentCard key={t.id} tournament={t} featured={i === 0} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Tüm Turnuvalar */}
-      {regularTournaments.length > 0 && (
-        <section className="pb-10">
-          <h3 className="text-sm font-bold text-white mb-4 uppercase tracking-widest">
-            {activeStatus === 'all' ? 'Diğer Turnuvalar' : activeStatus === 'live' ? 'Devam Edenler' : activeStatus === 'upcoming' ? 'Yaklaşanlar' : 'Sonuçlananlar'}
-          </h3>
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {regularTournaments.map((t) => (
-              <TournamentCard key={t.id} tournament={t} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {filteredTournaments.length === 0 && (
-        <div className="flex items-center justify-center py-20" style={{ color: 'var(--es-text-3)' }}>
-          <div className="text-center">
-            <Trophy className="w-12 h-12 mx-auto mb-3 opacity-20" />
-            <p>Seçilen filtrelere uygun turnuva bulunamadı.</p>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
