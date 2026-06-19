@@ -1,17 +1,19 @@
 "use client";
 
-import LiveEventToast from "./LiveEventToast";
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Trophy, MonitorPlay, Swords, Newspaper, Users, Settings,
-  Bell, Search, ChevronDown, BarChart2, Radio, Gamepad2, X, Menu
+  Bell, Search, ChevronDown, BarChart2, Radio, Gamepad2, X, Menu, History
 } from "lucide-react";
+import LiveEventToast from "./LiveEventToast";
 
-// --- SABİT VERİLER ---
+// --- SABİT VERİLER (NAVİGASYON BURADAN YÖNETİLİYOR) ---
 const NAV_ITEMS = [
   { icon: MonitorPlay, label: "Canlı Maçlar", path: "/", accent: "#4D7CFE" },
+  // 🚀 YENİ EKLENEN "SONUÇLAR" SEKMESİ
+  { icon: History, label: "Sonuçlar", path: "/results", accent: "#F43F5E" }, 
   { icon: Trophy, label: "Turnuvalar", path: "/tournaments", accent: "#7C3AED" },
   { icon: Swords, label: "Takımlar", path: "/teams", accent: "#EF4444" },
   { icon: BarChart2, label: "Sıralama", path: "/rankings", accent: "#F59E0B" },
@@ -28,7 +30,7 @@ const GAMES = [
 
 // OYUNLARA ÖZEL RENK PALETİ
 const GAME_COLORS: Record<string, string> = {
-  lol: '#C89B3C', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', default: '#4D7CFE'
+  lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', default: '#4D7CFE'
 };
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
@@ -39,7 +41,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // SİHRİN GERÇEKLEŞTİĞİ YER: Aktif temayı belirliyoruz
   const themeColor = selectedGame ? GAME_COLORS[selectedGame] : GAME_COLORS.default;
 
   return (
@@ -160,7 +161,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       {/* --- SAĞ TARAF (ANA İÇERİK VE ÜST BAR) --- */}
       <main className="flex-1 flex flex-col overflow-hidden relative z-10">
         
-        {/* 🌟 DİNAMİK AMBİYANS IŞIKLARI (TÜM SAYFAYI KAPLAR) 🌟 */}
+        {/* DİNAMİK AMBİYANS IŞIKLARI */}
         <div
           className="absolute top-[-10%] left-[10%] w-[600px] h-[600px] rounded-full pointer-events-none transition-colors duration-1000 ease-in-out opacity-40"
           style={{ background: `radial-gradient(circle, ${themeColor}20 0%, transparent 60%)`, filter: 'blur(60px)' }}
@@ -213,7 +214,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           {children}
         </div>
         
-        {/* 🚀 CANLI OLAY BİLDİRİMLERİ BURAYA EKLENDİ */}
+        {/* 🚀 CANLI OLAY BİLDİRİMLERİ */}
         <LiveEventToast />
 
       </main>
