@@ -15,7 +15,7 @@ const NAV_ITEMS = [
   { icon: History, label: "Sonuçlar", path: "/results", accent: "#F43F5E" }, 
   { icon: Trophy, label: "Turnuvalar", path: "/tournaments", accent: "#7C3AED" },
   { icon: Swords, label: "Takımlar", path: "/teams", accent: "#EF4444" },
-  { icon: BarChart2, label: "Sıralama", path: "/rankings", accent: "#F59E0B" },
+  { icon: BarChart2, label: "En İyi Oyuncular", path: "/rankings", accent: "#F59E0B" }, // 🚀 BURASI DEĞİŞTİ
   { icon: Newspaper, label: "Haberler", path: "/news", accent: "#22C55E" },
   { icon: Users, label: "Topluluk", path: "/community", accent: "#00D4FF" },
 ];
@@ -134,7 +134,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
         <div className="p-4 border-t border-white/5">
           {!sidebarCollapsed ? (
-            <button className="flex items-center gap-3 w-full hover:bg-white/5 p-2 rounded-xl transition-colors">
+            // 🚀 ÇÖZÜM: onClick eventi ile /profile sayfasına yönlendirme eklendi
+            <button onClick={() => router.push('/profile')} className="flex items-center gap-3 w-full hover:bg-white/5 p-2 rounded-xl transition-colors">
               <div className="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white">
                 AD
               </div>
@@ -145,7 +146,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <ChevronDown className="w-4 h-4 shrink-0 text-slate-500" />
             </button>
           ) : (
-            <div className="w-9 h-9 mx-auto rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white">
+            // 🚀 ÇÖZÜM: Sidebar kapalıyken de tıklandığında profile gitsin
+            <div onClick={() => router.push('/profile')} className="w-9 h-9 mx-auto rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-white cursor-pointer hover:bg-slate-700 transition-colors">
               AD
             </div>
           )}
