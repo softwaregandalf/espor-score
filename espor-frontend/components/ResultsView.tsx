@@ -1,53 +1,64 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Calendar, Filter, ChevronLeft, BarChart3, Info, Users, ListFilter, TrendingUp, Layers3 } from "lucide-react";
+import { useState, useMemo } from "react";
+import { Search, Calendar, Filter, ChevronLeft, BarChart3, Info, Layers3, ListFilter, TrendingUp, Clock, Flame } from "lucide-react";
 import { COMPLETED_MATCHES, GAMES } from "@/app/data/mockData";
-import MatchScoreboard from "./MatchScoreboard"; // Veto ve Frag Tablosu
-import MatchAnalytics from "./MatchAnalytics";   // Derin Grafikler (Full Stats)
+import MatchScoreboard from "./MatchScoreboard"; 
+import MatchAnalytics from "./MatchAnalytics";   
 
+// 🚀 Sadece platformumuzun desteklediği ana oyunların filtrede çıkmasını sağlıyoruz
+const ALLOWED_GAMES = ['lol', 'val', 'cs2', 'dota2'];
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
 function TeamLogo({ name, color, size = 'sm' }: { name: string; color: string; size?: 'xs' | 'sm' | 'md' | 'lg' }) {
   const sizes = { xs: 'w-4 h-4 text-[7px]', sm: 'w-6 h-6 text-[9px]', md: 'w-10 h-10 text-xs', lg: 'w-16 h-16 text-base' };
-  return (
-    <div className={`${sizes[size]} rounded-lg flex items-center justify-center font-black text-white shrink-0`} style={{ background: color }}>
-      {name.slice(0, 3).toUpperCase()}
-    </div>
-  );
+  return <div className={`${sizes[size]} rounded-lg flex items-center justify-center font-black text-white shrink-0`} style={{ background: color }}>{name.slice(0, 3).toUpperCase()}</div>;
 }
 
-const ENRICHED_MATCHES = COMPLETED_MATCHES.map((m, i) => ({
-  ...m,
-  dateGroup: i === 0 ? 'today' : i === 1 ? 'yesterday' : 'older',
-  displayDate: i === 0 ? 'Bugün, 14:30' : i === 1 ? 'Dün, 19:00' : '15 Haz 2026, 21:00'
-}));
+// 🚀 Gerçekçi kronolojik test verisi ve API entegrasyonu için Timestamp eklendi
+const ENRICHED_MATCHES = [
+  ...COMPLETED_MATCHES.map(m => ({ ...m, id: `${m.id}-1`, dateKey: '20 Haziran 2026', timestamp: new Date('2026-06-20T14:30:00').getTime(), displayTime: '14:30' })),
+  ...COMPLETED_MATCHES.map(m => ({ ...m, id: `${m.id}-2`, dateKey: '19 Haziran 2026', timestamp: new Date('2026-06-19T19:00:00').getTime(), displayTime: '19:00' })),
+  ...COMPLETED_MATCHES.map(m => ({ ...m, id: `${m.id}-3`, dateKey: '18 Haziran 2026', timestamp: new Date('2026-06-18T21:00:00').getTime(), displayTime: '21:00' })),
+];
 
 export default function ResultsView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGame, setSelectedGame] = useState<string>('all');
-  const [selectedDate, setSelectedDate] = useState<string>('all');
 
   const [viewMode, setViewMode] = useState<'list' | 'detail' | 'analysis'>('list');
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [standardTab, setStandardTab] = useState<'overview' | 'lineups' | 'stats'>('overview');
 
+  // ARAMA VE OYUN FİLTRELEME
   const filteredMatches = ENRICHED_MATCHES.filter(match => {
     const matchesSearch = match.team1.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           match.team2.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           match.tournament.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesGame = selectedGame === 'all' || match.game === selectedGame;
-    const matchesDate = selectedDate === 'all' || match.dateGroup === selectedDate;
-    return matchesSearch && matchesGame && matchesDate;
+    return matchesSearch && matchesGame;
   });
+
+  // MİMARİ GÜVENLİK: API'den gelen verileri HER ZAMAN en yeniden en eskiye sıralar
+  const sortedMatches = useMemo(() => {
+    return [...filteredMatches].sort((a, b) => b.timestamp - a.timestamp);
+  }, [filteredMatches]);
+
+  // TARİHE GÖRE GRUPLAMA (Sıralanmış veri üzerinden)
+  const groupedMatches = useMemo(() => {
+    const groups: Record<string, typeof sortedMatches> = {};
+    sortedMatches.forEach(match => {
+      if (!groups[match.dateKey]) groups[match.dateKey] = [];
+      groups[match.dateKey].push(match);
+    });
+    return groups;
+  }, [sortedMatches]);
 
   const gameColor = selectedMatch ? (GAME_COLORS[selectedMatch.game] || '#4D7CFE') : '#4D7CFE';
 
-  // 🚀 3. SEVİYE: DERİN ANALİZ MODU (Full Stats - Sadece Grafikler)
+  // --- DERİN ANALİZ (FULL STATS) EKRANI ---
   if (viewMode === 'analysis' && selectedMatch) {
-    const isTier3Match = selectedMatch.team1.name === "Natus Vincere" || selectedMatch.team2.name === "Natus Vincere";
     const category = (selectedMatch.game === 'cs2' || selectedMatch.game === 'val') ? 'fps' : 'moba';
-
     return (
       <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in bg-es-bg">
         <div className="px-8 py-4 flex items-center justify-between border-b border-white/5 bg-es-bg-2 shrink-0">
@@ -62,18 +73,16 @@ export default function ResultsView() {
           </div>
         </div>
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-           {/* BURADA SADECE GRAFİKLER ÇAĞRILIYOR */}
-           <MatchAnalytics match={selectedMatch} category={category} gameColor={gameColor} hasDeepData={!isTier3Match} />
+           <MatchAnalytics match={selectedMatch} category={category} gameColor={gameColor} hasDeepData={true} />
         </div>
       </div>
     );
   }
 
-  // 🏠 2. SEVİYE: STANDART DETAY MODU
+  // --- STANDART DETAY EKRANI ---
   if (viewMode === 'detail' && selectedMatch) {
     return (
       <div className="flex-1 flex flex-col overflow-hidden animate-fade-in bg-es-bg">
-        
         <div className="px-8 py-4 flex items-center justify-between border-b border-white/5 bg-es-bg-2 shrink-0">
           <button onClick={() => { setViewMode('list'); setSelectedMatch(null); }} className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group">
             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-es-blue group-hover:text-white transition-all"><ChevronLeft className="w-4 h-4" /></div>
@@ -89,42 +98,24 @@ export default function ResultsView() {
                 <TeamLogo name={selectedMatch.team1.short} color={selectedMatch.team1.color} size="lg" />
                 <div className="text-2xl font-black text-white tracking-tight">{selectedMatch.team1.name}</div>
               </div>
-              
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-1.5 px-3 py-1 rounded-full mb-1" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
                   <span className="text-xs font-black uppercase tracking-widest text-slate-400">BİTTİ</span>
                 </div>
                 <div className="text-6xl font-black text-white tracking-tighter score-display tabular-nums leading-none mb-2">{selectedMatch.team1.score} <span className="text-slate-700 mx-2">:</span> {selectedMatch.team2.score}</div>
-                
-                {/* 🚀 FULL STATS BUTONU (Sadece Derin Grafiklere Gider) */}
-                <button 
-                  onClick={() => setViewMode('analysis')}
-                  className="mt-4 px-6 py-2.5 rounded-full text-[10px] font-black flex items-center gap-2 uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl"
-                  style={{ background: '#4D7CFE', color: 'white', boxShadow: `0 0 20px rgba(77, 124, 254, 0.4)` }}
-                >
-                  <BarChart3 className="w-4 h-4" />
-                  Full Stats
+                <button onClick={() => setViewMode('analysis')} className="mt-4 px-6 py-2.5 rounded-full text-[10px] font-black flex items-center gap-2 uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl" style={{ background: '#4D7CFE', color: 'white', boxShadow: `0 0 20px rgba(77, 124, 254, 0.4)` }}>
+                  <BarChart3 className="w-4 h-4" /> Full Stats
                 </button>
               </div>
-
               <div className="flex flex-col items-center gap-4 w-48 shrink-0">
                 <TeamLogo name={selectedMatch.team2.short} color={selectedMatch.team2.color} size="lg" />
                 <div className="text-2xl font-black text-white tracking-tight">{selectedMatch.team2.name}</div>
               </div>
             </div>
             
-            {/* Maç İçi Sekmeler */}
             <div className="flex items-center justify-center gap-8 border-t border-white/5 max-w-5xl mx-auto">
-              {[ 
-                { id: 'overview', label: 'Overview', icon: Info }, 
-                { id: 'lineups', label: 'Lineups & Veto', icon: Layers3 }, // 🟢 İsmi Lineups & Veto yapıldı
-                { id: 'stats', label: 'Statistics', icon: ListFilter } 
-              ].map(tab => (
-                <button 
-                  key={tab.id}
-                  onClick={() => setStandardTab(tab.id as any)}
-                  className={`px-4 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${standardTab === tab.id ? 'text-white' : 'text-slate-500 hover:text-white'}`}
-                >
+              {[ { id: 'overview', label: 'Overview', icon: Info }, { id: 'lineups', label: 'Lineups & Veto', icon: Layers3 }, { id: 'stats', label: 'Statistics', icon: ListFilter } ].map(tab => (
+                <button key={tab.id} onClick={() => setStandardTab(tab.id as any)} className={`px-4 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${standardTab === tab.id ? 'text-white' : 'text-slate-500 hover:text-white'}`}>
                   <tab.icon className="w-3.5 h-3.5" /> {tab.label}
                   {standardTab === tab.id && <div className="absolute left-0 bottom-0 w-full h-0.5 rounded-t" style={{ background: gameColor }} />}
                 </button>
@@ -133,7 +124,6 @@ export default function ResultsView() {
           </div>
         </div>
 
-        {/* Sekme İçerikleri */}
         <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
            <div className="max-w-5xl mx-auto">
              {standardTab === 'overview' && (
@@ -142,31 +132,19 @@ export default function ResultsView() {
                    <h4 className="text-xs font-bold text-white mb-4 flex items-center gap-2"><Info className="w-4 h-4" style={{ color: gameColor }}/> Maç Bilgileri</h4>
                    <div className="space-y-3">
                      <div className="flex justify-between"><span className="text-xs text-slate-400">Turnuva</span><span className="text-xs font-bold text-white">{selectedMatch.tournament}</span></div>
-                     <div className="flex justify-between"><span className="text-xs text-slate-400">Aşama</span><span className="text-xs font-bold text-white">{selectedMatch.stage || "Açıklanmadı"}</span></div>
-                     <div className="flex justify-between"><span className="text-xs text-slate-400">Tarih</span><span className="text-xs font-bold text-white">{selectedMatch.displayDate}</span></div>
+                     <div className="flex justify-between"><span className="text-xs text-slate-400">Tarih</span><span className="text-xs font-bold text-white">{selectedMatch.dateKey}, {selectedMatch.displayTime}</span></div>
                    </div>
                  </div>
                  <div className="rounded-xl p-6 shadow-lg flex flex-col justify-center" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-                   <h4 className="text-xs font-bold text-white mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4" style={{ color: gameColor }}/> Takım Formu (Maç Öncesi)</h4>
+                   <h4 className="text-xs font-bold text-white mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4" style={{ color: gameColor }}/> Takım Formu</h4>
                    <div className="space-y-4">
-                     <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5">
-                       <div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team1.short} color={selectedMatch.team1.color} size="xs" /><span className="text-xs font-bold text-white truncate max-w-[80px]">{selectedMatch.team1.name}</span></div>
-                       <div className="flex gap-1.5">{['W','W','W','L','W'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div>
-                     </div>
-                     <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5">
-                       <div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team2.short} color={selectedMatch.team2.color} size="xs" /><span className="text-xs font-bold text-white truncate max-w-[80px]">{selectedMatch.team2.name}</span></div>
-                       <div className="flex gap-1.5">{['W','L','W','L','L'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div>
-                     </div>
+                     <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5"><div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team1.short} color={selectedMatch.team1.color} size="xs" /><span className="text-xs font-bold text-white">{selectedMatch.team1.name}</span></div><div className="flex gap-1.5">{['W','W','W','L','W'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div></div>
+                     <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5"><div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team2.short} color={selectedMatch.team2.color} size="xs" /><span className="text-xs font-bold text-white">{selectedMatch.team2.name}</span></div><div className="flex gap-1.5">{['W','L','W','L','L'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div></div>
                    </div>
                  </div>
                </div>
              )}
-             
-             {/* 🟢 YENİ: Veto ve Frag Tablosu Lineups Sekmesine Geldi */}
-             {standardTab === 'lineups' && (
-               <MatchScoreboard match={selectedMatch} gameColor={gameColor} />
-             )}
-             
+             {standardTab === 'lineups' && <MatchScoreboard match={selectedMatch} gameColor={gameColor} />}
              {standardTab === 'stats' && <div className="text-center py-20 text-slate-500 font-black uppercase tracking-widest animate-fade-in border border-dashed border-white/10 rounded-xl">Maç içi karşılaştırmalı istatistikler derleniyor...</div>}
            </div>
         </div>
@@ -174,10 +152,10 @@ export default function ResultsView() {
     );
   }
 
-  // 📋 1. SEVİYE: LİSTE MODU EKRANI
+  // --- 🏠 ANA LİSTE EKRANI (TARİHE GÖRE GRUPLANMIŞ) ---
   return (
     <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in" style={{ background: 'var(--es-bg)' }}>
-      {/* ... (ÜST BAR VE LİSTE AYNI KALIYOR) ... */}
+      {/* ÜST BAR VE FİLTRELER */}
       <div className="shrink-0 p-8 border-b border-white/5 bg-es-bg-2 relative overflow-hidden">
         <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
         <div className="relative z-10 flex flex-col gap-6">
@@ -194,7 +172,9 @@ export default function ResultsView() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800">
               <button onClick={() => setSelectedGame('all')} className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${selectedGame === 'all' ? 'bg-slate-700 text-white' : 'text-slate-500 hover:text-white'}`}>Tümü</button>
-              {GAMES.map(game => (
+              
+              {/* 🔴 OYUN FİLTRESİ SADECE ALLOWED_GAMES İÇİN ÇALIŞIR */}
+              {GAMES.filter(g => ALLOWED_GAMES.includes(g.id)).map(game => (
                 <button key={game.id} onClick={() => setSelectedGame(game.id)} className={`px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${selectedGame === game.id ? 'text-white shadow-lg' : 'text-slate-500 hover:text-white'}`} style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent' }}>
                   <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
                 </button>
@@ -204,25 +184,88 @@ export default function ResultsView() {
         </div>
       </div>
 
+      {/* LİSTE ALANI: HLTV STİLİ GRUPLANMIŞ MAÇ KARTLARI */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-        <div className="flex flex-col gap-3 max-w-5xl mx-auto">
-          {filteredMatches.length === 0 ? (
-            <div className="text-center py-20 text-slate-500">Sonuç Bulunamadı</div>
+        <div className="flex flex-col gap-10 max-w-5xl mx-auto">
+          {Object.keys(groupedMatches).length === 0 ? (
+            <div className="text-center py-20 text-slate-500 flex flex-col items-center gap-4">
+              <Filter className="w-12 h-12 opacity-20" />
+              <div className="text-lg font-black uppercase tracking-widest">Sonuç Bulunamadı</div>
+            </div>
           ) : (
-            filteredMatches.map(match => (
-              <div key={match.id} onClick={() => { setSelectedMatch(match); setViewMode('detail'); setStandardTab('overview'); }} className="flex items-center justify-between p-4 rounded-xl shadow-lg transition-all hover:scale-[1.01] group border border-white/5 cursor-pointer hover:border-es-cyan/50" style={{ background: 'var(--es-card)', borderLeft: `4px solid ${GAME_COLORS[match.game]}` }}>
-                <div className="flex flex-col gap-1.5 w-48 shrink-0">
-                  <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-widest">{match.displayDate}</div>
-                  <div className="text-xs font-bold text-white truncate group-hover:text-es-cyan transition-colors">{match.tournament}</div>
-                  <div className="flex items-center gap-1.5"><span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: `${GAME_COLORS[match.game]}20`, color: GAME_COLORS[match.game] }}>{match.game.toUpperCase()}</span></div>
-                </div>
-                <div className="flex-1 flex items-center justify-center gap-8">
-                  <div className="flex items-center gap-3 w-40 justify-end"><span className="text-sm font-black text-white">{match.team1.name}</span><div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-[10px]" style={{ background: match.team1.color }}>{match.team1.short}</div></div>
-                  <div className="flex flex-col items-center gap-1 shrink-0"><div className="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-700 flex items-center gap-3 shadow-inner"><span className="text-xl font-black tabular-nums text-white">{match.team1.score}</span><span className="text-slate-600 font-black">-</span><span className="text-xl font-black tabular-nums text-white">{match.team2.score}</span></div></div>
-                  <div className="flex items-center gap-3 w-40 justify-start"><div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-[10px]" style={{ background: match.team2.color }}>{match.team2.short}</div><span className="text-sm font-black text-white">{match.team2.name}</span></div>
-                </div>
-                <div className="w-32 shrink-0 flex justify-end">
-                  <div className="px-4 py-2.5 rounded-lg text-[10px] font-black flex items-center gap-2 uppercase tracking-widest transition-all bg-slate-800/50 text-slate-400 group-hover:text-es-cyan group-hover:bg-slate-800">Görüntüle</div>
+            // TARİH GRUPLARINI DÖNGÜYE ALIYORUZ
+            Object.entries(groupedMatches).map(([date, matches], index) => (
+              <div key={date} className="animate-fade-in">
+                
+                {/* 🚀 İLK GÜNÜN MAÇLARI BİTİNCE ARAYA GİREN NATIVE REKLAM KARTI */}
+                {index === 1 && (
+                  <div className="mb-10 p-5 rounded-xl border border-orange-500/20 bg-gradient-to-r from-orange-950/40 to-slate-900 flex items-center justify-between cursor-pointer hover:border-orange-500/50 transition-all group shadow-lg">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-500 group-hover:scale-110 transition-transform"><Flame className="w-6 h-6" /></div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-0.5">Sponsorlu Tavsiye</span>
+                        <span className="text-sm font-bold text-white">Bahis Oranları ve Canlı Analizler İçin BetArena'ya Katıl!</span>
+                        <span className="text-[10px] text-slate-400">Yeni üyelere özel 1000 TL hoşgeldin bonusu seni bekliyor.</span>
+                      </div>
+                    </div>
+                    <div className="px-4 py-2 bg-orange-600 text-white rounded-lg text-[10px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(234,88,12,0.4)] group-hover:bg-orange-500 transition-colors">Şimdi Oyna</div>
+                  </div>
+                )}
+
+                {/* HLTV TARZI TARİH BAŞLIĞI */}
+                <h2 className="text-sm font-black text-slate-300 uppercase tracking-widest mb-4 border-b border-white/10 pb-2 flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-slate-500" />
+                  {date} Sonuçları
+                </h2>
+                
+                {/* O TARİHE AİT MAÇLAR */}
+                <div className="flex flex-col gap-3">
+                  {matches.map(match => (
+                    <div 
+                      key={match.id} 
+                      onClick={() => { setSelectedMatch(match); setViewMode('detail'); setStandardTab('overview'); }}
+                      className="flex items-center justify-between p-4 rounded-xl shadow-lg transition-all hover:scale-[1.01] group border border-white/5 cursor-pointer hover:border-es-cyan/50" 
+                      style={{ background: 'var(--es-card)', borderLeft: `4px solid ${GAME_COLORS[match.game]}` }}
+                    >
+                      <div className="flex flex-col gap-1.5 w-48 shrink-0">
+                        <div className="text-[10px] font-bold text-slate-400 flex items-center gap-1.5 uppercase tracking-widest">
+                          <Clock className="w-3 h-3" /> {match.displayTime}
+                        </div>
+                        <div className="text-xs font-bold text-white truncate group-hover:text-es-cyan transition-colors">{match.tournament}</div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-black" style={{ background: `${GAME_COLORS[match.game]}20`, color: GAME_COLORS[match.game] }}>{match.game.toUpperCase()}</span>
+                          <span className="text-[10px] text-slate-500">{match.format}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 flex items-center justify-center gap-8">
+                        <div className="flex items-center gap-3 w-40 justify-end">
+                          <span className="text-sm font-black text-white">{match.team1.name}</span>
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-[10px]" style={{ background: match.team1.color }}>{match.team1.short}</div>
+                        </div>
+                        
+                        <div className="flex flex-col items-center gap-1 shrink-0">
+                          <div className="px-4 py-1.5 rounded-lg bg-slate-900 border border-slate-700 flex items-center gap-3 shadow-inner">
+                            <span className={`text-xl font-black tabular-nums ${match.team1.score > match.team2.score ? 'text-white' : 'text-slate-500'}`}>{match.team1.score}</span>
+                            <span className="text-slate-600 font-black">-</span>
+                            <span className={`text-xl font-black tabular-nums ${match.team2.score > match.team1.score ? 'text-white' : 'text-slate-500'}`}>{match.team2.score}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 w-40 justify-start">
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-[10px]" style={{ background: match.team2.color }}>{match.team2.short}</div>
+                          <span className="text-sm font-black text-white">{match.team2.name}</span>
+                        </div>
+                      </div>
+
+                      <div className="w-32 shrink-0 flex justify-end">
+                        <div className="px-4 py-2.5 rounded-lg text-[10px] font-black flex items-center gap-2 uppercase tracking-widest transition-all bg-slate-800/50 text-slate-400 group-hover:text-es-cyan group-hover:bg-slate-800">
+                          Görüntüle
+                        </div>
+                      </div>
+
+                    </div>
+                  ))}
                 </div>
               </div>
             ))

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Search, Clock, Users, Info, Radio, MonitorPlay, TrendingUp, ChevronLeft, BarChart3, ListFilter, Layers3 } from "lucide-react";
+import { ChevronDown, Search, Info, Radio, MonitorPlay, TrendingUp, ChevronLeft, BarChart3, ListFilter, Layers3, Flame } from "lucide-react";
 import { LIVE_MATCHES, UPCOMING_MATCHES, COMPLETED_MATCHES, GAMES } from "@/app/data/mockData";
-import MatchScoreboard from "./MatchScoreboard"; // 🚀 VETO VE FRAG TABLOSU
-import MatchAnalytics from "./MatchAnalytics";   // 🚀 DERİN GRAFİKLER
+import MatchScoreboard from "./MatchScoreboard"; 
+import MatchAnalytics from "./MatchAnalytics";   
+import RightSidebar from "./RightSidebar"; 
 
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
@@ -20,11 +21,7 @@ function GameBadge({ gameId, small }: { gameId: string; small?: boolean }) {
 
 function TeamLogo({ name, color, size = 'sm' }: { name: string; color: string; size?: 'xs' | 'sm' | 'md' | 'lg' }) {
   const sizes = { xs: 'w-4 h-4 text-[7px]', sm: 'w-6 h-6 text-[9px]', md: 'w-10 h-10 text-xs', lg: 'w-16 h-16 text-base' };
-  return (
-    <div className={`${sizes[size]} rounded-lg flex items-center justify-center font-black text-white shrink-0`} style={{ background: color }}>
-      {name.slice(0, 3).toUpperCase()}
-    </div>
-  );
+  return <div className={`${sizes[size]} rounded-lg flex items-center justify-center font-black text-white shrink-0`} style={{ background: color }}>{name.slice(0, 3).toUpperCase()}</div>;
 }
 
 export default function LiveDashboard() {
@@ -34,6 +31,9 @@ export default function LiveDashboard() {
   
   const [viewMode, setViewMode] = useState<'standard' | 'analysis'>('standard');
   const [standardTab, setStandardTab] = useState<'overview' | 'lineups' | 'stats'>('overview');
+
+  // 🚀 YENİ: VİDEO OYNATICI STATE KONTROLÜ
+  const [activeVideo, setActiveVideo] = useState<'twitch' | 'youtube' | null>(null);
 
   const selectedMatch = [...LIVE_MATCHES, ...UPCOMING_MATCHES, ...COMPLETED_MATCHES].find(m => m.id === selectedMatchId) || LIVE_MATCHES[0];
   const gameColor = selectedMatch ? GAME_COLORS[selectedMatch.game] : '#4D7CFE';
@@ -48,7 +48,7 @@ export default function LiveDashboard() {
     <div className="flex flex-row w-full h-full overflow-hidden" style={{ background: 'var(--es-bg)' }}>
       
       {/* 1. SOL PANEL: MAÇ LİSTESİ */}
-      <div className="w-[280px] shrink-0 flex flex-col overflow-hidden transition-all duration-300" style={{ borderRight: '1px solid var(--es-border)', background: 'var(--es-bg-2)' }}>
+      <div className="w-[280px] shrink-0 flex flex-col overflow-hidden transition-all duration-300 relative z-20" style={{ borderRight: '1px solid var(--es-border)', background: 'var(--es-bg-2)' }}>
         <div className="p-3 border-b border-white/5">
           <div className="relative group">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-es-cyan transition-colors" />
@@ -71,7 +71,13 @@ export default function LiveDashboard() {
                 {isExpanded && (
                   <div className="flex flex-col px-2 pb-2">
                     {matches.map(match => (
-                      <button key={match.id} onClick={() => { setSelectedMatchId(match.id); setViewMode('standard'); setStandardTab('overview'); }} className="w-full text-left px-3 py-2.5 rounded-xl mb-1 transition-all group relative overflow-hidden" style={{ background: selectedMatchId === match.id ? `${GAME_COLORS[match.game]}10` : 'transparent', borderLeft: selectedMatchId === match.id ? `2px solid ${GAME_COLORS[match.game]}` : '2px solid transparent' }}>
+                      <button 
+                        key={match.id} 
+                        // Maç değiştiğinde video oynatıcıyı otomatik kapatıyoruz
+                        onClick={() => { setSelectedMatchId(match.id); setViewMode('standard'); setStandardTab('overview'); setActiveVideo(null); }} 
+                        className="w-full text-left px-3 py-2.5 rounded-xl mb-1 transition-all group relative overflow-hidden" 
+                        style={{ background: selectedMatchId === match.id ? `${GAME_COLORS[match.game]}10` : 'transparent', borderLeft: selectedMatchId === match.id ? `2px solid ${GAME_COLORS[match.game]}` : '2px solid transparent' }}
+                      >
                         <div className="flex items-center justify-between mb-1.5">
                            <div className="flex items-center gap-2"><TeamLogo name={match.team1.short} color={match.team1.color} size="xs" /><span className="text-xs font-semibold text-white truncate max-w-[100px] group-hover:text-es-cyan transition-colors">{match.team1.name}</span></div>
                            <span className="text-xs font-black text-white score-display tabular-nums">{match.team1.score}</span>
@@ -92,9 +98,8 @@ export default function LiveDashboard() {
       </div>
 
       {/* 2. ORTA PANEL: ANA İÇERİK ALANI */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         
-        {/* 🚀 ANALİZ MODU: FULL STATS GRAFİKLERİ */}
         {viewMode === 'analysis' ? (
           <div className="flex-1 flex flex-col overflow-hidden animate-fade-in bg-es-bg">
             <div className="px-8 py-4 flex items-center justify-between border-b border-white/5 bg-es-bg-2">
@@ -109,18 +114,12 @@ export default function LiveDashboard() {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-               {/* SADECE GRAFİKLER BURADA ÇAĞRILIR */}
-               <MatchAnalytics 
-                 match={selectedMatch} 
-                 category={(selectedMatch.game === 'cs2' || selectedMatch.game === 'val') ? 'fps' : 'moba'} 
-                 gameColor={gameColor} 
-                 hasDeepData={!(selectedMatch.team1.name === "Natus Vincere" || selectedMatch.team2.name === "Natus Vincere")} 
-               />
+               <MatchAnalytics match={selectedMatch} category={(selectedMatch.game === 'cs2' || selectedMatch.game === 'val') ? 'fps' : 'moba'} gameColor={gameColor} hasDeepData={!(selectedMatch.team1.name === "Natus Vincere" || selectedMatch.team2.name === "Natus Vincere")} />
             </div>
           </div>
         ) : (
-          /* 🏠 STANDART MOD: MAÇ GÖRÜNÜMÜ */
           <div className="flex-1 flex flex-col overflow-hidden animate-fade-in">
+            {/* Üst Kısım: Kahraman Alanı (Skorlar) */}
             <div className="shrink-0 px-8 pt-8 pb-0 relative overflow-hidden" style={{ background: 'var(--es-bg-2)', borderBottom: '1px solid var(--es-border)' }}>
               <div className="absolute inset-0 pointer-events-none" style={{ background: `radial-gradient(ellipse at 50% 0%, ${gameColor}15 0%, transparent 70%)` }} />
               <div className="relative">
@@ -139,13 +138,8 @@ export default function LiveDashboard() {
                     </div>
                     <div className="text-6xl font-black text-white tracking-tighter score-display tabular-nums leading-none mb-2">{selectedMatch.team1.score} <span className="text-slate-700 mx-2">:</span> {selectedMatch.team2.score}</div>
                     
-                    {/* FULL STATS BUTONU (Grafiklere Gider) */}
                     {selectedMatch.status === 'completed' && (
-                      <button 
-                        onClick={() => setViewMode('analysis')}
-                        className="mt-2 px-6 py-2.5 rounded-full text-[10px] font-black flex items-center gap-2 uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl"
-                        style={{ background: '#4D7CFE', color: 'white', boxShadow: `0 0 20px rgba(77, 124, 254, 0.4)` }}
-                      >
+                      <button onClick={() => setViewMode('analysis')} className="mt-2 px-6 py-2.5 rounded-full text-[10px] font-black flex items-center gap-2 uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl" style={{ background: '#4D7CFE', color: 'white', boxShadow: `0 0 20px rgba(77, 124, 254, 0.4)` }}>
                         <BarChart3 className="w-4 h-4" /> Full Stats
                       </button>
                     )}
@@ -157,18 +151,9 @@ export default function LiveDashboard() {
                   </div>
                 </div>
                 
-                {/* 🔴 SEKMELER (Lineups & Veto Olarak Güncellendi) */}
                 <div className="flex items-center gap-8 border-t border-white/5">
-                  {[
-                    { id: 'overview', label: 'Overview', icon: Info },
-                    { id: 'lineups', label: 'Lineups & Veto', icon: Layers3 }, // 🚀 YENİLENDİ
-                    { id: 'stats', label: 'Statistics', icon: ListFilter },
-                  ].map(tab => (
-                    <button 
-                      key={tab.id}
-                      onClick={() => setStandardTab(tab.id as any)}
-                      className={`px-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${standardTab === tab.id ? 'text-white' : 'text-slate-500 hover:text-white'}`}
-                    >
+                  {[ { id: 'overview', label: 'Overview', icon: Info }, { id: 'lineups', label: 'Lineups & Veto', icon: Layers3 }, { id: 'stats', label: 'Statistics', icon: ListFilter } ].map(tab => (
+                    <button key={tab.id} onClick={() => setStandardTab(tab.id as any)} className={`px-1 py-4 text-[10px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${standardTab === tab.id ? 'text-white' : 'text-slate-500 hover:text-white'}`}>
                       <tab.icon className="w-3.5 h-3.5" /> {tab.label}
                       {standardTab === tab.id && <div className="absolute left-0 bottom-0 w-full h-0.5 rounded-t" style={{ background: gameColor }} />}
                     </button>
@@ -177,6 +162,7 @@ export default function LiveDashboard() {
               </div>
             </div>
 
+            {/* Alt İçerik Alanı (Sekmeler Arası Geçiş) */}
             <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
                {standardTab === 'overview' && (
                  <div className="animate-fade-in space-y-6">
@@ -192,75 +178,85 @@ export default function LiveDashboard() {
                      <div className="rounded-xl p-5 shadow-lg flex flex-col justify-center" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
                        <h4 className="text-xs font-bold text-white mb-4 flex items-center gap-2"><TrendingUp className="w-4 h-4" style={{ color: gameColor }}/> Takım Formu (Son 5)</h4>
                        <div className="space-y-4 flex-1 flex flex-col justify-center">
-                         <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5">
-                           <div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team1.short} color={selectedMatch.team1.color} size="xs" /><span className="text-xs font-bold text-white truncate max-w-[80px]">{selectedMatch.team1.name}</span></div>
-                           <div className="flex gap-1.5">{['W','W','W','L','W'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div>
-                         </div>
-                         <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5">
-                           <div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team2.short} color={selectedMatch.team2.color} size="xs" /><span className="text-xs font-bold text-white truncate max-w-[80px]">{selectedMatch.team2.name}</span></div>
-                           <div className="flex gap-1.5">{['W','L','W','L','L'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div>
-                         </div>
+                         <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5"><div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team1.short} color={selectedMatch.team1.color} size="xs" /><span className="text-xs font-bold text-white truncate max-w-[80px]">{selectedMatch.team1.name}</span></div><div className="flex gap-1.5">{['W','W','W','L','W'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div></div>
+                         <div className="flex items-center justify-between p-2 rounded-lg bg-es-surface border border-white/5"><div className="flex items-center gap-2"><TeamLogo name={selectedMatch.team2.short} color={selectedMatch.team2.color} size="xs" /><span className="text-xs font-bold text-white truncate max-w-[80px]">{selectedMatch.team2.name}</span></div><div className="flex gap-1.5">{['W','L','W','L','L'].map((r,i)=><div key={i} className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black ${r==='W'?'bg-green-500/20 text-green-400 border border-green-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}`}>{r}</div>)}</div></div>
                        </div>
                      </div>
                    </div>
 
                    {selectedMatch.status === 'live' && (
                      <div className="grid grid-cols-2 gap-6">
-                       <div className="col-span-2 rounded-xl p-5 shadow-lg" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-                         <h4 className="text-xs font-bold text-white mb-4 flex items-center gap-2"><Radio className="w-4 h-4 text-red-500"/> Canlı Yayınlar</h4>
-                         <div className="grid grid-cols-2 gap-4">
-                           <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-all border border-transparent hover:border-purple-500/30 group cursor-pointer bg-es-surface">
-                             <div className="flex items-center gap-3"><div className="w-8 h-8 rounded bg-purple-600/20 flex items-center justify-center text-purple-500 group-hover:bg-purple-600 group-hover:text-white transition-colors"><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold text-white">Twitch</span></div>
-                             <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold text-slate-400">112K İzleyici</span></div>
-                           </button>
-                           <button className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-all border border-transparent hover:border-red-500/30 group cursor-pointer bg-es-surface">
-                              <div className="flex items-center gap-3"><div className="w-8 h-8 rounded bg-red-600/20 flex items-center justify-center text-red-500 group-hover:bg-red-600 group-hover:text-white transition-colors"><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold text-white">YouTube</span></div>
-                              <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold text-slate-400">75K İzleyici</span></div>
-                           </button>
+                       
+                       {/* SOL KISIM: YAYIN BUTONLARI & VİDEO OYNATICI */}
+                       <div className="col-span-1 flex flex-col gap-4">
+                         
+                         {/* 1. YAYIN SEÇİM BUTONLARI */}
+                         <div className="rounded-xl p-5 shadow-lg" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
+                           <h4 className="text-xs font-bold text-white mb-4 flex items-center justify-between">
+                             <div className="flex items-center gap-2"><Radio className="w-4 h-4 text-red-500"/> Canlı Yayınlar</div>
+                             {activeVideo && <span onClick={() => setActiveVideo(null)} className="text-[10px] text-slate-500 hover:text-white cursor-pointer uppercase font-black">Yayını Kapat</span>}
+                           </h4>
+                           <div className="flex gap-4">
+                             <button onClick={() => setActiveVideo('twitch')} className={`flex-1 flex items-center justify-between p-3 rounded-lg transition-all border group cursor-pointer ${activeVideo === 'twitch' ? 'bg-purple-600/10 border-purple-500' : 'bg-es-surface border-transparent hover:border-purple-500/30'}`}>
+                               <div className="flex items-center gap-3"><div className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${activeVideo === 'twitch' ? 'bg-purple-600 text-white' : 'bg-purple-600/20 text-purple-500 group-hover:bg-purple-600 group-hover:text-white'}`}><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold text-white">Twitch</span></div>
+                               <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold text-slate-400">112K</span></div>
+                             </button>
+                             <button onClick={() => setActiveVideo('youtube')} className={`flex-1 flex items-center justify-between p-3 rounded-lg transition-all border group cursor-pointer ${activeVideo === 'youtube' ? 'bg-red-600/10 border-red-500' : 'bg-es-surface border-transparent hover:border-red-500/30'}`}>
+                                <div className="flex items-center gap-3"><div className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${activeVideo === 'youtube' ? 'bg-red-600 text-white' : 'bg-red-600/20 text-red-500 group-hover:bg-red-600 group-hover:text-white'}`}><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold text-white">YouTube</span></div>
+                                <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold text-slate-400">75K</span></div>
+                             </button>
+                           </div>
                          </div>
+
+                         {/* 2. DİNAMİK AÇILAN VİDEO OYNATICI (Sadece tıklandığında görünür) */}
+                         {activeVideo && (
+                           <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black animate-fade-in relative pt-[56.25%]">
+                             {/* SAHTE VİDEO YER TUTUCU (API geldiğinde buraya iFrame eklenecek) */}
+                             <div className="absolute inset-0 flex flex-col items-center justify-center">
+                               <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-4 ${activeVideo === 'twitch' ? 'bg-purple-600' : 'bg-red-600'}`}>
+                                 <MonitorPlay className="w-8 h-8 text-white" />
+                               </div>
+                               <span className="text-sm font-black text-white uppercase tracking-widest">{activeVideo} Yayını Başlatılıyor...</span>
+                               <span className="text-xs text-slate-500 mt-2">Bağlantı bekleniyor</span>
+                             </div>
+                           </div>
+                         )}
+
                        </div>
+
+                       {/* SAĞ KISIM: 300x250 REKLAM ALANI (Aşağı Kayacak Modül) */}
+                       <div className="col-span-1">
+                          <div className="w-full h-full min-h-[250px] rounded-xl overflow-hidden shadow-lg border border-white/5 bg-gradient-to-br from-slate-900 to-black relative flex flex-col group cursor-pointer hover:border-blue-500/50 transition-all">
+                            <div className="absolute top-2 right-2 z-20 bg-black/60 px-2 py-0.5 rounded text-[8px] font-black text-slate-400 uppercase tracking-widest border border-white/10">Sponsorlu</div>
+                            
+                            <div className="flex-1 flex flex-col items-center justify-center relative p-6 text-center">
+                              <div className="absolute inset-0 cyber-grid opacity-10" />
+                              <Flame className="w-12 h-12 text-blue-500 mb-4 animate-pulse relative z-10" />
+                              <span className="text-2xl font-black text-white tracking-tighter relative z-10">REDBULL <span className="text-blue-500">GAMING</span></span>
+                              <span className="text-xs font-bold text-slate-400 mt-2 relative z-10">Kanatlandırır.</span>
+                            </div>
+
+                            <div className="h-10 bg-blue-600/10 border-t border-blue-500/20 flex items-center justify-center group-hover:bg-blue-600/20 transition-colors">
+                              <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Daha Fazla Bilgi</span>
+                            </div>
+                          </div>
+                       </div>
+
                      </div>
                    )}
                  </div>
                )}
                
-               {/* 🚀 YENİ: VETO VE KADRO (Lineups) BURADA ÇAĞRILIYOR */}
-               {standardTab === 'lineups' && (
-                 <MatchScoreboard match={selectedMatch} gameColor={gameColor} />
-               )}
-               
+               {standardTab === 'lineups' && <MatchScoreboard match={selectedMatch} gameColor={gameColor} />}
                {standardTab === 'stats' && <div className="text-center py-20 text-slate-500 font-black uppercase tracking-widest animate-fade-in border border-dashed border-white/10 rounded-xl">Maç içi istatistikler derleniyor...</div>}
             </div>
           </div>
         )}
       </div>
       
-      {/* 3. SAĞ PANEL */}
-      <div className="w-[300px] shrink-0 border-l border-white/5 bg-es-bg-2 p-5 overflow-y-auto custom-scrollbar">
-        <div className="rounded-xl p-5 relative overflow-hidden shadow-lg mb-6" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-          <div className="absolute inset-0 cyber-grid opacity-20" />
-          <div className="relative">
-            <div className="flex items-center gap-1.5 mb-2"><div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /><span className="text-[10px] font-bold text-red-400 uppercase tracking-widest">Öne Çıkan</span></div>
-            <div className="text-base font-black text-white mb-1">VCT Masters Shanghai</div>
-            <div className="text-xs text-slate-400">Grand Finals • SEN vs FNC</div>
-            <div className="mt-4 text-xs font-bold flex items-center gap-1 text-red-400"><Users className="w-3.5 h-3.5" /> 214K İzleyici</div>
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center gap-2 mb-3"><Clock className="w-4 h-4 text-blue-400" /><span className="text-xs font-bold text-white uppercase tracking-widest">Sıradaki Maçlar</span></div>
-          <div className="flex flex-col gap-2">
-            {UPCOMING_MATCHES.slice(0, 3).map((match, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-xl transition-colors hover:bg-white/5 cursor-pointer" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-1.5"><GameBadge gameId={match.game} small /><span className="text-[10px] text-slate-400 font-bold">{match.scheduledTime}</span></div>
-                  <span className="text-xs font-bold text-white truncate block">{match.team1.name} vs {match.team2.name}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* 3. SAĞ PANEL (Sidebar) */}
+      <RightSidebar />
+      
     </div>
   );
 }

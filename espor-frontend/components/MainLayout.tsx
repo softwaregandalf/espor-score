@@ -9,10 +9,9 @@ import {
 } from "lucide-react";
 import LiveEventToast from "./LiveEventToast";
 
-// --- SABİT VERİLER (NAVİGASYON BURADAN YÖNETİLİYOR) ---
+// --- SABİT VERİLER ---
 const NAV_ITEMS = [
   { icon: MonitorPlay, label: "Canlı Maçlar", path: "/", accent: "#4D7CFE" },
-  // 🚀 YENİ EKLENEN "SONUÇLAR" SEKMESİ
   { icon: History, label: "Sonuçlar", path: "/results", accent: "#F43F5E" }, 
   { icon: Trophy, label: "Turnuvalar", path: "/tournaments", accent: "#7C3AED" },
   { icon: Swords, label: "Takımlar", path: "/teams", accent: "#EF4444" },
@@ -28,7 +27,6 @@ const GAMES = [
   { id: 'dota2', name: 'Dota 2', short: 'DOTA' },
 ];
 
-// OYUNLARA ÖZEL RENK PALETİ
 const GAME_COLORS: Record<string, string> = {
   lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', default: '#4D7CFE'
 };
@@ -55,7 +53,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           borderRight: '1px solid var(--es-border)',
         }}
       >
-        {/* Logo Alanı */}
         <div className="h-[70px] flex items-center justify-between px-5 shrink-0 border-b border-white/5">
           {!sidebarCollapsed ? (
             <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => router.push('/')}>
@@ -84,7 +81,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         )}
 
         <div className="flex-1 overflow-y-auto custom-scrollbar py-4 flex flex-col gap-6">
-          {/* Menü Linkleri */}
           <nav className="flex flex-col gap-1 px-3">
             {!sidebarCollapsed && <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2 text-slate-500">Menü</div>}
             
@@ -106,7 +102,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             })}
           </nav>
 
-          {/* E-Spor Oyunları (Tema Değiştiriciler) */}
           {!sidebarCollapsed && (
             <div className="flex flex-col gap-1 px-3">
               <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2 flex justify-between items-center text-slate-500">
@@ -137,7 +132,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           )}
         </div>
 
-        {/* Profil Alanı */}
         <div className="p-4 border-t border-white/5">
           {!sidebarCollapsed ? (
             <button className="flex items-center gap-3 w-full hover:bg-white/5 p-2 rounded-xl transition-colors">
@@ -209,12 +203,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
 
-        {/* Dinamik Değişen Sayfa İçeriği - SADECE BİR KERE YAZILMALI */}
+        {/* Dinamik Değişen Sayfa İçeriği */}
         <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col relative z-10">
           {children}
         </div>
         
-        {/* 🚀 CANLI OLAY BİLDİRİMLERİ */}
+        {/* CANLI OLAY BİLDİRİMLERİ */}
         <LiveEventToast />
 
       </main>

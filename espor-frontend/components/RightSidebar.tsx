@@ -1,82 +1,74 @@
 "use client";
 
-import { Clock, Users, Star, ChevronRight, TrendingUp, Zap } from "lucide-react";
+import { ExternalLink, Sparkles, MessageSquare, Zap, Flame } from "lucide-react";
 
-export default function RightSidebar({ rankings }: { rankings: any[] }) {
-  const GAME_COLORS: Record<string, string> = { lol: '#C89B3C', val: '#FF4655', cs2: '#F59E0B' };
+// --- 🟢 MOCK DATA: TOPLULUK AKIŞI (FORUM) ---
+const COMMUNITY_POSTS = [
+  { id: 1, title: 's1mple: "NAVI 2021 was the peak"', replies: 161, game: 'cs2', isHot: true },
+  { id: 2, title: 'TenZ bu sezon sonu bırakıyor mu?', replies: 89, game: 'val', isHot: false },
+  { id: 3, title: 'Faker yine Ahri kilitledi...', replies: 45, game: 'lol', isHot: false },
+  { id: 4, title: 'Mirage A-Site güncel smoke rehberi', replies: 132, game: 'cs2', isHot: false },
+  { id: 5, title: 'Yeni yama notları turnuvayı nasıl etkiler?', replies: 67, game: 'val', isHot: false },
+];
+const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
+// 🚀 BÜYÜTÜLMÜŞ SPONSOR MODÜLÜ (h-[280px] yapıldı)
+function SponsorWidget({ title, subtitle, badge, type, gradient }: { title: React.ReactNode, subtitle: string, badge: string, type: 'gear' | 'supplement', gradient: string }) {
   return (
-    <div className="w-full flex flex-col gap-4 h-full rounded-xl overflow-y-auto custom-scrollbar p-1">
-      
-      {/* Öne Çıkan Turnuva */}
-      <div className="rounded-xl p-4 relative overflow-hidden shadow-lg" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-        <div className="absolute inset-0 cyber-grid opacity-20" />
-        <div className="relative">
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-[10px] font-bold text-red-400">ÖNE ÇIKAN • CANLI</span>
-          </div>
-          <div className="text-sm font-black text-white mb-1 tracking-wide">VCT Masters Shanghai</div>
-          <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--es-text-3)' }}>Büyük Final • SEN vs FNC</div>
-          <div className="mt-3 text-[10px] font-bold flex items-center gap-1" style={{ color: '#FF4655' }}>
-            <Users className="w-3 h-3" /> 214K İzleyici
-          </div>
+    <div className="relative w-full h-[280px] rounded-xl overflow-hidden shadow-lg group cursor-pointer mb-6 border border-white/5 bg-slate-900 transition-all hover:border-es-cyan/50 hover:shadow-[0_0_30px_rgba(0,212,255,0.15)] flex flex-col shrink-0">
+      <div className="absolute top-2 right-2 z-20 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-black text-slate-400 uppercase tracking-widest border border-white/10 flex items-center gap-1">
+        {badge} <ExternalLink className="w-2 h-2" />
+      </div>
+      <div className={`flex-1 relative overflow-hidden bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+        <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none" />
+        <div className="relative z-10 flex flex-col items-center gap-3 transform transition-transform duration-500 group-hover:scale-105">
+           {type === 'gear' ? <Sparkles className="w-10 h-10 text-es-cyan mb-1 animate-pulse" /> : <Zap className="w-10 h-10 text-orange-400 mb-1 animate-pulse" />}
+           <span className="text-2xl font-black text-white tracking-tighter text-center leading-tight">{title}</span>
+           <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest text-center px-4">{subtitle}</span>
         </div>
       </div>
-
-      {/* Sırada Ne Var? (Yaklaşan Maçlar Mini) */}
-      <div className="rounded-xl p-4 shadow-lg" style={{ background: 'var(--es-bg-2)', border: '1px solid var(--es-border)' }}>
-        <div className="flex items-center gap-2 mb-3">
-          <Clock className="w-3.5 h-3.5" style={{ color: 'var(--es-blue)' }} />
-          <span className="text-[11px] font-bold text-white uppercase tracking-widest">Günün Takvimi</span>
-        </div>
-        <div className="flex flex-col gap-2">
-          {['T1 vs HLE', 'NAVI vs FAZE', 'LOUD vs PRX'].map((match, i) => (
-            <button key={i} className="flex items-center gap-2 p-2.5 rounded-lg w-full text-left transition-colors hover:bg-white/5" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded" style={{ background: '#4D7CFE20', color: '#4D7CFE' }}>YAKLAŞAN</span>
-                  <span className="text-[10px]" style={{ color: 'var(--es-text-3)' }}>18:00</span>
-                </div>
-                <span className="text-xs font-semibold text-white truncate block">{match}</span>
-              </div>
-              <ChevronRight className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--es-text-3)' }} />
-            </button>
-          ))}
-        </div>
+      <div className="h-12 bg-slate-800/80 backdrop-blur border-t border-white/10 flex items-center justify-between px-4 transition-colors group-hover:bg-slate-800">
+        <span className="text-[10px] font-bold text-slate-400">Google Ads / Sponsor</span>
+        <span className="text-[10px] font-black text-white bg-es-cyan/20 text-es-cyan px-3 py-1.5 rounded border border-es-cyan/30 uppercase tracking-widest">İncele</span>
       </div>
-
-      {/* Popüler Oyuncular */}
-      <div className="rounded-xl p-4 shadow-lg" style={{ background: 'var(--es-bg-2)', border: '1px solid var(--es-border)' }}>
-        <div className="flex items-center gap-2 mb-3">
-          <TrendingUp className="w-3.5 h-3.5" style={{ color: '#22C55E' }} />
-          <span className="text-[11px] font-bold text-white uppercase tracking-widest">Trend Oyuncular</span>
-        </div>
-        <div className="flex flex-col gap-2">
-          {[
-            { name: 'Faker', team: 'T1', stat: '9.5 KDA', color: '#E84057' },
-            { name: 'TenZ', team: 'SEN', stat: '312 ACS', color: '#AC323F' },
-            { name: 'ropz', team: 'FAZE', stat: '1.24 Rtg', color: '#FF4500' }
-          ].map((player, i) => (
-            <div key={i} className="flex items-center gap-3 p-2 rounded-lg transition-colors hover:bg-white/5" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black text-white shrink-0" style={{ background: player.color }}>
-                {player.name.slice(0, 1)}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs font-bold text-white">{player.name}</div>
-                <div className="text-[10px] font-medium mt-0.5" style={{ color: 'var(--es-text-3)' }}>{player.team} • {player.stat}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Sponsor Alanı */}
-      <div className="rounded-xl p-4 flex flex-col items-center justify-center gap-2 mt-auto" style={{ background: 'var(--es-surface)', border: '1px dashed var(--es-border)', minHeight: '120px' }}>
-        <Zap className="w-5 h-5" style={{ color: 'var(--es-text-3)', opacity: 0.4 }} />
-        <span className="text-[10px] font-medium tracking-widest uppercase" style={{ color: 'var(--es-text-3)', opacity: 0.5 }}>SPONSOR ALANI</span>
-      </div>
-
     </div>
+  );
+}
+
+function CommunityFeed() {
+  return (
+    <div className="mb-6 flex-1 flex flex-col">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-es-cyan" /><span className="text-xs font-bold text-white uppercase tracking-widest">Topluluk (Forum)</span></div>
+        <span className="text-[10px] font-black text-slate-500 hover:text-white cursor-pointer transition-colors">TÜMÜ</span>
+      </div>
+      <div className="flex flex-col gap-1 bg-slate-900/50 rounded-xl border border-white/5 overflow-hidden flex-1">
+        {COMMUNITY_POSTS.map((post, i) => (
+          <div key={post.id} className={`flex items-center justify-between p-4 transition-colors hover:bg-white/5 cursor-pointer ${i !== COMMUNITY_POSTS.length - 1 ? 'border-b border-white/5' : ''}`}>
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-1.5 h-4 rounded-full shrink-0" style={{ background: GAME_COLORS[post.game] || '#fff' }} />
+              <span className={`text-xs font-semibold truncate ${post.isHot ? 'text-white' : 'text-slate-300'}`}>{post.title}</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0 pl-2">
+              <span className="text-[10px] font-black text-slate-500">{post.replies}</span>
+              {post.isHot ? <Flame className="w-3.5 h-3.5 text-orange-500" /> : <MessageSquare className="w-3.5 h-3.5 text-slate-600" />}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function RightSidebar() {
+  return (
+    <aside className="w-[300px] shrink-0 border-l border-white/5 bg-es-bg-2 p-5 overflow-y-auto custom-scrollbar relative flex flex-col">
+      {/* REKLAM 1 */}
+      <SponsorWidget type="gear" title={<>NEXUS<span className="text-es-cyan">GEAR</span> PRO</>} subtitle="E-Sporcular İçin Tasarlandı" badge="Sponsorlu" gradient="from-indigo-900 via-slate-900 to-black" />
+      {/* TOPLULUK AKIŞI */}
+      <CommunityFeed />
+      {/* REKLAM 2 */}
+      <SponsorWidget type="supplement" title={<>NEXUS <span className="text-orange-400">FOCUS+</span></>} subtitle="Performansını Zirveye Taşı" badge="Reklam" gradient="from-orange-900/40 via-slate-900 to-black" />
+    </aside>
   );
 }
