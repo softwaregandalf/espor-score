@@ -1,8 +1,8 @@
 "use client";
 
 import { ExternalLink, Sparkles, MessageSquare, Zap, Flame } from "lucide-react";
+import { useLanguage } from "./LanguageProvider"; // 🚀 DİL BEYNİ EKLENDİ
 
-// --- 🟢 MOCK DATA: TOPLULUK AKIŞI (FORUM) ---
 const COMMUNITY_POSTS = [
   { id: 1, title: 's1mple: "NAVI 2021 was the peak"', replies: 161, game: 'cs2', isHot: true },
   { id: 2, title: 'TenZ bu sezon sonu bırakıyor mu?', replies: 89, game: 'val', isHot: false },
@@ -12,8 +12,7 @@ const COMMUNITY_POSTS = [
 ];
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
-// 🚀 BÜYÜTÜLMÜŞ SPONSOR MODÜLÜ (h-[280px] yapıldı)
-function SponsorWidget({ title, subtitle, badge, type, gradient }: { title: React.ReactNode, subtitle: string, badge: string, type: 'gear' | 'supplement', gradient: string }) {
+function SponsorWidget({ title, subtitle, badge, type, gradient, inspectText }: { title: React.ReactNode, subtitle: string, badge: string, type: 'gear' | 'supplement', gradient: string, inspectText: string }) {
   return (
     <div className="relative w-full h-[280px] rounded-xl overflow-hidden shadow-lg group cursor-pointer mb-6 border border-white/5 bg-slate-900 transition-all hover:border-es-cyan/50 hover:shadow-[0_0_30px_rgba(0,212,255,0.15)] flex flex-col shrink-0">
       <div className="absolute top-2 right-2 z-20 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-black text-slate-400 uppercase tracking-widest border border-white/10 flex items-center gap-1">
@@ -29,18 +28,19 @@ function SponsorWidget({ title, subtitle, badge, type, gradient }: { title: Reac
       </div>
       <div className="h-12 bg-slate-800/80 backdrop-blur border-t border-white/10 flex items-center justify-between px-4 transition-colors group-hover:bg-slate-800">
         <span className="text-[10px] font-bold text-slate-400">Google Ads / Sponsor</span>
-        <span className="text-[10px] font-black text-white bg-es-cyan/20 text-es-cyan px-3 py-1.5 rounded border border-es-cyan/30 uppercase tracking-widest">İncele</span>
+        <span className="text-[10px] font-black text-white bg-es-cyan/20 text-es-cyan px-3 py-1.5 rounded border border-es-cyan/30 uppercase tracking-widest">{inspectText}</span>
       </div>
     </div>
   );
 }
 
 function CommunityFeed() {
+  const { t, language } = useLanguage(); // 🚀 DİL BEYNİ ÇAĞRILDI
   return (
     <div className="mb-6 flex-1 flex flex-col">
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-es-cyan" /><span className="text-xs font-bold text-white uppercase tracking-widest">Topluluk (Forum)</span></div>
-        <span className="text-[10px] font-black text-slate-500 hover:text-white cursor-pointer transition-colors">TÜMÜ</span>
+        <div className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-es-cyan" /><span className="text-xs font-bold text-white uppercase tracking-widest">{t.communityForum}</span></div>
+        <span className="text-[10px] font-black text-slate-500 hover:text-white cursor-pointer transition-colors">{language === 'tr' ? 'TÜMÜ' : 'ALL'}</span>
       </div>
       <div className="flex flex-col gap-1 bg-slate-900/50 rounded-xl border border-white/5 overflow-hidden flex-1">
         {COMMUNITY_POSTS.map((post, i) => (
@@ -60,15 +60,29 @@ function CommunityFeed() {
   );
 }
 
-export default function RightSidebar() {
+export default function RightSidebar({ rankings }: { rankings?: any[] }) {
+  const { t, language } = useLanguage(); 
+//...
+  
   return (
     <aside className="w-[300px] shrink-0 border-l border-white/5 bg-es-bg-2 p-5 overflow-y-auto custom-scrollbar relative flex flex-col">
-      {/* REKLAM 1 */}
-      <SponsorWidget type="gear" title={<>NEXUS<span className="text-es-cyan">GEAR</span> PRO</>} subtitle="E-Sporcular İçin Tasarlandı" badge="Sponsorlu" gradient="from-indigo-900 via-slate-900 to-black" />
-      {/* TOPLULUK AKIŞI */}
+      <SponsorWidget 
+        type="gear" 
+        title={<>NEXUS<span className="text-es-cyan">GEAR</span> PRO</>} 
+        subtitle={language === 'tr' ? "E-Sporcular İçin Tasarlandı" : "Designed for Esports Athletes"} 
+        badge={t.sponsored} 
+        gradient="from-indigo-900 via-slate-900 to-black"
+        inspectText={language === 'tr' ? "İncele" : "Review"}
+      />
       <CommunityFeed />
-      {/* REKLAM 2 */}
-      <SponsorWidget type="supplement" title={<>NEXUS <span className="text-orange-400">FOCUS+</span></>} subtitle="Performansını Zirveye Taşı" badge="Reklam" gradient="from-orange-900/40 via-slate-900 to-black" />
+      <SponsorWidget 
+        type="supplement" 
+        title={<>NEXUS <span className="text-orange-400">FOCUS+</span></>} 
+        subtitle={language === 'tr' ? "Performansını Zirveye Taşı" : "Take Your Performance to the Peak"} 
+        badge={t.sponsored} 
+        gradient="from-orange-900/40 via-slate-900 to-black" 
+        inspectText={language === 'tr' ? "İncele" : "Review"}
+      />
     </aside>
   );
 }

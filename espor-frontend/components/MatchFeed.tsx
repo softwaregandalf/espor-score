@@ -43,11 +43,7 @@ export default function MatchFeed({ initialMatches, rankings }: { initialMatches
   });
 
   return (
-    // Mobilde alt alta (flex-col) ve serbest yükseklik (h-auto)
-    // Masaüstünde (xl) yan yana (flex-row) ve ekrana tam oturan yükseklik
     <div className="flex flex-col xl:flex-row gap-6 w-full max-w-[1800px] mx-auto h-auto xl:h-[calc(100vh-100px)] min-h-0">
-      
-      {/* SOL MENÜ: Maç Listesi */}
       <div className="w-full xl:w-[320px] flex-shrink-0 flex flex-col min-h-[500px] xl:min-h-0">
         <MatchList 
           matches={filteredMatches} 
@@ -58,7 +54,6 @@ export default function MatchFeed({ initialMatches, rankings }: { initialMatches
         />
       </div>
 
-      {/* ORTA EKRAN: Detay Paneli */}
       <div className="flex-1 flex flex-col min-w-0 min-h-[600px] xl:min-h-0">
         <MatchDetail 
           selectedMatch={selectedMatch} 
@@ -66,11 +61,9 @@ export default function MatchFeed({ initialMatches, rankings }: { initialMatches
         />
       </div>
 
-      {/* SAĞ MENÜ: Mobilde ekranı çok uzatmamak için gizlenir, masaüstünde (xl) geri gelir */}
       <div className="w-full xl:w-[300px] flex-shrink-0 flex-col min-h-0 hidden xl:flex">
         <RightSidebar rankings={rankings} />
       </div>
-
     </div>
   );
 }

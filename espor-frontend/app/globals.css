@@ -67,3 +67,66 @@ body {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
+
+/* --- 🌞 GÜNDÜZ MODU KESİN ÇÖZÜM (ULTIMATE LIGHT THEME) --- */
+
+/* 1. Kök CSS Değişkenlerini (Variables) Zorla Değiştir */
+html.light, [data-theme='light'] {
+  --es-bg: #f8fafc !important;
+  --es-bg-2: #ffffff !important;
+  --es-border: rgba(0, 0, 0, 0.08) !important;
+  --es-surface: #f1f5f9 !important;
+  --es-card: #ffffff !important;
+}
+
+/* 2. Özel bg-es-... Sınıflarını Yakala */
+html.light .bg-es-bg { background-color: #f8fafc !important; }
+html.light .bg-es-bg-2 { background-color: #ffffff !important; }
+html.light .bg-es-surface { background-color: #f1f5f9 !important; }
+
+/* 3. Slate/Black Arkaplanların Tamamını Eziyoruz (Joker Seçiciler) */
+html.light [class*="bg-slate-950"] { background-color: #ffffff !important; }
+html.light [class*="bg-slate-900"] { background-color: #f1f5f9 !important; }
+html.light [class*="bg-slate-800"] { background-color: #e2e8f0 !important; }
+html.light [class*="bg-black"] { background-color: rgba(255, 255, 255, 0.9) !important; }
+
+/* 4. Tüm Koyu Gradient Efektlerini Kapat (Sağ paneldeki sponsor vb. için) */
+html.light [class*="from-slate-"],
+html.light [class*="to-slate-"],
+html.light [class*="from-black"],
+html.light [class*="to-black"] {
+  background-image: none !important;
+  background-color: #ffffff !important;
+}
+
+/* 5. Yazı Renkleri (Metinlerin görünmez olmasını engeller) */
+html.light .text-white { color: #0f172a !important; }
+html.light .text-slate-200 { color: #1e293b !important; }
+html.light .text-slate-300 { color: #334155 !important; }
+html.light .text-slate-400 { color: #475569 !important; }
+html.light .text-slate-500 { color: #64748b !important; }
+
+/* 6. Form Elemanları (Arama Kutuları ve Inputlar) - Kesin Çözüm */
+html.light input, 
+html.light select, 
+html.light textarea {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02) !important;
+}
+html.light input::placeholder { color: #94a3b8 !important; }
+
+/* 7. Kenarlıklar ve Hover Efektleri */
+html.light [class*="border-white/"] { border-color: rgba(0, 0, 0, 0.08) !important; }
+html.light [class*="border-slate-"] { border-color: rgba(0, 0, 0, 0.1) !important; }
+html.light [class*="hover:bg-white/"]:hover { background-color: rgba(0, 0, 0, 0.05) !important; }
+html.light [class*="hover:bg-slate-"]:hover { background-color: #e2e8f0 !important; }
+
+/* 8. İstisnalar (Bozulmaması gereken renkli takım alanları ve Butonlar) */
+html.light .bg-es-cyan .text-black,
+html.light .bg-blue-600 .text-white,
+html.light .bg-red-500 .text-white,
+html.light .score-display {
+  color: inherit !important;
+}

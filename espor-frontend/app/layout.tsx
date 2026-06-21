@@ -1,32 +1,35 @@
 import type { Metadata } from "next";
-import { Inter, Rajdhani, JetBrains_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
 import MainLayout from "@/components/MainLayout";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { LanguageProvider } from "@/components/LanguageProvider"; // 🚀 EKLENDİ
 
-// Özel Fontlarımızı Yüklüyoruz
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const rajdhani = Rajdhani({ weight: ["400", "500", "600", "700"], subsets: ["latin"], variable: "--font-rajdhani" });
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "NEXUS PRO | Espor Arena",
-  description: "Global Canlı Espor Skorları ve İstatistikleri",
+  title: "NEXUS PRO | Espor Ekosistemi",
+  description: "Global Espor Canlı Skor, Sonuçlar ve Haberler",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    // Font değişkenlerini HTML etiketine gömüyoruz
-    <html lang="tr" suppressHydrationWarning className={`${inter.variable} ${rajdhani.variable} ${jetbrainsMono.variable}`}>
-      <body className="font-sans antialiased text-white selection:bg-cyan-500/30 selection:text-cyan-200" style={{ background: 'var(--es-bg)' }}>
-        <ThemeProvider attribute="class" defaultTheme="dark">
-          <MainLayout>
-            {children}
-          </MainLayout>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {/* 🚀 EKLENDİ: Tüm proje dil sistemi ile sarmalandı */}
+          <LanguageProvider>
+            <MainLayout>{children}</MainLayout>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>
