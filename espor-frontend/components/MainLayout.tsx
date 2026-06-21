@@ -52,12 +52,20 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const isDark = currentTheme === 'dark';
   const themeColor = selectedGame ? GAME_COLORS[selectedGame] : GAME_COLORS.default;
 
+  const handleLogoClick = () => {
+    if (pathname === '/') {
+      window.location.href = '/';
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <div className="flex h-screen overflow-hidden transition-colors duration-500" style={{ background: 'var(--es-bg)' }}>
       <aside className="flex flex-col shrink-0 transition-all duration-300 relative z-20" style={{ width: sidebarCollapsed ? '64px' : '240px', background: 'var(--es-bg-2)', borderRight: '1px solid var(--es-border)' }}>
         <div className="h-[70px] flex items-center justify-between px-5 shrink-0 border-b border-white/5">
           {!sidebarCollapsed ? (
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => router.push('/')}>
+            <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={handleLogoClick}>
               <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-700" style={{ background: themeColor }}>
                 <Radio className="w-4 h-4 text-white" />
               </div>
@@ -65,7 +73,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded transition-colors duration-700" style={{ background: `${themeColor}20`, color: themeColor }}>PRO</span>
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto cursor-pointer transition-colors duration-700" style={{ background: themeColor }} onClick={() => router.push('/')}>
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto cursor-pointer transition-all duration-700 hover:opacity-80 hover:scale-105" style={{ background: themeColor }} onClick={handleLogoClick}>
               <Radio className="w-4 h-4 text-white" />
             </div>
           )}
@@ -90,8 +98,16 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               const isActive = pathname === item.path;
               const label = t[item.id as TranslationKeys];
               
+              // 🚀 SOL MENÜ: KULLANICI AKTİF SEKMEYE TIKLARSA SAYFAYI SIFIRLAR!
+              const handleNavClick = (e: React.MouseEvent) => {
+                if (isActive) {
+                  e.preventDefault();
+                  window.location.href = item.path;
+                }
+              };
+
               return (
-                <Link key={item.id} href={item.path} title={sidebarCollapsed ? label : undefined} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${sidebarCollapsed ? 'justify-center' : ''} ${isActive ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`} style={isActive ? { background: `${themeColor}15`, color: themeColor } : {}}>
+                <Link key={item.id} href={item.path} onClick={handleNavClick} title={sidebarCollapsed ? label : undefined} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${sidebarCollapsed ? 'justify-center' : ''} ${isActive ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`} style={isActive ? { background: `${themeColor}15`, color: themeColor } : {}}>
                   {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full transition-colors duration-700" style={{ background: themeColor }} />}
                   <item.icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" style={isActive ? { color: themeColor } : {}} />
                   {!sidebarCollapsed && <span className="text-sm font-semibold">{label}</span>}
@@ -172,7 +188,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             {mounted && (
               <button onClick={() => setTheme(isDark ? 'light' : 'dark')} className="flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all hover:scale-105 active:scale-95 group" style={{ background: isDark ? 'rgba(30, 41, 59, 0.5)' : '#ffffff', borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                 {isDark ? <Moon className="w-4 h-4 text-es-cyan group-hover:-rotate-12 transition-transform" /> : <Sun className="w-4 h-4 text-orange-500 group-hover:rotate-45 transition-transform" />}
-                {/* 🚀 DİL BEYNİ: Gece/Gündüz yazısı dinamikleştirildi */}
                 <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: isDark ? '#94a3b8' : '#475569' }}>
                   {isDark ? t.nightOn : t.dayOn}
                 </span>

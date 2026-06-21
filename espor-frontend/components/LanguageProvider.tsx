@@ -26,10 +26,11 @@ export const translations = {
     upcoming: "UPCOMING",
     finishedToday: "FINISHED TODAY",
     favorites: "FAVORITES",
-    favoriteMatchesTitle: "Favorite Matches", // 🚀 YENİ
+    favoriteMatchesTitle: "Favorite Matches",
     notification: "NOTIFICATION",
     now: "NOW",
     backToMain: "BACK TO MAIN FEED",
+    backToResults: "BACK TO RESULTS",
     overview: "OVERVIEW",
     lineups: "LINEUPS & VETO",
     statistics: "STATISTICS",
@@ -37,21 +38,46 @@ export const translations = {
     tournament: "Tournament",
     stage: "Stage",
     format: "Format",
-    location: "Location",
-    prizePool: "Prize Pool",
+    location: "LOCATION",
+    prizePool: "PRIZE POOL",
     teamForm: "Team Form (Last 5)",
     liveStreams: "Live Streams",
     officialStream: "Official Stream",
     dayOn: "Day: ON",
     nightOn: "Night: ON",
-    // 🚀 TABLO VE SEÇİM EKRANI İÇİN YENİLER
     picks: "Picks",
     gameStr: "Game",
     completed: "COMPLETED",
     player: "PLAYER",
     champion: "CHAMPION",
     gold: "GOLD",
-    vision: "VISION"
+    vision: "VISION",
+    resultsArchiveTitle: "Match Results Archive",
+    resultsArchiveDesc: "All past esports matches, detailed statistics, and P&B analysis.",
+    all: "ALL",
+    view: "VIEW",
+    sponsoredRecommendation: "SPONSORED RECOMMENDATION",
+    betPromoTitle: "Join BetArena for Betting Odds and Live Analysis!",
+    betPromoDesc: "A special 1000 TL welcome bonus awaits new members.",
+    playNow: "PLAY NOW",
+    vetoStage: "VETO STAGE",
+    map: "MAP",
+    agent: "AGENT",
+    role: "ROLE",
+    hero: "HERO",
+    banned: "Banned",
+    picked: "Picked",
+    left: "Left",
+    statsCompiling: "In-match comparative statistics are being compiled...",
+    tournamentsTitle: "Esports Tournaments",
+    tournamentsDesc: "Follow official leagues, championships, and qualifiers worldwide.",
+    ongoingTourneys: "ONGOING",
+    upcomingTourneys: "UPCOMING",
+    completedTourneys: "CONCLUDED",
+    date: "DATE",
+    teamCount: "TEAMS",
+    tournamentDetails: "TOURNAMENT DETAILS",
+    teamsText: "Teams"
   },
   tr: {
     liveMatches: "Canlı Maçlar",
@@ -74,10 +100,11 @@ export const translations = {
     upcoming: "YAKLAŞAN",
     finishedToday: "BUGÜN BİTENLER",
     favorites: "FAVORİLER",
-    favoriteMatchesTitle: "Favori Maçlarım", // 🚀 YENİ
+    favoriteMatchesTitle: "Favori Maçlarım",
     notification: "BİLDİRİMİ",
     now: "ŞİMDİ",
     backToMain: "ANA AKIŞA DÖN",
+    backToResults: "SONUÇLARA DÖN",
     overview: "GENEL BAKIŞ",
     lineups: "KADROLAR & VETO",
     statistics: "İSTATİSTİKLER",
@@ -85,21 +112,46 @@ export const translations = {
     tournament: "Turnuva",
     stage: "Aşama",
     format: "Format",
-    location: "Konum",
-    prizePool: "Ödül Havuzu",
+    location: "KONUM",
+    prizePool: "ÖDÜL HAVUZU",
     teamForm: "Takım Formu (Son 5)",
     liveStreams: "Canlı Yayınlar",
     officialStream: "Resmi Yayın",
     dayOn: "Gündüz: AÇIK",
     nightOn: "Gece: AÇIK",
-    // 🚀 TABLO VE SEÇİM EKRANI İÇİN YENİLER
     picks: "Seçimleri",
     gameStr: "Oyun",
     completed: "TAMAMLANDI",
     player: "OYUNCU",
     champion: "ŞAMPİYON",
     gold: "ALTIN",
-    vision: "GÖRÜŞ"
+    vision: "GÖRÜŞ",
+    resultsArchiveTitle: "Maç Sonuçları Arşivi",
+    resultsArchiveDesc: "Geçmiş tüm e-spor karşılaşmaları, detaylı istatistikler ve P&B analizleri.",
+    all: "TÜMÜ",
+    view: "GÖRÜNTÜLE",
+    sponsoredRecommendation: "SPONSORLU TAVSİYE",
+    betPromoTitle: "Bahis Oranları ve Canlı Analizler için BetArena'ya Katıl!",
+    betPromoDesc: "Yeni üyelere özel 1000 TL hoşgeldin bonusu seni bekliyor.",
+    playNow: "ŞİMDİ OYNA",
+    vetoStage: "VETO AŞAMASI",
+    map: "HARİTA",
+    agent: "AJAN",
+    role: "ROL",
+    hero: "KAHRAMAN",
+    banned: "Yasakladı",
+    picked: "Seçti",
+    left: "Kaldı",
+    statsCompiling: "Maç içi karşılaştırmalı istatistikler derleniyor...",
+    tournamentsTitle: "E-Spor Turnuvaları",
+    tournamentsDesc: "Dünya çapındaki resmi ligleri, şampiyonaları ve eleme aşamalarını takip edin.",
+    ongoingTourneys: "DEVAM EDENLER",
+    upcomingTourneys: "YAKLAŞANLAR",
+    completedTourneys: "SONUÇLANANLAR",
+    date: "TARİH",
+    teamCount: "TAKIM SAYISI",
+    tournamentDetails: "TURNUVA DETAYLARI",
+    teamsText: "Takım"
   }
 };
 
@@ -107,13 +159,26 @@ const apiTermDictionary: Record<string, string> = {
   "Regular Season": "Normal Sezon",
   "Group Stage": "Grup Aşaması",
   "Playoffs": "Playofflar",
-  "Quarterfinals": "Çeyrek Final",
-  "Semifinals": "Yarı Final",
-  "Grand Final": "Büyük Final",
-  "Week": "Hafta",
-  "Day": "Gün",
   "Qualifier": "Elemeler",
-  "Global (Online)": "Global (Çevrimiçi)"
+  "Global (Online)": "Global (Çevrimiçi)",
+  "Tier": "Seviye", 
+  
+  // 🚀 TURNUVA AŞAMALARI (BRACKET) EKLENDİ
+  "Quarterfinal": "Çeyrek Final",
+  "Quarterfinals": "Çeyrek Final",
+  "Çeyrek Final": "Çeyrek Final", // Mock veride Türkçe yazılmış olabilir diye koruma
+  "Semifinal": "Yarı Final",
+  "Semifinals": "Yarı Final",
+  "Yarı Final": "Yarı Final",
+  "Grand Final": "Büyük Final",
+  "Grand Finals": "Büyük Final",
+  "Büyük Final": "Büyük Final",
+  
+  "January": "Ocak", "February": "Şubat", "March": "Mart", "April": "Nisan", 
+  "May": "Mayıs", "June": "Haziran", "July": "Temmuz", "August": "Ağustos", 
+  "September": "Eylül", "October": "Ekim", "November": "Kasım", "December": "Aralık",
+  "Jan": "Oca", "Feb": "Şub", "Mar": "Mar", "Apr": "Nis", "Jun": "Haz", 
+  "Jul": "Tem", "Aug": "Ağu", "Sep": "Eyl", "Oct": "Eki", "Nov": "Kas", "Dec": "Ara"
 };
 
 export type TranslationKeys = keyof typeof translations.en;
@@ -157,8 +222,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     if (language === 'en') return text;
     
     let translatedText = text;
-    Object.keys(apiTermDictionary).forEach(term => {
-      const regex = new RegExp(term, "gi");
+    // Çakışmaları önlemek için uzun kelimeleri önce çeviriyoruz
+    const terms = Object.keys(apiTermDictionary).sort((a, b) => b.length - a.length);
+    terms.forEach(term => {
+      const regex = new RegExp(`\\b${term}\\b`, "gi"); 
       translatedText = translatedText.replace(regex, apiTermDictionary[term]);
     });
     return translatedText;

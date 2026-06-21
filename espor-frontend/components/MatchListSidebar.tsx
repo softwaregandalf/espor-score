@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { Search, ChevronDown, Star } from "lucide-react";
 import { GAMES } from "@/app/data/mockData";
-import { useLanguage } from "./LanguageProvider"; // 🚀 DİL BEYNİ EKLENDİ
+import { useLanguage } from "./LanguageProvider";
 
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
@@ -39,7 +39,7 @@ export default function MatchListSidebar({
   selectedMatchId: string | null;
   onMatchSelect: (id: string) => void;
 }) {
-  const { t } = useLanguage(); // 🚀 DİL BEYNİ ÇAĞRILDI
+  const { t } = useLanguage();
   const [favoriteMatches, setFavoriteMatches] = useState<Set<string>>(new Set());
 
   const toggleFavorite = (e: React.MouseEvent, matchId: string) => {
@@ -61,25 +61,27 @@ export default function MatchListSidebar({
 
     const favoriteSection = {
       label: 'Favorites',
-      title: t.favoriteMatchesTitle, // 🚀 DİNAMİK YAPILDI
+      title: t.favoriteMatchesTitle,
       matches: favoritedMatchesList,
       color: '#F59E0B'
     };
 
     return [favoriteSection, ...sections];
-  }, [sections, favoriteMatches, t.favoriteMatchesTitle]); // 🚀 BAĞIMLILIK EKLENDİ
+  }, [sections, favoriteMatches, t.favoriteMatchesTitle]); 
 
   return (
     <div className="w-[280px] shrink-0 flex flex-col overflow-hidden transition-all duration-300 relative z-20" style={{ borderRight: '1px solid var(--es-border)', background: 'var(--es-bg-2)' }}>
-      <div className="p-3 border-b border-white/5">
+      <div className="p-3 border-b" style={{ borderColor: 'var(--es-border)' }}>
         <div className="relative group">
-          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-es-cyan transition-colors" />
+          {/* 🚀 ARAMA İKONU VE YAZISI DÜZELTİLDİ */}
+          <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--es-text-3)' }} />
           <input 
             type="text" 
             value={searchQuery} 
             onChange={e => setSearchQuery(e.target.value)} 
-            placeholder={t.searchMatch} // 🚀 DİNAMİK YAPILDI
-            className="w-full pl-8 pr-3 py-2 rounded-lg text-xs outline-none text-slate-900 dark:text-white transition-all bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-es-cyan" 
+            placeholder={t.searchMatch}
+            className="w-full pl-8 pr-3 py-2 rounded-lg text-xs outline-none transition-all" 
+            style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }}
           />
         </div>
       </div>
@@ -89,7 +91,7 @@ export default function MatchListSidebar({
           const isExpanded = expandedSections.includes(label);
           return (
             <div key={label} className="mb-2">
-              <button onClick={() => setExpandedSections((prev: any) => prev.includes(label) ? prev.filter((s: string) => s !== label) : [...prev, label])} className="w-full flex items-center justify-between px-2 py-2 mb-1 text-[10px] font-black uppercase tracking-widest transition-colors hover:bg-black/5 dark:hover:bg-white/5 rounded-lg" style={{ color }}>
+              <button onClick={() => setExpandedSections((prev: any) => prev.includes(label) ? prev.filter((s: string) => s !== label) : [...prev, label])} className="w-full flex items-center justify-between px-2 py-2 mb-1 text-[10px] font-black uppercase tracking-widest transition-opacity hover:opacity-80 rounded-lg" style={{ color }}>
                 <div className="flex items-center gap-2">
                   {label === 'Live' && <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
                   {label === 'Favorites' && <Star className="w-3.5 h-3.5 fill-current text-yellow-500 animate-bounce" />}
@@ -108,33 +110,35 @@ export default function MatchListSidebar({
                       <button 
                         key={match.id} 
                         onClick={() => onMatchSelect(match.id)} 
-                        className="w-full text-left px-3 py-2.5 rounded-xl transition-all group relative overflow-hidden bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 shadow-sm" 
-                        style={{ background: isSelected ? `${GAME_COLORS[match.game]}15` : '', borderLeft: isSelected ? `3px solid ${GAME_COLORS[match.game]}` : '' }}
+                        className="w-full text-left px-3 py-2.5 rounded-xl transition-all group relative overflow-hidden shadow-sm hover:opacity-90" 
+                        style={{ background: isSelected ? 'var(--es-surface)' : 'var(--es-bg)', border: '1px solid var(--es-border)', borderLeft: isSelected ? `3px solid ${GAME_COLORS[match.game]}` : '1px solid transparent' }}
                       >
                         <div className="flex items-center justify-between mb-1.5">
                            <div className="flex items-center gap-2">
                              <TeamLogo name={match.team1.short} color={match.team1.color} size="xs" />
-                             <span className="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[100px] group-hover:text-es-cyan transition-colors">{match.team1.name}</span>
+                             {/* 🚀 CSS DEĞİŞKENİNE (VAR) GERİ DÖNÜLDÜ */}
+                             <span className="text-xs font-semibold truncate max-w-[100px] transition-colors" style={{ color: 'var(--es-text-1)' }}>{match.team1.name}</span>
                            </div>
-                           <span className="text-xs font-black text-slate-900 dark:text-white score-display tabular-nums">{match.team1.score}</span>
+                           <span className="text-xs font-black score-display tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{match.team1.score}</span>
                         </div>
                         <div className="flex items-center justify-between mb-1.5">
                            <div className="flex items-center gap-2">
                              <TeamLogo name={match.team2.short} color={match.team2.color} size="xs" />
-                             <span className="text-xs font-semibold text-slate-800 dark:text-white truncate max-w-[100px] group-hover:text-es-cyan transition-colors">{match.team2.name}</span>
+                             {/* 🚀 CSS DEĞİŞKENİNE (VAR) GERİ DÖNÜLDÜ */}
+                             <span className="text-xs font-semibold truncate max-w-[100px] transition-colors" style={{ color: 'var(--es-text-1)' }}>{match.team2.name}</span>
                            </div>
-                           <span className="text-xs font-black text-slate-900 dark:text-white score-display tabular-nums">{match.team2.score}</span>
+                           <span className="text-xs font-black score-display tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{match.team2.score}</span>
                         </div>
-                        <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200 dark:border-white/5">
+                        <div className="flex items-center justify-between mt-2 pt-2 border-t" style={{ borderColor: 'var(--es-border)' }}>
                            <div className="flex items-center gap-1.5">
                              <GameBadge gameId={match.game} small />
-                             <span className="text-[9px] text-slate-500 font-semibold truncate">{match.tournamentShort}</span>
+                             <span className="text-[9px] font-semibold truncate transition-colors" style={{ color: 'var(--es-text-3)' }}>{match.tournamentShort}</span>
                            </div>
                            <div 
                              onClick={(e) => toggleFavorite(e, match.id)}
-                             className={`p-1.5 rounded-md transition-all flex items-center justify-center ${isFavorite ? 'opacity-100 bg-yellow-500/10 text-yellow-500 dark:text-yellow-400' : 'opacity-0 group-hover:opacity-100 text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-yellow-500 dark:hover:text-yellow-400'}`}
+                             className={`p-1.5 rounded-md transition-all flex items-center justify-center ${isFavorite ? 'opacity-100 bg-yellow-500/10 text-yellow-500' : 'opacity-0 group-hover:opacity-100 hover:bg-yellow-500/10 hover:text-yellow-500'}`} style={{ color: isFavorite ? '' : 'var(--es-text-3)' }}
                            >
-                             <Star className={`w-3.5 h-3.5 ${isFavorite ? 'fill-yellow-500 dark:fill-yellow-400' : ''}`} />
+                             <Star className={`w-3.5 h-3.5 ${isFavorite ? 'fill-yellow-500' : ''}`} />
                            </div>
                         </div>
                       </button>
