@@ -3,7 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import MainLayout from "@/components/MainLayout";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { LanguageProvider } from "@/components/LanguageProvider"; // 🚀 EKLENDİ
+import { LanguageProvider } from "@/components/LanguageProvider"; 
+import { AuthProvider } from "@/components/AuthProvider"; // 🚀 AUTH BEYNİ EKLENDİ
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,9 +27,11 @@ export default function RootLayout({
           enableSystem={false}
           disableTransitionOnChange
         >
-          {/* 🚀 EKLENDİ: Tüm proje dil sistemi ile sarmalandı */}
           <LanguageProvider>
-            <MainLayout>{children}</MainLayout>
+            {/* 🚀 TÜM SİSTEM GERÇEK KİMLİK DOĞRULAMA (SESSION) İLE SARMALANDI */}
+            <AuthProvider>
+              <MainLayout>{children}</MainLayout>
+            </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

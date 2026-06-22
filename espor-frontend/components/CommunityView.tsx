@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "./AuthProvider"; // Supabase Auth Hook'u
 import { useState, useMemo } from "react";
 import { MessageSquare, ArrowBigUp, ArrowBigDown, Share2, MessageCircle, ShieldAlert, Sparkles, Flame, Trophy, HelpCircle, X, UserCheck } from "lucide-react";
 import { GAMES } from "@/app/data/mockData";
@@ -19,7 +20,9 @@ export default function CommunityView() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // 🚀 TIER 1 DÜZELTME: signOut eklendi!
+  const { user, isLoading, signOut } = useAuth();
+  const isLoggedIn = !!user; 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [modalReasonKey, setModalReasonKey] = useState<TranslationKeys | ''>('');
 
@@ -94,20 +97,6 @@ export default function CommunityView() {
             </button>
           ))}
           
-          <div className="mt-auto p-4 rounded-xl border flex flex-col gap-2 transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
-            <span className="text-[9px] font-bold uppercase transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.simulationMode}</span>
-            <button 
-              onClick={() => setIsLoggedIn(!isLoggedIn)} 
-              className="w-full py-2 rounded text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all"
-              style={{
-                background: isLoggedIn ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                color: isLoggedIn ? '#22C55E' : '#EF4444',
-                border: isLoggedIn ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
-              }}
-            >
-              <UserCheck className="w-3.5 h-3.5" /> {isLoggedIn ? (language === 'tr' ? 'Giriş Yapıldı' : 'Logged In') : t.visitorMode}
-            </button>
-          </div>
         </aside>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-4">
