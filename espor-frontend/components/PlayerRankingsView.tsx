@@ -4,20 +4,12 @@ import { useState, useMemo } from "react";
 import { Search, Trophy, Filter, Medal, User, ChevronDown, RotateCcw } from "lucide-react";
 import { GAMES } from "@/app/data/mockData";
 import PlayerDetail from "./PlayerDetail";
+import { useLanguage } from "./LanguageProvider";
 
 const ALLOWED_GAMES = ['lol', 'val', 'cs2', 'dota2'];
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
-// 🚀 OYUNLARA ÖZEL DİNAMİK ROL LİSTELERİ
-const GAME_ROLES: Record<string, { id: string, label: string }[]> = {
-  val: [ { id: 'Duelist', label: 'Düellocu (Duelist)' }, { id: 'Initiator', label: 'Öncü (Initiator)' }, { id: 'Sentinel', label: 'Gözcü (Sentinel)' }, { id: 'Controller', label: 'Kontrol Uzmanı (Controller)' } ],
-  cs2: [ { id: 'Sniper', label: 'Keskin Nişancı (AWPer)' }, { id: 'Entry', label: 'Giriş (Entry Fragger)' }, { id: 'Rifler', label: 'Tüfekçi (Rifler)' }, { id: 'IGL', label: 'Oyun İçi Lider (IGL)' } ],
-  lol: [ { id: 'Top', label: 'Üst Koridor (Top)' }, { id: 'Jungle', label: 'Ormancı (Jungle)' }, { id: 'Mid', label: 'Orta Koridor (Mid)' }, { id: 'ADC', label: 'Nişancı (ADC)' }, { id: 'Support', label: 'Destek (Support)' } ],
-  dota2: [ { id: 'Carry', label: 'Taşıyıcı (Carry)' }, { id: 'Mid', label: 'Orta Koridor (Mid)' }, { id: 'Offlane', label: 'Offlane' }, { id: 'Support', label: 'Destek (Support)' } ]
-};
-
-const REGIONS = [ { id: 'eu', label: 'Europe (EU)' }, { id: 'na', label: 'North America (NA)' }, { id: 'kr', label: 'Korea (KR)' }, { id: 'cn', label: 'China (CN)' }, { id: 'br', label: 'Brazil (BR)' } ];
-const TIMESPANS = [ { id: '30d', label: 'Son 30 Gün' }, { id: '60d', label: 'Son 60 Gün' }, { id: '90d', label: 'Son 90 Gün' }, { id: 'all', label: 'Tüm Zamanlar' } ];
+const REGIONS = [ { id: 'eu', label: 'Europe' }, { id: 'na', label: 'North America' }, { id: 'kr', label: 'Korea' }, { id: 'cn', label: 'China' }, { id: 'br', label: 'Brazil' }, { id: 'world', label: 'World' } ];
 
 const MOCK_PLAYERS = [
   // --- VALORANT (FPS) ---
@@ -43,17 +35,32 @@ function TeamLogo({ name, color }: { name: string; color: string }) {
 }
 
 export default function PlayerRankingsView() {
+  const { t, translateApiText, language } = useLanguage(); 
+
   const [selectedGame, setSelectedGame] = useState<string>('val');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<any>(null);
 
-  // 🚀 FİLTRE DURUMLARI (STATE)
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterRole, setFilterRole] = useState('all');
   const [filterRegion, setFilterRegion] = useState('all');
   const [filterTime, setFilterTime] = useState('all');
 
-  // Akıllı Arama ve Detaylı Filtreleme Mantığı
+  // 🚀 AÇILIR MENÜ İÇİN ROL İSİMLERİ SÖZLÜKTEN BESLENİYOR
+  const GAME_ROLES: Record<string, { id: string, label: string }[]> = {
+    val: [ { id: 'Duelist', label: 'Duelist' }, { id: 'Initiator', label: 'Initiator' }, { id: 'Sentinel', label: 'Sentinel' }, { id: 'Controller', label: 'Controller' } ],
+    cs2: [ { id: 'Sniper', label: 'Sniper' }, { id: 'Entry', label: 'Entry' }, { id: 'Rifler', label: 'Rifler' }, { id: 'IGL', label: 'IGL' } ],
+    lol: [ { id: 'Top', label: 'Top' }, { id: 'Jungle', label: 'Jungle' }, { id: 'Mid', label: 'Mid' }, { id: 'ADC', label: 'ADC' }, { id: 'Support', label: 'Support' } ],
+    dota2: [ { id: 'Carry', label: 'Carry' }, { id: 'Mid', label: 'Mid' }, { id: 'Offlane', label: 'Offlane' }, { id: 'Support', label: 'Support' } ]
+  };
+
+  const TIMESPANS = [ 
+    { id: '30d', label: language === 'tr' ? 'Son 30 Gün' : 'Last 30 Days' }, 
+    { id: '60d', label: language === 'tr' ? 'Son 60 Gün' : 'Last 60 Days' }, 
+    { id: '90d', label: language === 'tr' ? 'Son 90 Gün' : 'Last 90 Days' }, 
+    { id: 'all', label: language === 'tr' ? 'Tüm Zamanlar' : 'All Time' } 
+  ];
+
   const filteredPlayers = useMemo(() => {
     let result = MOCK_PLAYERS.filter(player => player.game === selectedGame);
 
@@ -63,7 +70,7 @@ export default function PlayerRankingsView() {
     if (filterRole !== 'all') {
       result = result.filter(p => p.role === filterRole);
     }
-    if (filterRegion !== 'all') {
+    if (filterRegion !== 'all' && filterRegion !== 'world') {
       result = result.filter(p => p.region === filterRegion);
     }
 
@@ -74,7 +81,6 @@ export default function PlayerRankingsView() {
   const gameName = GAMES.find(g => g.id === selectedGame)?.name || 'E-Spor';
   const isFPS = selectedGame === 'cs2' || selectedGame === 'val';
 
-  // Oyun Değiştiğinde Filtreleri Sıfırla (Çünkü LoL rolüyle CS2 filtrelenemez)
   const handleGameChange = (gameId: string) => {
     setSelectedGame(gameId);
     setFilterRole('all');
@@ -82,8 +88,8 @@ export default function PlayerRankingsView() {
   };
 
   const getRankStyle = (rank: number) => {
-    if (rank === 1) return 'text-yellow-400 font-black drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]'; 
-    if (rank === 2) return 'text-slate-300 font-black drop-shadow-[0_0_8px_rgba(203,213,225,0.5)]'; 
+    if (rank === 1) return 'text-yellow-500 font-black drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]'; 
+    if (rank === 2) return 'text-slate-400 font-black drop-shadow-[0_0_8px_rgba(148,163,184,0.5)]'; 
     if (rank === 3) return 'text-amber-600 font-black drop-shadow-[0_0_8px_rgba(217,119,6,0.5)]'; 
     return 'text-slate-500 font-bold'; 
   };
@@ -94,96 +100,90 @@ export default function PlayerRankingsView() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in" style={{ background: 'var(--es-bg)' }}>
+    <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in transition-colors" style={{ background: 'var(--es-bg)' }}>
       
-      {/* ÜST BAR VE FİLTRELER */}
-      <div className="shrink-0 p-8 border-b border-white/5 bg-es-bg-2 relative overflow-hidden flex flex-col gap-6 transition-all">
+      <div className="shrink-0 p-8 border-b relative overflow-hidden flex flex-col gap-6 transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
         <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-colors duration-700" style={{ background: gameColor, transform: 'translate(30%, -30%)' }} />
         
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-black text-white tracking-tight mb-1 flex items-center gap-3">
-              Global Oyuncu Sıralamaları <Medal className="w-6 h-6" style={{ color: gameColor }} />
+            <h1 className="text-3xl font-black tracking-tight mb-1 flex items-center gap-3 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+              {t.globalPlayerRankings} <Medal className="w-6 h-6" style={{ color: gameColor }} />
             </h1>
-            <p className="text-sm text-slate-400">{gameName} arenasında bireysel istatistikleri ve ratingleri ile öne çıkan en iyi oyuncular.</p>
+            <p className="text-sm transition-colors" style={{ color: 'var(--es-text-3)' }}>{gameName} {t.playerRankingsDesc}</p>
           </div>
           <div className="relative group w-72">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-es-cyan transition-colors" />
-            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Oyuncu ara..." className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all bg-slate-900 border border-slate-700 text-white focus:border-es-cyan shadow-lg" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--es-text-3)' }} />
+            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchPlayerInput} className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500 dark:placeholder:text-slate-400" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }} />
           </div>
         </div>
         
         <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="flex items-center gap-2 p-1.5 rounded-xl transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
             {GAMES.filter(g => ALLOWED_GAMES.includes(g.id)).map(game => (
-              <button key={game.id} onClick={() => handleGameChange(game.id)} className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${selectedGame === game.id ? 'text-white shadow-lg' : 'text-slate-500 hover:text-white'}`} style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent' }}>
+              <button key={game.id} onClick={() => handleGameChange(game.id)} className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:opacity-80`} style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>
                 <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
               </button>
             ))}
           </div>
           
-          {/* DETAYLI FİLTRE AÇ/KAPA BUTONU */}
           <button 
             onClick={() => setIsFilterOpen(!isFilterOpen)} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-black uppercase tracking-widest transition-all shadow-lg ${isFilterOpen ? 'bg-white text-black border-white' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-black uppercase tracking-widest transition-all shadow-lg hover:opacity-80`}
+            style={{ background: isFilterOpen ? 'var(--es-text-1)' : 'var(--es-surface)', color: isFilterOpen ? 'var(--es-bg)' : 'var(--es-text-3)', borderColor: 'var(--es-border)' }}
           >
-            <Filter className="w-3.5 h-3.5" /> Detaylı Filtre
+            <Filter className="w-3.5 h-3.5" /> {t.detailedFilter}
           </button>
         </div>
 
-        {/* 🚀 AKILLI AÇILIR FİLTRE PANELİ (VLR.gg Tarzı) */}
         {isFilterOpen && (
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-4 bg-slate-900/80 p-5 rounded-2xl border border-white/10 animate-fade-in shadow-2xl backdrop-blur-md">
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-4 p-5 rounded-2xl border animate-fade-in shadow-2xl backdrop-blur-md transition-colors" style={{ background: 'var(--es-surface-2)', borderColor: 'var(--es-border)' }}>
             
-            {/* Rol Filtresi (Oyuna Göre Dinamik Değişir) */}
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">{gameName} Rolü</label>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{gameName} {language === 'tr' ? 'Rolü' : 'Role'}</label>
               <div className="relative">
-                <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="w-full bg-slate-950 border border-slate-800 text-white text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner">
-                  <option value="all">Tüm Roller</option>
+                <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="w-full border text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
+                  <option value="all">{language === 'tr' ? 'Tüm Roller' : 'All Roles'}</option>
                   {GAME_ROLES[selectedGame]?.map(role => (
-                    <option key={role.id} value={role.id}>{role.label}</option>
+                    <option key={role.id} value={role.id}>{translateApiText(role.label)}</option>
                   ))}
                 </select>
-                <ChevronDown className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" style={{ color: 'var(--es-text-3)' }} />
               </div>
             </div>
 
-            {/* Bölge Filtresi */}
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Bölge (Region)</label>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bölge' : 'Region'}</label>
               <div className="relative">
-                <select value={filterRegion} onChange={(e) => setFilterRegion(e.target.value)} className="w-full bg-slate-950 border border-slate-800 text-white text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner">
-                  <option value="all">Global (Dünya)</option>
+                <select value={filterRegion} onChange={(e) => setFilterRegion(e.target.value)} className="w-full border text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
+                  <option value="all">{language === 'tr' ? 'Global (Dünya)' : 'Global (World)'}</option>
                   {REGIONS.map(region => (
-                    <option key={region.id} value={region.id}>{region.label}</option>
+                    <option key={region.id} value={region.id}>{translateApiText(region.label)}</option>
                   ))}
                 </select>
-                <ChevronDown className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" style={{ color: 'var(--es-text-3)' }} />
               </div>
             </div>
 
-            {/* Zaman Aralığı Filtresi */}
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest pl-1">Zaman Aralığı</label>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Zaman Aralığı' : 'Time Span'}</label>
               <div className="relative">
-                <select value={filterTime} onChange={(e) => setFilterTime(e.target.value)} className="w-full bg-slate-950 border border-slate-800 text-white text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner">
+                <select value={filterTime} onChange={(e) => setFilterTime(e.target.value)} className="w-full border text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
                   {TIMESPANS.map(time => (
                     <option key={time.id} value={time.id}>{time.label}</option>
                   ))}
                 </select>
-                <ChevronDown className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" style={{ color: 'var(--es-text-3)' }} />
               </div>
             </div>
 
-            {/* Sıfırlama Butonu */}
             <div className="flex flex-col gap-2 justify-end">
               <button 
                 onClick={() => { setFilterRole('all'); setFilterRegion('all'); setFilterTime('all'); setSearchQuery(''); }}
-                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/50 text-xs font-black uppercase tracking-widest rounded-xl px-4 py-3 transition-colors flex items-center justify-center gap-2"
+                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 hover:border-red-500/50 text-xs font-black uppercase tracking-widest rounded-xl px-4 py-3 transition-colors flex items-center justify-center gap-2"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> Temizle
+                <RotateCcw className="w-3.5 h-3.5" /> {language === 'tr' ? 'Temizle' : 'Clear'}
               </button>
             </div>
 
@@ -191,23 +191,22 @@ export default function PlayerRankingsView() {
         )}
       </div>
 
-      {/* İÇERİK ALANI (DİNAMİK TABLO) */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
         <div className="max-w-6xl mx-auto">
           
           {filteredPlayers.length === 0 ? (
-            <div className="text-center py-20 text-slate-500 flex flex-col items-center gap-4">
+            <div className="text-center py-20 flex flex-col items-center gap-4 transition-colors" style={{ color: 'var(--es-text-3)' }}>
               <User className="w-12 h-12 opacity-20" />
-              <div className="text-lg font-black uppercase tracking-widest">Bu filtrelere uygun oyuncu bulunamadı</div>
+              <div className="text-lg font-black uppercase tracking-widest">{language === 'tr' ? 'Bu filtrelere uygun oyuncu bulunamadı' : 'No players found matching these filters'}</div>
             </div>
           ) : (
-            <div className="bg-es-bg-2 rounded-xl border border-white/5 overflow-hidden shadow-2xl animate-fade-in">
+            <div className="rounded-xl border overflow-hidden shadow-2xl animate-fade-in transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-900/80 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-white/5">
-                    <th className="p-4 w-16 text-center">Sıra</th>
-                    <th className="p-4">Oyuncu</th>
-                    <th className="p-4">Takım</th>
+                  <tr className="text-[10px] font-black uppercase tracking-widest border-b transition-colors" style={{ background: 'var(--es-surface)', color: 'var(--es-text-3)', borderColor: 'var(--es-border)' }}>
+                    <th className="p-4 w-16 text-center">{t.rankCol}</th>
+                    <th className="p-4">{t.playerCol}</th>
+                    <th className="p-4">{t.teamCol}</th>
                     
                     {isFPS ? (
                       <>
@@ -219,27 +218,28 @@ export default function PlayerRankingsView() {
                     ) : (
                       <>
                         <th className="p-4 text-center text-es-cyan">KDA</th>
-                        <th className="p-4 text-center">CS / Dk</th>
-                        <th className="p-4 text-center">Skor Katkısı</th>
-                        <th className="p-4 text-center">Hasar / Dk</th>
+                        <th className="p-4 text-center">CS / {language === 'tr' ? 'Dk' : 'Min'}</th>
+                        <th className="p-4 text-center">{language === 'tr' ? 'Skor Katkısı' : 'KP'}</th>
+                        <th className="p-4 text-center">{language === 'tr' ? 'Hasar' : 'DMG'} / {language === 'tr' ? 'Dk' : 'Min'}</th>
                       </>
                     )}
-                    <th className="p-4 text-right">Profil</th>
+                    <th className="p-4 text-right">{t.profileCol}</th>
                   </tr>
                 </thead>
-                <tbody className="text-sm font-semibold text-slate-300">
+                <tbody className="text-sm font-semibold transition-colors" style={{ color: 'var(--es-text-1)' }}>
                   {filteredPlayers.map((player) => (
-                    <tr key={player.id} onClick={() => setSelectedPlayer(player)} className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group">
+                    <tr key={player.id} onClick={() => setSelectedPlayer(player)} className="border-b transition-colors cursor-pointer group hover:opacity-80" style={{ borderColor: 'var(--es-border)' }}>
                       <td className={`p-4 text-center text-lg ${getRankStyle(player.rank)}`}>{player.rank}</td>
                       
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <span className="text-2xl">{player.nationality}</span>
                           <div className="flex flex-col">
-                            <span className="text-sm font-black text-white group-hover:text-es-cyan transition-colors">{player.nickname}</span>
+                            <span className="text-sm font-black group-hover:text-es-cyan transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.nickname}</span>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[8px] font-black uppercase text-slate-400">{player.role}</span>
-                              <span className="text-[10px] text-slate-500 uppercase tracking-widest">{player.realName}</span>
+                              {/* 🚀 OYUNCU ROLÜ ARTIK TÜM OYUNLAR İÇİN ÇEVRİLİYOR (Örn: Sniper -> Keskin Nişancı, Mid -> Orta Koridor) */}
+                              <span className="px-1.5 py-0.5 rounded border text-[8px] font-black uppercase transition-colors" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>{translateApiText(player.role)}</span>
+                              <span className="text-[10px] uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.realName}</span>
                             </div>
                           </div>
                         </div>
@@ -248,29 +248,29 @@ export default function PlayerRankingsView() {
                       <td className="p-4">
                         <div className="flex items-center gap-2">
                           <TeamLogo name={player.teamShort} color={player.teamColor} />
-                          <span className="text-xs font-bold text-white">{player.teamName}</span>
+                          <span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.teamName}</span>
                         </div>
                       </td>
 
                       {isFPS ? (
                         <>
-                          <td className="p-4 text-center font-black text-white tabular-nums text-base">{player.rating?.toFixed(2)}</td>
-                          <td className="p-4 text-center tabular-nums">{player.acs}</td>
-                          <td className="p-4 text-center tabular-nums">{player.kd}</td>
-                          <td className="p-4 text-center tabular-nums text-slate-400">{player.hs}</td>
+                          <td className="p-4 text-center font-black tabular-nums text-base transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.rating?.toFixed(2)}</td>
+                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.acs}</td>
+                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.kd}</td>
+                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.hs}</td>
                         </>
                       ) : (
                         <>
-                          <td className="p-4 text-center font-black text-white tabular-nums text-base">{player.kda}</td>
-                          <td className="p-4 text-center tabular-nums">{player.csm}</td>
-                          <td className="p-4 text-center tabular-nums text-slate-400">{player.kp}</td>
-                          <td className="p-4 text-center tabular-nums">{player.dpm}</td>
+                          <td className="p-4 text-center font-black tabular-nums text-base transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.kda}</td>
+                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.csm}</td>
+                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.kp}</td>
+                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.dpm}</td>
                         </>
                       )}
 
                       <td className="p-4 text-right">
-                        <button className="px-3 py-1.5 rounded-lg bg-slate-800 text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:bg-es-cyan group-hover:text-black transition-colors">
-                          İncele
+                        <button className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest group-hover:bg-es-cyan group-hover:text-black transition-colors" style={{ background: 'var(--es-surface)', color: 'var(--es-text-3)' }}>
+                          {t.inspect}
                         </button>
                       </td>
                     </tr>
