@@ -6,6 +6,15 @@ type Language = 'tr' | 'en';
 
 export const translations = {
   en: {
+    backToCommunity: "Back to Community",
+    writeComment: "Write a comment...",
+    postComment: "Post Comment",
+    noCommentsYet: "No comments yet. Be the first to share your thoughts!",
+    commentsLabel: "Comments",
+    upvote: "UPVOTE",
+    thread: "THREAD",
+    comment: "COMMENT",
+    noActivity: "No interactions found yet.",
     newPassword: "New Password",
     save: "Save",
     cancel: "Cancel",
@@ -175,6 +184,15 @@ export const translations = {
     login: "Log In",
   },
   tr: {
+    backToCommunity: "Topluluğa Dön",
+    writeComment: "Bir yorum yaz...",
+    postComment: "Yorumu Gönder",
+    noCommentsYet: "Henüz yorum yok. İlk fikrini paylaşan sen ol!",
+    commentsLabel: "Yorumlar",
+    upvote: "UPVOTE", // (Espor terminolojisi olduğu için Upvote kalabilir)
+    thread: "KONU",
+    comment: "YORUM",
+    noActivity: "Henüz bir etkileşim bulunmuyor.",
     newPassword: "Yeni Şifre",
     save: "Kaydet",
     cancel: "İptal",

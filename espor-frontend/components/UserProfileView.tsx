@@ -6,15 +6,7 @@ import { User, Settings, MessageSquare, ArrowBigUp, Shield, LogOut, Medal, Flame
 
 import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider"; 
-// 🚀 TIER 1 DÜZELTME: Supabase İstemcisi Şifre Güncelleme İçin Eklendi
 import { supabase } from "@/app/utils/supabaseClient"; 
-
-const MOCK_STATS = { threads: 0, comments: 0, upvotes: 0 };
-const MOCK_RECENT_ACTIVITY = [
-  { id: 1, type: 'thread', title: 'VCT EMEA Stage 2 Grand Finals Analizi', time: '2 gün önce', upvotes: 142 },
-  { id: 2, type: 'comment', title: 'Re: Son güncelleme sonrası subtick oranları...', time: '4 gün önce', upvotes: 15 },
-  { id: 3, type: 'thread', title: 'Yeni Meta: Çift Kontrol Uzmanı neden bu kadar güçlü?', time: '1 hafta önce', upvotes: 89 },
-];
 
 export default function UserProfileView() {
   const [activeTab, setActiveTab] = useState<'activity' | 'settings'>('activity');
@@ -23,17 +15,45 @@ export default function UserProfileView() {
   const router = useRouter();
   const { t, language } = useLanguage(); 
 
-  // 🚀 ŞİFRE DEĞİŞTİRME STATELERİ
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [isPassLoading, setIsPassLoading] = useState(false);
   const [passStatus, setPassStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+
+  const [userStats, setUserStats] = useState({ threads: 0, comments: 0, upvotes: 0 });
+  const [recentActivities, setRecentActivities] = useState<any[]>([]);
+  const [isStatsLoading, setIsStatsLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/');
     }
   }, [user, isLoading, router]);
+
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setIsStatsLoading(true);
+        const res = await fetch(`http://localhost:5000/api/users/${user.id}/profile`);
+        const json = await res.json();
+
+        if (json.success) {
+          setUserStats(json.data.stats);
+          setRecentActivities(json.data.recentActivity);
+        }
+      } catch (error) {
+        console.error("Profil istatistikleri çekilemedi:", error);
+      } finally {
+        setIsStatsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchProfileData();
+    }
+  }, [user]);
 
   if (isLoading || !user) {
     return (
@@ -43,7 +63,6 @@ export default function UserProfileView() {
     );
   }
 
-  // 🚀 ŞİFRE GÜNCELLEME FONKSİYONU
   const handlePasswordUpdate = async () => {
     if (newPassword.length < 6) {
       setPassStatus({ type: 'error', message: (t as any).passwordShort || 'Şifreniz en az 6 karakter olmalıdır.' });
@@ -53,7 +72,6 @@ export default function UserProfileView() {
     setIsPassLoading(true);
     setPassStatus({ type: null, message: '' });
 
-    // Supabase üzerinden şifre güncelleme isteği
     const { error } = await supabase.auth.updateUser({ password: newPassword });
 
     if (error) {
@@ -78,7 +96,6 @@ export default function UserProfileView() {
   return (
     <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in" style={{ background: 'var(--es-bg)' }}>
       
-      {/* 🌟 ÜST PROFİL HEADER */}
       <div className="shrink-0 px-8 py-10 border-b border-white/5 bg-es-bg-2 relative overflow-hidden">
         <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[100px] opacity-10 pointer-events-none transition-colors" style={{ background: '#00D4FF', transform: 'translate(20%, -40%)' }} />
@@ -109,19 +126,25 @@ export default function UserProfileView() {
 
           <div className="flex gap-3">
             <div className="flex flex-col items-center bg-slate-900/80 px-5 py-3 rounded-xl border border-white/5">
-              <span className="text-xl font-black text-white">{MOCK_STATS.upvotes}</span>
+              <span className="text-xl font-black text-white">
+                {isStatsLoading ? <Loader2 className="w-4 h-4 animate-spin text-slate-500" /> : userStats.upvotes}
+              </span>
               <span className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1">
                 <ArrowBigUp className="w-3 h-3"/> {(t as any).upvote || 'UPVOTE'}
               </span>
             </div>
             <div className="flex flex-col items-center bg-slate-900/80 px-5 py-3 rounded-xl border border-white/5">
-              <span className="text-xl font-black text-white">{MOCK_STATS.threads}</span>
+              <span className="text-xl font-black text-white">
+                {isStatsLoading ? <Loader2 className="w-4 h-4 animate-spin text-slate-500" /> : userStats.threads}
+              </span>
               <span className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1">
                 <Flame className="w-3 h-3"/> {(t as any).thread || 'KONU'}
               </span>
             </div>
             <div className="flex flex-col items-center bg-slate-900/80 px-5 py-3 rounded-xl border border-white/5">
-              <span className="text-xl font-black text-white">{MOCK_STATS.comments}</span>
+              <span className="text-xl font-black text-white">
+                {isStatsLoading ? <Loader2 className="w-4 h-4 animate-spin text-slate-500" /> : userStats.comments}
+              </span>
               <span className="text-[9px] font-bold text-slate-500 uppercase flex items-center gap-1">
                 <MessageSquare className="w-3 h-3"/> {(t as any).comment || 'YORUM'}
               </span>
@@ -130,7 +153,6 @@ export default function UserProfileView() {
         </div>
       </div>
 
-      {/* 🚀 SEKME BUTONLARI */}
       <div className="shrink-0 px-8 border-b border-white/5 bg-es-bg-2">
         <div className="max-w-5xl mx-auto flex gap-8">
           <button onClick={() => setActiveTab('activity')} className={`py-4 text-[11px] font-black uppercase tracking-widest transition-all relative flex items-center gap-2 ${activeTab === 'activity' ? 'text-white' : 'text-slate-500 hover:text-white'}`}>
@@ -144,7 +166,6 @@ export default function UserProfileView() {
         </div>
       </div>
 
-      {/* 🚀 İÇERİK ALANI */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
         <div className="max-w-5xl mx-auto">
           
@@ -154,25 +175,44 @@ export default function UserProfileView() {
                 <Medal className="w-4 h-4 text-es-cyan" /> {(t as any).recentActivities || 'Son Aktiviteler'}
               </h3>
               
-              {MOCK_RECENT_ACTIVITY.map((item) => (
-                <div key={item.id} className="bg-es-bg-2 p-5 rounded-xl border border-white/5 flex items-center justify-between hover:bg-white/5 transition-colors group cursor-pointer">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center text-slate-400">
-                      {item.type === 'thread' ? <Flame className="w-5 h-5 text-orange-400" /> : <MessageSquare className="w-5 h-5 text-blue-400" />}
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5">
-                        {item.type === 'thread' ? ((t as any).openedThread || 'Konu Açtı') : ((t as any).madeComment || 'Yorum Yaptı')} • {item.time}
-                      </span>
-                      <span className="text-sm font-bold text-white group-hover:text-es-cyan transition-colors">{item.title}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-slate-900 px-3 py-1.5 rounded-lg border border-white/5">
-                    <ArrowBigUp className="w-4 h-4 text-green-400" />
-                    <span className="text-xs font-black text-white">{item.upvotes}</span>
-                  </div>
+              {isStatsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-es-cyan" />
                 </div>
-              ))}
+              ) : recentActivities.length === 0 ? (
+                <div className="bg-es-bg-2 p-8 rounded-xl border border-white/5 flex flex-col items-center justify-center text-center">
+                  <History className="w-8 h-8 text-slate-600 mb-3" />
+                  <span className="text-sm font-bold text-slate-400">
+                    {(t as any).noActivity || 'Henüz bir etkileşim bulunmuyor.'}
+                  </span>
+                </div>
+              ) : (
+                recentActivities.map((item) => (
+                  <div 
+                    key={item.id} 
+                    onClick={() => router.push(`/community/${item.threadId}`)} // 🚀 TIER 1 DÜZELTME: Tıklanınca konuya gider
+                    className="bg-es-bg-2 p-5 rounded-xl border border-white/5 flex items-center justify-between hover:bg-white/5 hover:border-es-cyan/30 transition-all group cursor-pointer shadow-sm"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-lg bg-slate-900 border border-white/5 flex items-center justify-center text-slate-400 group-hover:text-es-cyan transition-colors">
+                        {item.type === 'thread' ? <Flame className="w-5 h-5 text-orange-400" /> : <MessageSquare className="w-5 h-5 text-blue-400" />}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-0.5">
+                          {item.type === 'thread' ? ((t as any).openedThread || 'Konu Açtı') : ((t as any).madeComment || 'Yorum Yaptı')} • {item.time}
+                        </span>
+                        <span className="text-sm font-bold text-white group-hover:text-es-cyan transition-colors">{item.title}</span>
+                      </div>
+                    </div>
+                    {item.type === 'thread' && (
+                      <div className="flex items-center gap-1.5 bg-slate-900 px-3 py-1.5 rounded-lg border border-white/5 group-hover:border-green-500/30 transition-colors">
+                        <ArrowBigUp className="w-4 h-4 text-green-400" />
+                        <span className="text-xs font-black text-white">{item.upvotes}</span>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           )}
 
@@ -194,7 +234,6 @@ export default function UserProfileView() {
 
               <div className="flex flex-col gap-6">
                 
-                {/* 🚀 DİNAMİK ŞİFRE DEĞİŞTİRME ALANI */}
                 <div className="bg-es-bg-2 p-6 rounded-xl border border-white/5 flex flex-col gap-4 shadow-lg transition-all">
                   <h3 className="text-sm font-black text-white uppercase tracking-widest mb-2 border-b border-white/5 pb-3">{(t as any).security || 'Güvenlik'}</h3>
                   

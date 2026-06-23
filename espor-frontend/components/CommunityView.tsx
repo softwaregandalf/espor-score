@@ -1,30 +1,40 @@
 "use client";
 
-import { useAuth } from "./AuthProvider"; // Supabase Auth Hook'u
-import { useState, useMemo } from "react";
-import { MessageSquare, ArrowBigUp, ArrowBigDown, Share2, MessageCircle, ShieldAlert, Sparkles, Flame, Trophy, HelpCircle, X, UserCheck } from "lucide-react";
+import Link from "next/link"; // 🚀 TIER 1 DÜZELTME: Link Eklendi
+import { useAuth } from "./AuthProvider"; 
+import { useState, useMemo, useEffect } from "react"; 
+import { useRouter } from "next/navigation"; 
+import { MessageSquare, ArrowBigUp, ArrowBigDown, Share2, MessageCircle, ShieldAlert, Sparkles, Flame, Trophy, HelpCircle, X, Loader2 } from "lucide-react"; 
 import { GAMES } from "@/app/data/mockData";
 import { useLanguage, TranslationKeys } from "./LanguageProvider"; 
+import AuthModal from "./AuthModal";
 
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', all: '#00D4FF' };
 
-const MOCK_THREADS = [
-  { id: 1, category: 'analytics', game: 'val', title: 'VCT EMEA Stage 2 Grand Finals Analizi: FNATIC stratejik olarak nerede hata yaptı?', author: 'TacticalMaster', avatar: 'TM', time: '2 hours ago', votes: 142, comments: 45, content: 'Ascent haritasındaki B savunmasında Viper perdelerinin zamanlaması tamamen yanlıştı. Sizce ana sebep neydi?' },
-  { id: 2, category: 'transfers', game: 'lol', title: '🚨 İDDİA: G2 Esports LoL takımında alt koridor için Asya pazarından bir isimle flörtleşiyor!', author: 'RumorMill', avatar: 'RM', time: '4 hours ago', votes: 310, comments: 89, content: 'Güvenilir kaynaklardan gelen bilgilere göre kontrat süreçleri başlamış durumda. Avrupa ekosistemi için devasa bir hamle olur.' },
-  { id: 3, category: 'patches', game: 'cs2', title: 'Son güncelleme sonrası subtick oranlarında ve mermi kaydolma (hitreg) sisteminde sorun yaşayan var mı?', author: 'GlobalElite99', avatar: 'GE', time: '1 day ago', votes: 85, comments: 120, content: 'Özellikle sprey atarken mermilerin gitmediği hissiyatı çok yoğun. Ping değerlerim normal olmasına rağmen bunu yaşıyorum.' },
-];
-
 export default function CommunityView() {
+  const router = useRouter(); 
   const { t, translateApiText, language } = useLanguage(); 
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // 🚀 TIER 1 DÜZELTME: signOut eklendi!
-  const { user, isLoading, signOut } = useAuth();
+  const { user } = useAuth(); 
   const isLoggedIn = !!user; 
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  const [showAuthModal, setShowAuthModal] = useState(false); 
+  const [showRealAuthModal, setShowRealAuthModal] = useState(false); 
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login'); 
   const [modalReasonKey, setModalReasonKey] = useState<TranslationKeys | ''>('');
+
+  const [threads, setThreads] = useState<any[]>([]);
+  const [isThreadsLoading, setIsThreadsLoading] = useState(true);
+  
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newThreadTitle, setNewThreadTitle] = useState('');
+  const [newThreadContent, setNewThreadContent] = useState('');
+  const [newThreadCategory, setNewThreadCategory] = useState('general');
+  const [newThreadGame, setNewThreadGame] = useState('all');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const FORUM_CATEGORIES = [
     { id: 'all', label: t.allTopics, icon: MessageCircle },
@@ -34,14 +44,83 @@ export default function CommunityView() {
     { id: 'general', label: t.generalChat, icon: HelpCircle },
   ];
 
+  const fetchThreads = async () => {
+    setIsThreadsLoading(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/community');
+      const json = await res.json();
+      if (json.success) {
+        setThreads(json.data);
+      }
+    } catch (error) {
+      console.error("Topluluk verileri çekilemedi:", error);
+    } finally {
+      setIsThreadsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchThreads();
+  }, []);
+
+  const handleCreateThread = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('http://localhost:5000/api/community', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newThreadTitle,
+          content: newThreadContent,
+          category: newThreadCategory,
+          gameSlug: newThreadGame,
+          authorId: user.id
+        })
+      });
+      
+      const json = await res.json();
+      if (json.success) {
+        setShowCreateModal(false);
+        setNewThreadTitle('');
+        setNewThreadContent('');
+        setNewThreadCategory('general');
+        setNewThreadGame('all');
+        fetchThreads(); 
+      }
+    } catch (error) {
+      console.error("Konu oluşturulamadı:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVote = async (threadId: number, value: number) => {
+    if (!user) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/${threadId}/vote`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, value })
+      });
+      if (res.ok) {
+        fetchThreads(); 
+      }
+    } catch (error) {
+      console.error("Oy işlemi başarısız:", error);
+    }
+  };
+
   const filteredThreads = useMemo(() => {
-    return MOCK_THREADS.filter(thread => {
+    return threads.filter(thread => {
       const matchCategory = selectedCategory === 'all' || thread.category === selectedCategory;
       const matchSearch = thread.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           thread.content.toLowerCase().includes(searchQuery.toLowerCase());
       return matchCategory && matchSearch;
-    }).sort((a, b) => b.votes - a.votes);
-  }, [selectedCategory, searchQuery]);
+    }).sort((a, b) => b.upvotes - a.upvotes); 
+  }, [selectedCategory, searchQuery, threads]);
 
   const handleAction = (reasonKey: TranslationKeys, callback: () => void) => {
     if (!isLoggedIn) {
@@ -102,7 +181,7 @@ export default function CommunityView() {
         <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-4">
           
           <div 
-            onClick={() => handleAction('actionStartDiscussion', () => alert(language === 'tr' ? 'Konu açma başarılı!' : 'Thread created!'))}
+            onClick={() => handleAction('actionStartDiscussion', () => setShowCreateModal(true))}
             className="p-4 rounded-xl border hover:opacity-80 transition-all cursor-pointer flex items-center justify-between group shadow-sm"
             style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}
           >
@@ -110,7 +189,11 @@ export default function CommunityView() {
             <button className="px-5 py-2 group-hover:bg-es-cyan group-hover:text-black text-[10px] font-black uppercase tracking-widest rounded-lg transition-colors border" style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>{t.createBtn}</button>
           </div>
 
-          {filteredThreads.length === 0 ? (
+          {isThreadsLoading ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-es-cyan" />
+            </div>
+          ) : filteredThreads.length === 0 ? (
             <div className="text-center py-20 font-bold uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>
               {language === 'tr' ? 'Bu panoda henüz konu açılmamış' : 'No topics found in this board'}
             </div>
@@ -120,15 +203,17 @@ export default function CommunityView() {
                 
                 <div className="w-12 border-r flex flex-col items-center pt-4 gap-1 select-none transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
                   <button 
-                    onClick={() => handleAction('actionVote', () => {})} 
+                    onClick={() => handleAction('actionVote', () => handleVote(thread.id, 1))} 
                     className="p-1 rounded hover:text-green-500 transition-colors" style={{ color: 'var(--es-text-3)' }}
+                    title={language === 'tr' ? 'Yukarı Oy' : 'Upvote'}
                   >
                     <ArrowBigUp className="w-5 h-5 fill-current" />
                   </button>
-                  <span className="text-xs font-black tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{thread.votes}</span>
+                  <span className="text-xs font-black tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{thread.upvotes}</span>
                   <button 
-                    onClick={() => handleAction('actionVote', () => {})} 
+                    onClick={() => handleAction('actionVote', () => handleVote(thread.id, -1))} 
                     className="p-1 rounded hover:text-red-500 transition-colors" style={{ color: 'var(--es-text-3)' }}
+                    title={language === 'tr' ? 'Aşağı Oy' : 'Downvote'}
                   >
                     <ArrowBigDown className="w-5 h-5 fill-current" />
                   </button>
@@ -136,24 +221,39 @@ export default function CommunityView() {
 
                 <div className="flex-1 p-5 flex flex-col gap-2 min-w-0">
                   <div className="flex items-center gap-2 text-[10px] font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>
-                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: GAME_COLORS[thread.game] }} />
-                    <span className="uppercase tracking-widest">{thread.game.toUpperCase()}</span>
+                    <div className="w-1.5 h-1.5 rounded-full" style={{ background: GAME_COLORS[thread.gameSlug] || GAME_COLORS.all }} />
+                    <span className="uppercase tracking-widest">{thread.gameSlug.toUpperCase()}</span>
                     <span>•</span>
-                    <span className="font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>{thread.author}</span>
-                    <span>{translateApiText(thread.time)}</span>
+                    <span className="font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>{thread.author?.nickname || 'Unknown'}</span>
+                    <span>{translateApiText(thread.timeAgo)}</span>
                   </div>
                   
-                  <h2 className="text-lg font-black tracking-tight leading-snug hover:text-es-cyan transition-colors cursor-pointer" style={{ color: 'var(--es-text-1)' }}>{thread.title}</h2>
+                  {/* 🚀 TIER 1 DÜZELTME: Konu başlığı Next.js Link yapısıyla sarıldı */}
+                  <Link href={`/community/${thread.id}`} className="block">
+                    <h2 className="text-lg font-black tracking-tight leading-snug hover:text-es-cyan transition-colors cursor-pointer" style={{ color: 'var(--es-text-1)' }}>
+                      {thread.title}
+                    </h2>
+                  </Link>
                   <p className="text-xs line-clamp-2 leading-relaxed transition-colors" style={{ color: 'var(--es-text-3)' }}>{thread.content}</p>
                   
                   <div className="flex items-center gap-6 mt-2 border-t pt-3 text-xs font-bold transition-colors" style={{ borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
+                    {/* 🚀 TIER 1 DÜZELTME: Yorum butonuna e.preventDefault eklendi */}
                     <button 
-                      onClick={() => handleAction('actionComment', () => {})} 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAction('actionComment', () => router.push(`/community/${thread.id}`));
+                      }} 
                       className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}
                     >
-                      <MessageSquare className="w-4 h-4" /> {thread.comments} {t.commentStr}
+                      <MessageSquare className="w-4 h-4" /> {thread.commentCount} {(t as any).comment || 'Yorum'}
                     </button>
-                    <button className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}>
+                    <button 
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/community/${thread.id}`);
+                        alert(language === 'tr' ? 'Konu bağlantısı kopyalandı!' : 'Thread link copied!');
+                      }}
+                      className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}
+                    >
                       <Share2 className="w-4 h-4" /> {t.shareStr}
                     </button>
                   </div>
@@ -184,10 +284,10 @@ export default function CommunityView() {
             </p>
 
             <div className="flex flex-col gap-3 w-full">
-              <button onClick={() => setShowAuthModal(false)} className="w-full py-3 rounded-xl bg-es-cyan hover:bg-white text-black text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-es-cyan/10">
+              <button onClick={() => { setShowAuthModal(false); setAuthMode('register'); setShowRealAuthModal(true); }} className="w-full py-3 rounded-xl bg-es-cyan hover:bg-white text-black text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-es-cyan/10">
                 {t.createAccount}
               </button>
-              <button onClick={() => setShowAuthModal(false)} className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border hover:opacity-80" style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>
+              <button onClick={() => { setShowAuthModal(false); setAuthMode('login'); setShowRealAuthModal(true); }} className="w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all border hover:opacity-80" style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>
                 {t.login}
               </button>
             </div>
@@ -195,6 +295,84 @@ export default function CommunityView() {
         </div>
       )}
 
+      {showCreateModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] animate-fade-in p-4">
+          <div className="p-8 rounded-2xl border max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col transition-colors" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+            <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+            <button onClick={() => setShowCreateModal(false)} className="absolute top-4 right-4 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}><X className="w-5 h-5" /></button>
+
+            <h3 className="text-xl font-black tracking-tight mb-6 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+              {language === 'tr' ? 'Yeni Konu Aç' : 'Start a New Discussion'}
+            </h3>
+
+            <form onSubmit={handleCreateThread} className="flex flex-col gap-4 relative z-10">
+              <input
+                type="text"
+                required
+                value={newThreadTitle}
+                onChange={e => setNewThreadTitle(e.target.value)}
+                placeholder={language === 'tr' ? 'Konu Başlığı' : 'Thread Title'}
+                className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border shadow-inner"
+                style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
+              />
+
+              <div className="flex gap-4">
+                <select
+                  value={newThreadCategory}
+                  onChange={e => setNewThreadCategory(e.target.value)}
+                  className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border cursor-pointer"
+                  style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
+                >
+                  {FORUM_CATEGORIES.filter(c => c.id !== 'all').map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={newThreadGame}
+                  onChange={e => setNewThreadGame(e.target.value)}
+                  className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border cursor-pointer"
+                  style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
+                >
+                  <option value="all">{language === 'tr' ? 'Genel (Tümü)' : 'General (All)'}</option>
+                  {GAMES.map(game => (
+                    <option key={game.id} value={game.id}>{game.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <textarea
+                required
+                value={newThreadContent}
+                onChange={e => setNewThreadContent(e.target.value)}
+                placeholder={language === 'tr' ? 'Ne düşünüyorsun?' : 'What are your thoughts?'}
+                className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border min-h-[150px] resize-y shadow-inner custom-scrollbar"
+                style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
+              />
+
+              <div className="flex gap-3 mt-2">
+                <button 
+                  type="button" 
+                  onClick={() => setShowCreateModal(false)}
+                  className="flex-1 py-3 rounded-xl border text-xs font-black uppercase tracking-widest transition-all hover:opacity-80"
+                  style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}
+                >
+                  {language === 'tr' ? 'İptal' : 'Cancel'}
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="flex-[2] py-3 rounded-xl bg-es-cyan hover:bg-white text-black text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-es-cyan/20 flex justify-center items-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (language === 'tr' ? 'Gönder' : 'Post')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <AuthModal isOpen={showRealAuthModal} onClose={() => setShowRealAuthModal(false)} initialMode={authMode} />
     </div>
   );
 }

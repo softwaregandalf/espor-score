@@ -8,6 +8,8 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import axios from 'axios'; // Dışarıdan veri çekmek için eklendi
+import userRoutes from './routes/userRoutes';
+import communityRoutes from './routes/communityRoutes';
 
 dotenv.config();
 
@@ -34,6 +36,9 @@ const prisma = new PrismaClient({ adapter });
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+app.use('/api/users', userRoutes(prisma));
+app.use('/api/community', communityRoutes(prisma));
 
 // WebSockets Bağlantı Dinleyicisi
 io.on("connection", (socket) => {
