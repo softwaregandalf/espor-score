@@ -22,7 +22,7 @@ const ENRICHED_MATCHES = [
 ];
 
 export default function ResultsView() {
-  const { t, translateApiText, language } = useLanguage(); 
+  const { t, translateApiText } = useLanguage(); 
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGame, setSelectedGame] = useState<string>('all');
@@ -105,7 +105,7 @@ export default function ResultsView() {
                 </div>
                 <div className="text-6xl font-black tracking-tighter score-display tabular-nums leading-none mb-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>{selectedMatch.team1.score} <span className="mx-2 transition-colors" style={{ color: 'var(--es-text-3)' }}>:</span> {selectedMatch.team2.score}</div>
                 <button onClick={() => setViewMode('analysis')} className="mt-4 px-6 py-2.5 rounded-full text-[10px] font-black flex items-center gap-2 uppercase tracking-widest transition-all hover:scale-105 active:scale-95 shadow-xl" style={{ background: '#4D7CFE', color: 'white', boxShadow: `0 0 20px rgba(77, 124, 254, 0.4)` }}>
-                  <BarChart3 className="w-4 h-4" /> {language === 'tr' ? 'Tüm İstatistikler' : 'Full Stats'}
+                  <BarChart3 className="w-4 h-4" /> {t.fullStats}
                 </button>
               </div>
               <div className="flex flex-col items-center gap-4 w-48 shrink-0">
@@ -134,7 +134,7 @@ export default function ResultsView() {
                      <h4 className="text-xs font-bold mb-4 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}><Info className="w-4 h-4" style={{ color: gameColor }}/> {t.matchInfo}</h4>
                      <div className="space-y-3">
                        <div className="flex justify-between"><span className="text-xs transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.tournament}</span><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{selectedMatch.tournament}</span></div>
-                       <div className="flex justify-between"><span className="text-xs transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Tarih' : 'Date'}</span><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{translateApiText(selectedMatch.dateKey)}, {selectedMatch.displayTime}</span></div>
+                       <div className="flex justify-between"><span className="text-xs transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.date}</span><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{translateApiText(selectedMatch.dateKey)}, {selectedMatch.displayTime}</span></div>
                      </div>
                    </div>
                    <div className="rounded-xl p-6 shadow-lg flex flex-col justify-center transition-colors" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
@@ -152,9 +152,9 @@ export default function ResultsView() {
                        <h4 className="text-xs font-bold mb-4 flex items-center justify-between transition-colors">
                          <div className="flex items-center gap-2" style={{ color: 'var(--es-text-1)' }}>
                            {isLive ? <Radio className="w-4 h-4 text-red-500"/> : isCompleted ? <MonitorPlay className="w-4 h-4 text-es-cyan"/> : <Clock className="w-4 h-4" style={{ color: 'var(--es-text-3)' }}/>}
-                           {isLive ? t.liveStreams : isCompleted ? (language === 'tr' ? 'Özetler & Tekrarlar' : 'VODs & Replays') : (language === 'tr' ? 'Yayın Kanalları (Yakında)' : 'Broadcast Channels (Soon)')}
+                           {isLive ? t.liveStreams : isCompleted ? t.vodsAndReplays : t.broadcastChannelsSoon}
                          </div>
-                         {activeVideo && <span onClick={() => setActiveVideo(null)} className="text-[10px] cursor-pointer uppercase font-black transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Kapat' : 'Close'}</span>}
+                         {activeVideo && <span onClick={() => setActiveVideo(null)} className="text-[10px] cursor-pointer uppercase font-black transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}>{t.closeLabel}</span>}
                        </h4>
 
                        <div className="flex gap-4">
@@ -162,11 +162,11 @@ export default function ResultsView() {
                              <>
                                <div className="flex-1 flex items-center justify-between p-3 rounded-lg opacity-50 cursor-not-allowed transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
                                  <div className="flex items-center gap-3"><div className="w-8 h-8 rounded flex items-center justify-center bg-purple-500/20 text-purple-500"><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>Twitch</span></div>
-                                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bekleniyor' : 'Waiting'}</span>
+                                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{t.waiting}</span>
                                </div>
                                <div className="flex-1 flex items-center justify-between p-3 rounded-lg opacity-50 cursor-not-allowed transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
                                  <div className="flex items-center gap-3"><div className="w-8 h-8 rounded flex items-center justify-center bg-red-500/20 text-red-500"><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>YouTube</span></div>
-                                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bekleniyor' : 'Waiting'}</span>
+                                 <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{t.waiting}</span>
                                </div>
                              </>
                           ) : (
@@ -176,7 +176,7 @@ export default function ResultsView() {
                                  {isLive ? (
                                      <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold" style={{ color: 'var(--es-text-3)' }}>112K</span></div>
                                  ) : (
-                                     <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-500/10 px-2 py-1 rounded">VOD {language === 'tr' ? 'İzle' : 'Watch'}</span>
+                                     <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-500/10 px-2 py-1 rounded">VOD {t.vodWatch}</span>
                                  )}
                                </button>
                                <button onClick={() => setActiveVideo('youtube')} className={`flex-1 flex items-center justify-between p-3 rounded-lg transition-all border group cursor-pointer ${activeVideo === 'youtube' ? 'bg-red-500/10 border-red-500/50' : 'hover:border-red-500/30'}`} style={{ background: activeVideo === 'youtube' ? '' : 'var(--es-surface)', borderColor: activeVideo === 'youtube' ? '' : 'var(--es-border)' }}>
@@ -184,7 +184,7 @@ export default function ResultsView() {
                                  {isLive ? (
                                      <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold" style={{ color: 'var(--es-text-3)' }}>75K</span></div>
                                  ) : (
-                                     <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-2 py-1 rounded">{language === 'tr' ? 'Özet İzle' : 'Highlights'}</span>
+                                     <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-2 py-1 rounded">{t.highlights}</span>
                                  )}
                                </button>
                              </>
@@ -199,9 +199,9 @@ export default function ResultsView() {
                              <MonitorPlay className="w-8 h-8 text-white" />
                            </div>
                            <span className="text-sm font-black text-white uppercase tracking-widest">
-                             {isLive ? `${activeVideo} ${language === 'tr' ? 'Yayını Başlatılıyor...' : 'Stream Starting...'}` : `${activeVideo} ${language === 'tr' ? 'Özeti Yükleniyor...' : 'VOD Loading...'}`}
+                             {isLive ? `${activeVideo} ${t.streamStarting}` : `${activeVideo} ${t.vodLoading}`}
                            </span>
-                           <span className="text-xs mt-2" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bağlantı bekleniyor' : 'Awaiting connection'}</span>
+                           <span className="text-xs mt-2" style={{ color: 'var(--es-text-3)' }}>{t.awaitingConnection}</span>
                          </div>
                        </div>
                      )}
@@ -214,7 +214,7 @@ export default function ResultsView() {
                           <div className="absolute inset-0 cyber-grid opacity-10" />
                           <Flame className="w-12 h-12 text-blue-500 mb-4 animate-pulse relative z-10" />
                           <span className="text-2xl font-black tracking-tighter relative z-10 transition-colors" style={{ color: 'var(--es-text-1)' }}>REDBULL <span className="text-blue-500">GAMING</span></span>
-                          <span className="text-xs font-bold mt-2 relative z-10 transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Kanatlandırır.' : 'Gives you wings.'}</span>
+                          <span className="text-xs font-bold mt-2 relative z-10 transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.givesYouWings}</span>
                         </div>
                         <div className="h-10 border-t flex items-center justify-center transition-colors" style={{ background: 'rgba(77, 124, 254, 0.1)', borderColor: 'rgba(77, 124, 254, 0.2)' }}>
                           <span className="text-[10px] font-black text-blue-500 uppercase tracking-widest transition-colors">{t.seeMore}</span>
@@ -226,8 +226,6 @@ export default function ResultsView() {
                </div>
              )}
              {standardTab === 'lineups' && <MatchScoreboard match={selectedMatch} gameColor={gameColor} />}
-             
-             {/* 🚀 İSTATİSTİK YAZISI BURADA DÜZELTİLDİ */}
              {standardTab === 'stats' && <div className="text-center py-20 font-black uppercase tracking-widest animate-fade-in border border-dashed rounded-xl transition-colors" style={{ color: 'var(--es-text-3)', borderColor: 'var(--es-border)' }}>{t.statsCompiling}</div>}
            </div>
         </div>
@@ -235,7 +233,6 @@ export default function ResultsView() {
     );
   }
 
-  // --- 🏠 ANA LİSTE EKRANI (TARİHE GÖRE GRUPLANMIŞ) ---
   return (
     <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in transition-colors" style={{ background: 'var(--es-bg)' }}>
       <div className="shrink-0 p-8 border-b relative overflow-hidden transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
@@ -253,7 +250,20 @@ export default function ResultsView() {
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 p-1.5 rounded-xl transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-              <button onClick={() => setSelectedGame('all')} className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" style={{ background: selectedGame === 'all' ? 'var(--es-surface-2)' : 'transparent', color: selectedGame === 'all' ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>{t.all}</button>
+              
+              {/* 🚀 TIER 1 DÜZELTME: "TÜMÜ" Butonu Renk Optimizasyonu */}
+              <button 
+                onClick={() => setSelectedGame('all')} 
+                className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" 
+                style={{ 
+                  background: selectedGame === 'all' ? 'rgba(0, 212, 255, 0.1)' : 'transparent', 
+                  color: selectedGame === 'all' ? '#00D4FF' : 'var(--es-text-3)',
+                  border: selectedGame === 'all' ? '1px solid rgba(0, 212, 255, 0.2)' : '1px solid transparent'
+                }}
+              >
+                {t.all}
+              </button>
+
               {GAMES.filter(g => ALLOWED_GAMES.includes(g.id)).map(game => (
                 <button key={game.id} onClick={() => setSelectedGame(game.id)} className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:opacity-80" style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>
                   <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
@@ -269,7 +279,7 @@ export default function ResultsView() {
           {Object.keys(groupedMatches).length === 0 ? (
             <div className="text-center py-20 flex flex-col items-center gap-4 transition-colors" style={{ color: 'var(--es-text-3)' }}>
               <Filter className="w-12 h-12 opacity-20" />
-              <div className="text-lg font-black uppercase tracking-widest">Sonuç Bulunamadı</div>
+              <div className="text-lg font-black uppercase tracking-widest">{t.noResultsFound}</div>
             </div>
           ) : (
             Object.entries(groupedMatches).map(([date, matches], index) => (
@@ -290,7 +300,7 @@ export default function ResultsView() {
 
                 <h2 className="text-sm font-black uppercase tracking-widest mb-4 border-b pb-2 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>
                   <Calendar className="w-4 h-4" style={{ color: 'var(--es-text-3)' }} />
-                  {translateApiText(date)} {language === 'tr' ? 'Sonuçları' : 'Results'}
+                  {translateApiText(date)} {t.dateResultsSuffix}
                 </h2>
                 
                 <div className="flex flex-col gap-3">

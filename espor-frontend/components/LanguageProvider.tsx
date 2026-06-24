@@ -1,482 +1,74 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import {
+  translations,
+  detectBrowserLanguage,
+  getApiTermDictionary,
+  isValidLanguage,
+  type Language,
+  type TranslationKeys,
+  type Translations,
+} from "@/i18n";
 
-type Language = 'tr' | 'en';
-
-export const translations = {
-  en: {
-    backToCommunity: "Back to Community",
-    writeComment: "Write a comment...",
-    postComment: "Post Comment",
-    noCommentsYet: "No comments yet. Be the first to share your thoughts!",
-    commentsLabel: "Comments",
-    upvote: "UPVOTE",
-    thread: "THREAD",
-    comment: "COMMENT",
-    noActivity: "No interactions found yet.",
-    newPassword: "New Password",
-    save: "Save",
-    cancel: "Cancel",
-    passwordUpdated: "Password updated successfully!",
-    passwordShort: "Password must be at least 6 characters.",
-    communityInteractions: "Community Interactions",
-    accountSettings: "Account Settings",
-    recentActivities: "Recent Activities",
-    profileInfo: "Profile Information",
-    usernameLabel: "Username",
-    emailAddressLabel: "Email Address",
-    accountLockedNote: "Note: Account details are currently locked for your security.",
-    security: "Security",
-    changePassword: "Change Password",
-    dangerZone: "Danger Zone",
-    openedThread: "Started a Thread",
-    madeComment: "Made a Comment",
-    upvoteLabel: "Upvote",
-    threadLabel: "Thread",
-    commentLabel: "Comment",
-    profile: "Profile",
-    logout: "Log Out",
-    errorUserTaken: "This username or email is already registered.",
-    liveMatches: "Live Matches",
-    results: "Results",
-    tournaments: "Tournaments",
-    teams: "Teams",
-    topPlayer: "Top Players",
-    news: "News",
-    community: "Community",
-    games: "Games",
-    menu: "Menu",
-    adminUser: "Admin User",
-    proMember: "PRO Member",
-    searchPlaceholder: "Search team, tournament or player...",
-    searchMatch: "Search match or team...",
-    communityForum: "COMMUNITY (FORUM)",
-    sponsored: "SPONSORED",
-    seeMore: "SEE MORE",
-    live: "LIVE",
-    upcoming: "UPCOMING",
-    finishedToday: "FINISHED TODAY",
-    favorites: "FAVORITES",
-    favoriteMatchesTitle: "Favorite Matches",
-    notification: "NOTIFICATION",
-    now: "NOW",
-    backToMain: "BACK TO MAIN FEED",
-    backToResults: "BACK TO RESULTS",
-    overview: "OVERVIEW",
-    lineups: "LINEUPS & VETO",
-    statistics: "STATISTICS",
-    matchInfo: "Match Information",
-    tournament: "Tournament",
-    stage: "Stage",
-    format: "Format",
-    location: "LOCATION",
-    prizePool: "PRIZE POOL",
-    teamForm: "Team Form (Last 5)",
-    liveStreams: "Live Streams",
-    officialStream: "Official Stream",
-    dayOn: "Day: ON",
-    nightOn: "Night: ON",
-    picks: "Picks",
-    gameStr: "Game",
-    completed: "COMPLETED",
-    player: "PLAYER",
-    champion: "CHAMPION",
-    gold: "GOLD",
-    vision: "VISION",
-    resultsArchiveTitle: "Match Results Archive",
-    resultsArchiveDesc: "All past esports matches, detailed statistics, and P&B analysis.",
-    all: "ALL",
-    view: "VIEW",
-    sponsoredRecommendation: "SPONSORED RECOMMENDATION",
-    betPromoTitle: "Join BetArena for Betting Odds and Live Analysis!",
-    betPromoDesc: "A special 1000 TL welcome bonus awaits new members.",
-    playNow: "PLAY NOW",
-    vetoStage: "VETO STAGE",
-    map: "MAP",
-    agent: "AGENT",
-    role: "ROLE",
-    hero: "HERO",
-    banned: "Banned",
-    picked: "Picked",
-    left: "Left",
-    statsCompiling: "In-match comparative statistics are being compiled...",
-    tournamentsTitle: "Esports Tournaments",
-    tournamentsDesc: "Follow official leagues, championships, and qualifiers worldwide.",
-    ongoingTourneys: "ONGOING",
-    upcomingTourneys: "UPCOMING",
-    completedTourneys: "CONCLUDED",
-    date: "DATE",
-    teamCount: "TEAMS",
-    tournamentDetails: "TOURNAMENT DETAILS",
-    teamsText: "Teams",
-    worldTeamRankings: "World Team Rankings",
-    teamRankingsDesc: "The most up-to-date global and regional power rankings in the ecosystem.",
-    searchTeamInput: "Search team...",
-    detailedFilter: "Detailed Filter",
-    points: "PTS",
-    seeAllRegion: "SEE ALL",
-    rankingsStr: "RANKINGS",
-    globalPlayerRankings: "Global Player Rankings",
-    playerRankingsDesc: "Top players standing out with individual statistics and ratings in the arena.",
-    searchPlayerInput: "Search player...",
-    rankCol: "RANK",
-    playerCol: "PLAYER",
-    teamCol: "TEAM",
-    profileCol: "PROFILE",
-    inspect: "INSPECT",
-    backToTeam: "BACK TO TEAM",
-    backToTopPlayers: "BACK TO TOP PLAYERS",
-    joinedTeam: "Joined:",
-    mostPlayedAgents: "Most Played Agents",
-    mostPlayedChampions: "Most Played Champions",
-    mostPlayedRoles: "Most Played Roles",
-    pickRate: "Pick %",
-    matches: "Matches",
-    recentMatchesTitle: "Recent Matches",
-    estTotalWinnings: "Est. Total Winnings",
-    careerSuccess: "Career Achievements",
-    pastTeams: "Past Teams",
-    leftTeam: "Left:",
-    vsStr: "vs",
-    backToRankings: "BACK TO RANKINGS",
-    founded: "Founded:",
-    globalRank: "GLOBAL RANK",
-    teamPoints: "POINTS",
-    activeRoster: "ACTIVE ROSTER",
-    teamStats: "STATISTICS",
-    startingLineup: "STARTING LINEUP",
-    allTimeWinRate: "All-Time Win Rate",
-    strongestMaps: "Strongest Maps",
-    scoreStr: "Score",
-    seeAllMatchHistory: "See Full Match History",
-    winRate: "Win Rate",
-    esportsNews: "Esports News",
-    esportsNewsDesc: "Breaking news, analysis, and updates from the esports world.",
-    trending: "Trending",
-    newsOfTheDay: "STORY OF THE DAY",
-    readMore: "Read More",
-    moreNews: "MORE NEWS",
-    communityHub: "Community Hub",
-    communityDesc: "Share your ideas, join discussions, and shape the esports ecosystem.",
-    searchDiscussion: "Search discussions or topics...",
-    boards: "BOARDS",
-    allTopics: "ALL TOPICS",
-    transferRumors: "TRANSFER RUMORS",
-    tournamentAnalysis: "TOURNAMENT ANALYSIS",
-    patchesMeta: "GAME PATCHES & META",
-    generalChat: "GENERAL CHAT",
-    startDiscussion: "Start a new discussion or ask a question...",
-    createBtn: "CREATE",
-    commentStr: "Comments",
-    shareStr: "Share",
-    simulationMode: "SIMULATION MODE",
-    visitorMode: "VISITOR MODE",
-
-    // 🚀 ERİŞİM ENGELLENDİ MODALI VE AKSİYONLAR İÇİN EKLENENLER
-    actionStartDiscussion: "starting a new discussion",
-    actionVote: "voting on this thread",
-    actionComment: "viewing and writing comments",
-    accessDenied: "Access Denied",
-    authWallDesc1: "You must have a Nexus Pro account for ",
-    authWallDesc2: ". You can activate all platform features as a free member.",
-    createAccount: "Create Account",
-    login: "Log In",
-  },
-  tr: {
-    backToCommunity: "Topluluğa Dön",
-    writeComment: "Bir yorum yaz...",
-    postComment: "Yorumu Gönder",
-    noCommentsYet: "Henüz yorum yok. İlk fikrini paylaşan sen ol!",
-    commentsLabel: "Yorumlar",
-    upvote: "UPVOTE", // (Espor terminolojisi olduğu için Upvote kalabilir)
-    thread: "KONU",
-    comment: "YORUM",
-    noActivity: "Henüz bir etkileşim bulunmuyor.",
-    newPassword: "Yeni Şifre",
-    save: "Kaydet",
-    cancel: "İptal",
-    passwordUpdated: "Şifreniz başarıyla güncellendi!",
-    passwordShort: "Şifreniz en az 6 karakter olmalıdır.",
-    communityInteractions: "Topluluk Etkileşimleri",
-    accountSettings: "Hesap Ayarları",
-    recentActivities: "Son Aktiviteler",
-    profileInfo: "Profil Bilgileri",
-    usernameLabel: "Kullanıcı Adı",
-    emailAddressLabel: "E-posta Adresi",
-    accountLockedNote: "Not: Hesap bilgileri güvenliğiniz için şu an kilitlidir.",
-    security: "Güvenlik",
-    changePassword: "Şifre Değiştir",
-    dangerZone: "Tehlikeli Bölge",
-    openedThread: "Konu Açtı",
-    madeComment: "Yorum Yaptı",
-    upvoteLabel: "Destek Oyu",
-    threadLabel: "Konu",
-    commentLabel: "Yorum",
-    profile: "Profil",
-    logout: "Çıkış Yap",
-    errorUserTaken: "Bu kullanıcı adı veya e-posta adresi zaten kullanılıyor.",
-    liveMatches: "Canlı Maçlar",
-    results: "Sonuçlar",
-    tournaments: "Turnuvalar",
-    teams: "Takımlar",
-    topPlayer: "En İyi Oyuncular",
-    news: "Haberler",
-    community: "Topluluk",
-    games: "Oyunlar",
-    menu: "Menü",
-    adminUser: "Admin User",
-    proMember: "PRO Üye",
-    searchPlaceholder: "Takım, turnuva veya oyuncu ara...",
-    searchMatch: "Maç veya takım ara...",
-    communityForum: "TOPLULUK (FORUM)",
-    sponsored: "SPONSORLU",
-    seeMore: "DAHA FAZLA BİLGİ",
-    live: "CANLI",
-    upcoming: "YAKLAŞAN",
-    finishedToday: "BUGÜN BİTENLER",
-    favorites: "FAVORİLER",
-    favoriteMatchesTitle: "Favori Maçlarım",
-    notification: "BİLDİRİMİ",
-    now: "ŞİMDİ",
-    backToMain: "ANA AKIŞA DÖN",
-    backToResults: "SONUÇLARA DÖN",
-    overview: "GENEL BAKIŞ",
-    lineups: "KADROLAR & VETO",
-    statistics: "İSTATİSTİKLER",
-    matchInfo: "Maç Bilgileri",
-    tournament: "Turnuva",
-    stage: "Aşama",
-    format: "Format",
-    location: "KONUM",
-    prizePool: "ÖDÜL HAVUZU",
-    teamForm: "Takım Formu (Son 5)",
-    liveStreams: "Canlı Yayınlar",
-    officialStream: "Resmi Yayın",
-    dayOn: "Gündüz: AÇIK",
-    nightOn: "Gece: AÇIK",
-    picks: "Seçimleri",
-    gameStr: "Oyun",
-    completed: "TAMAMLANDI",
-    player: "OYUNCU",
-    champion: "ŞAMPİYON",
-    gold: "ALTIN",
-    vision: "GÖRÜŞ",
-    resultsArchiveTitle: "Maç Sonuçları Arşivi",
-    resultsArchiveDesc: "Geçmiş tüm e-spor karşılaşmaları, detaylı istatistikler ve P&B analizleri.",
-    all: "TÜMÜ",
-    view: "GÖRÜNTÜLE",
-    sponsoredRecommendation: "SPONSORLU TAVSİYE",
-    betPromoTitle: "Bahis Oranları ve Canlı Analizler için BetArena'ya Katıl!",
-    betPromoDesc: "Yeni üyelere özel 1000 TL hoşgeldin bonusu seni bekliyor.",
-    playNow: "ŞİMDİ OYNA",
-    vetoStage: "VETO AŞAMASI",
-    map: "HARİTA",
-    agent: "AJAN",
-    role: "ROL",
-    hero: "KAHRAMAN",
-    banned: "Yasakladı",
-    picked: "Seçti",
-    left: "Kaldı",
-    statsCompiling: "Maç içi karşılaştırmalı istatistikler derleniyor...",
-    tournamentsTitle: "E-Spor Turnuvaları",
-    tournamentsDesc: "Dünya çapındaki resmi ligleri, şampiyonaları ve eleme aşamalarını takip edin.",
-    ongoingTourneys: "DEVAM EDENLER",
-    upcomingTourneys: "YAKLAŞANLAR",
-    completedTourneys: "SONUÇLANANLAR",
-    date: "TARİH",
-    teamCount: "TAKIM SAYISI",
-    tournamentDetails: "TURNUVA DETAYLARI",
-    teamsText: "Takım",
-    worldTeamRankings: "Dünya Takım Sıralamaları",
-    teamRankingsDesc: "Ekosistemdeki en güncel global ve bölgesel güç sıralamaları.",
-    searchTeamInput: "Takım ara...",
-    detailedFilter: "Detaylı Filtre",
-    points: "PUAN",
-    seeAllRegion: "TÜM",
-    rankingsStr: "SIRALAMASINI GÖR",
-    globalPlayerRankings: "Global Oyuncu Sıralamaları",
-    playerRankingsDesc: "arenasında bireysel istatistikleri ve ratingleri ile öne çıkan en iyi oyuncular.",
-    searchPlayerInput: "Oyuncu ara...",
-    rankCol: "SIRA",
-    playerCol: "OYUNCU",
-    teamCol: "TAKIM",
-    profileCol: "PROFİL",
-    inspect: "İNCELE",
-    backToTeam: "TAKIMA DÖN",
-    backToTopPlayers: "EN İYİ OYUNCULARA DÖN",
-    joinedTeam: "Katılım:",
-    mostPlayedAgents: "En Çok Oynanan Ajanlar",
-    mostPlayedChampions: "En Çok Oynanan Şampiyonlar",
-    mostPlayedRoles: "En Çok Oynanan Roller",
-    pickRate: "Seçim %",
-    matches: "Maç",
-    recentMatchesTitle: "Son Karşılaşmalar",
-    estTotalWinnings: "Tahmini Toplam Kazanç",
-    careerSuccess: "Kariyer Başarıları",
-    pastTeams: "Geçmiş Takımlar",
-    leftTeam: "Ayrıldı:",
-    vsStr: "vs",
-    backToRankings: "SIRALAMALARA DÖN",
-    founded: "Kurulum:",
-    globalRank: "GLOBAL SIRA",
-    teamPoints: "PUAN",
-    activeRoster: "AKTİF KADRO",
-    teamStats: "İSTATİSTİKLER",
-    startingLineup: "ANA KADRO (STARTING LINEUP)",
-    allTimeWinRate: "Tüm Zamanlar Kazanma Oranı",
-    strongestMaps: "En Güçlü Haritalar",
-    scoreStr: "Skor",
-    seeAllMatchHistory: "Tüm Maç Geçmişini Gör",
-    winRate: "Kazanma Oranı",
-    esportsNews: "E-Spor Haberleri",
-    esportsNewsDesc: "E-spor dünyasından son dakika haberleri, analizler ve güncellemeler.",
-    trending: "Trendler",
-    newsOfTheDay: "GÜNÜN HABERİ",
-    readMore: "Devamını Oku",
-    moreNews: "DAHA FAZLA HABER",
-    communityHub: "Merkez Topluluk",
-    communityDesc: "Fikirlerini paylaş, tartışmalara katıl ve espor ekosistemini yönlendir.",
-    searchDiscussion: "Tartışma veya başlık ara...",
-    boards: "PANOLAR",
-    allTopics: "TÜM KONULAR",
-    transferRumors: "TRANSFER DEDİKODULARI",
-    tournamentAnalysis: "TURNUVA ANALİZLERİ",
-    patchesMeta: "OYUN YAMALARI & META",
-    generalChat: "GENEL SOHBET",
-    startDiscussion: "Yeni bir tartışma konusu başlat veya soru sor...",
-    createBtn: "OLUŞTUR",
-    commentStr: "Yorum",
-    shareStr: "Paylaş",
-    simulationMode: "SİMÜLASYON MODU",
-    visitorMode: "ZİYARETÇİ MODU",
-
-    // 🚀 ERİŞİM ENGELLENDİ MODALI VE AKSİYONLAR İÇİN EKLENENLER
-    actionStartDiscussion: "yeni bir tartışma konusu açmak",
-    actionVote: "bu konuyu oylamak",
-    actionComment: "yorumları görmek ve cevap yazmak",
-    accessDenied: "Erişim Engellendi",
-    authWallDesc1: "Sitede ",
-    authWallDesc2: " için bir Nexus Pro hesabına sahip olmanız gerekmektedir. Ücretsiz üye olarak tüm platform özelliklerini aktif edebilirsiniz.",
-    createAccount: "Hesap Oluştur",
-    login: "Giriş Yap",
-  }
-};
-
-const apiTermDictionary: Record<string, string> = {
-  "Regular Season": "Normal Sezon",
-  "Group Stage": "Grup Aşaması",
-  "Playoffs": "Playofflar",
-  "Qualifier": "Elemeler",
-  "Global (Online)": "Global (Çevrimiçi)",
-  "Tier": "Seviye", 
-  
-  "Quarterfinal": "Çeyrek Final",
-  "Quarterfinals": "Çeyrek Final",
-  "Çeyrek Final": "Çeyrek Final",
-  "Semifinal": "Yarı Final",
-  "Semifinals": "Yarı Final",
-  "Yarı Final": "Yarı Final",
-  "Grand Final": "Büyük Final",
-  "Grand Finals": "Büyük Final",
-  "Büyük Final": "Büyük Final",
-  
-  "World": "Dünya",
-  "Europe": "Avrupa",
-  "North America": "Kuzey Amerika",
-  "Brazil": "Brezilya",
-  "Asia-Pacific": "Asya-Pasifik",
-  "Korea": "Kore",
-  "China": "Çin",
-
-  "France": "Fransa",
-  "United Kingdom": "Birleşik Krallık",
-  "United States": "Amerika Birleşik Devletleri",
-  "Argentina": "Arjantin",
-  "Singapore": "Singapur",
-  "Turkey": "Türkiye",
-  
-  "Duelist": "Düellocu",
-  "Initiator": "Öncü",
-  "Sentinel": "Gözcü",
-  "Controller": "Kontrol Uzmanı",
-  "Rifler": "Tüfekçi",
-  "AWPer": "Keskin Nişancı",
-  "Sniper": "Keskin Nişancı",
-  "Entry": "Giriş",
-  "IGL": "Oyun İçi Lider",
-  "Top": "Üst Koridor",
-  "Jungle": "Ormancı",
-  "Mid": "Orta Koridor",
-  "ADC": "Nişancı",
-  "Support": "Destek",
-  "Carry": "Taşıyıcı",
-  "Offlane": "Offlane",
-  "Lurker": "Lurker", 
-  
-  "January": "Ocak", "February": "Şubat", "March": "Mart", "April": "Nisan", 
-  "May": "Mayıs", "June": "Haziran", "July": "Temmuz", "August": "Ağustos", 
-  "September": "Eylül", "October": "Ekim", "November": "Kasım", "December": "Aralık",
-  "Jan": "Oca", "Feb": "Şub", "Mar": "Mar", "Apr": "Nis", "Jun": "Haz", 
-  "Jul": "Tem", "Aug": "Ağu", "Sep": "Eyl", "Oct": "Eki", "Nov": "Kas", "Dec": "Ara",
-  
-  "hours ago": "saat önce",
-  "hour ago": "saat önce",
-  "days ago": "gün önce",
-  "day ago": "gün önce",
-  "min read": "dk okuma"
-};
-
-export type TranslationKeys = keyof typeof translations.en;
+export type { Language, TranslationKeys, Translations };
+export { translations, LANGUAGES } from "@/i18n";
 
 type LanguageContextType = {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: typeof translations.en;
+  t: Translations;
   translateApiText: (text: string) => string;
 };
 
 const LanguageContext = createContext<LanguageContextType>({
-  language: 'en',
+  language: "en",
   setLanguage: () => {},
   t: translations.en,
   translateApiText: (text) => text,
 });
 
+const STORAGE_KEY = "nexus-lang";
+
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [language, setLanguageState] = useState<Language>('en');
+  const [language, setLanguageState] = useState<Language>("en");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const savedLang = localStorage.getItem('nexus-lang') as Language;
-    if (savedLang && (savedLang === 'en' || savedLang === 'tr')) {
+    const savedLang = localStorage.getItem(STORAGE_KEY);
+    if (savedLang && isValidLanguage(savedLang)) {
       setLanguageState(savedLang);
     } else {
-      const browserLang = navigator.language.toLowerCase();
-      setLanguageState(browserLang.startsWith('tr') ? 'tr' : 'en');
+      setLanguageState(detectBrowserLanguage());
     }
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('nexus-lang', lang);
+    localStorage.setItem(STORAGE_KEY, lang);
   };
 
-  const translateApiText = useCallback((text: string | undefined) => {
-    if (!text) return "";
-    if (language === 'en') return text;
-    
-    let translatedText = text;
-    const terms = Object.keys(apiTermDictionary).sort((a, b) => b.length - a.length);
-    terms.forEach(term => {
-      const regex = new RegExp(`\\b${term}\\b`, "gi"); 
-      translatedText = translatedText.replace(regex, apiTermDictionary[term]);
-    });
-    return translatedText;
-  }, [language]);
+  const translateApiText = useCallback(
+    (text: string | undefined) => {
+      if (!text) return "";
+      const dictionary = getApiTermDictionary(language);
+      if (!dictionary) return text;
 
-  if (!mounted) return <div style={{ visibility: 'hidden' }}>{children}</div>;
+      if (dictionary[text]) return dictionary[text];
+
+      let translatedText = text;
+      const terms = Object.keys(dictionary).sort((a, b) => b.length - a.length);
+      terms.forEach((term) => {
+        const regex = new RegExp(`\\b${term}\\b`, "gi");
+        translatedText = translatedText.replace(regex, dictionary[term]);
+      });
+      return translatedText;
+    },
+    [language]
+  );
+
+  if (!mounted) return <div style={{ visibility: "hidden" }}>{children}</div>;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t: translations[language], translateApiText }}>

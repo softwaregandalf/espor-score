@@ -2,6 +2,7 @@
 
 import { Coins, ShieldBan, CheckCircle2 } from "lucide-react";
 import { useLanguage } from "./LanguageProvider";
+import { formatTranslation } from "@/i18n";
 
 const GAME_CATEGORIES: Record<string, 'fps' | 'moba'> = { lol: 'moba', val: 'fps', cs2: 'fps', dota2: 'moba' };
 
@@ -19,7 +20,7 @@ function ScoreTeamLogo({ name, color }: { name: string; color: string }) {
 }
 
 export default function MatchScoreboard({ match, gameColor }: { match: any, gameColor: string }) {
-  const { t, language } = useLanguage(); 
+  const { t, language } = useLanguage();
 
   if (!match) return null;
 
@@ -50,7 +51,7 @@ export default function MatchScoreboard({ match, gameColor }: { match: any, game
               <span key={i} className={`px-2.5 py-1 text-[10px] font-bold rounded flex items-center gap-1.5 ${v.action === 'Banned' ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500 border border-red-200 dark:border-red-500/20' : v.action === 'Picked' ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-500 border border-green-200 dark:border-green-500/20' : 'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-400 border border-slate-200 dark:border-slate-500/20'}`}>
                  {v.action === 'Banned' ? <ShieldBan className="w-3 h-3"/> : v.action === 'Picked' ? <CheckCircle2 className="w-3 h-3"/> : null}
                  {/* 🚀 TÜRKÇE VE İNGİLİZCE GRAMER YAPISINA GÖRE FORMATLAMA */}
-                 {language === 'tr' ? `${teamName} ${v.map} ${actionText}` : `${teamName} ${actionText} ${v.map}`}
+                 {formatTranslation(language === 'tr' ? t.vetoLogTr : t.vetoLogDefault, { team: teamName, map: v.map, action: actionText })}
               </span>
             );
           })}

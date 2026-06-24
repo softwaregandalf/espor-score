@@ -35,7 +35,7 @@ function TeamLogo({ name, color }: { name: string; color: string }) {
 }
 
 export default function PlayerRankingsView() {
-  const { t, translateApiText, language } = useLanguage(); 
+  const { t, translateApiText } = useLanguage();
 
   const [selectedGame, setSelectedGame] = useState<string>('val');
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,19 +46,39 @@ export default function PlayerRankingsView() {
   const [filterRegion, setFilterRegion] = useState('all');
   const [filterTime, setFilterTime] = useState('all');
 
-  // 🚀 AÇILIR MENÜ İÇİN ROL İSİMLERİ SÖZLÜKTEN BESLENİYOR
-  const GAME_ROLES: Record<string, { id: string, label: string }[]> = {
-    val: [ { id: 'Duelist', label: 'Duelist' }, { id: 'Initiator', label: 'Initiator' }, { id: 'Sentinel', label: 'Sentinel' }, { id: 'Controller', label: 'Controller' } ],
-    cs2: [ { id: 'Sniper', label: 'Sniper' }, { id: 'Entry', label: 'Entry' }, { id: 'Rifler', label: 'Rifler' }, { id: 'IGL', label: 'IGL' } ],
-    lol: [ { id: 'Top', label: 'Top' }, { id: 'Jungle', label: 'Jungle' }, { id: 'Mid', label: 'Mid' }, { id: 'ADC', label: 'ADC' }, { id: 'Support', label: 'Support' } ],
-    dota2: [ { id: 'Carry', label: 'Carry' }, { id: 'Mid', label: 'Mid' }, { id: 'Offlane', label: 'Offlane' }, { id: 'Support', label: 'Support' } ]
+  const GAME_ROLES: Record<string, { id: string; label: string }[]> = {
+    val: [
+      { id: 'Duelist', label: 'Duelist' },
+      { id: 'Initiator', label: 'Initiator' },
+      { id: 'Sentinel', label: 'Sentinel' },
+      { id: 'Controller', label: 'Controller' },
+    ],
+    cs2: [
+      { id: 'Sniper', label: 'Sniper' },
+      { id: 'Entry', label: 'Entry' },
+      { id: 'Rifler', label: 'Rifler' },
+      { id: 'IGL', label: 'IGL' },
+    ],
+    lol: [
+      { id: 'Top', label: 'Top' },
+      { id: 'Jungle', label: 'Jungle' },
+      { id: 'Mid', label: 'Mid' },
+      { id: 'ADC', label: 'ADC' },
+      { id: 'Support', label: 'Support' },
+    ],
+    dota2: [
+      { id: 'Carry', label: 'Carry' },
+      { id: 'Mid', label: 'Mid' },
+      { id: 'Offlane', label: 'Offlane' },
+      { id: 'Support', label: 'Support' },
+    ],
   };
 
-  const TIMESPANS = [ 
-    { id: '30d', label: language === 'tr' ? 'Son 30 Gün' : 'Last 30 Days' }, 
-    { id: '60d', label: language === 'tr' ? 'Son 60 Gün' : 'Last 60 Days' }, 
-    { id: '90d', label: language === 'tr' ? 'Son 90 Gün' : 'Last 90 Days' }, 
-    { id: 'all', label: language === 'tr' ? 'Tüm Zamanlar' : 'All Time' } 
+  const TIMESPANS = [
+    { id: '30d', label: t.last30Days },
+    { id: '60d', label: t.last60Days },
+    { id: '90d', label: t.last90Days },
+    { id: 'all', label: t.allTime },
   ];
 
   const filteredPlayers = useMemo(() => {
@@ -141,10 +161,10 @@ export default function PlayerRankingsView() {
           <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-4 p-5 rounded-2xl border animate-fade-in shadow-2xl backdrop-blur-md transition-colors" style={{ background: 'var(--es-surface-2)', borderColor: 'var(--es-border)' }}>
             
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{gameName} {language === 'tr' ? 'Rolü' : 'Role'}</label>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{gameName} {t.roleLabel}</label>
               <div className="relative">
                 <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="w-full border text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
-                  <option value="all">{language === 'tr' ? 'Tüm Roller' : 'All Roles'}</option>
+                  <option value="all">{t.allRoles}</option>
                   {GAME_ROLES[selectedGame]?.map(role => (
                     <option key={role.id} value={role.id}>{translateApiText(role.label)}</option>
                   ))}
@@ -154,10 +174,10 @@ export default function PlayerRankingsView() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bölge' : 'Region'}</label>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.regionLabel}</label>
               <div className="relative">
                 <select value={filterRegion} onChange={(e) => setFilterRegion(e.target.value)} className="w-full border text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
-                  <option value="all">{language === 'tr' ? 'Global (Dünya)' : 'Global (World)'}</option>
+                  <option value="all">{t.globalWorld}</option>
                   {REGIONS.map(region => (
                     <option key={region.id} value={region.id}>{translateApiText(region.label)}</option>
                   ))}
@@ -167,7 +187,7 @@ export default function PlayerRankingsView() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Zaman Aralığı' : 'Time Span'}</label>
+              <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.timeSpan}</label>
               <div className="relative">
                 <select value={filterTime} onChange={(e) => setFilterTime(e.target.value)} className="w-full border text-xs font-bold rounded-xl px-4 py-3 outline-none focus:border-es-cyan transition-colors appearance-none cursor-pointer shadow-inner" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
                   {TIMESPANS.map(time => (
@@ -183,7 +203,7 @@ export default function PlayerRankingsView() {
                 onClick={() => { setFilterRole('all'); setFilterRegion('all'); setFilterTime('all'); setSearchQuery(''); }}
                 className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 hover:border-red-500/50 text-xs font-black uppercase tracking-widest rounded-xl px-4 py-3 transition-colors flex items-center justify-center gap-2"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> {language === 'tr' ? 'Temizle' : 'Clear'}
+                <RotateCcw className="w-3.5 h-3.5" /> {t.clearFilters}
               </button>
             </div>
 
@@ -197,7 +217,7 @@ export default function PlayerRankingsView() {
           {filteredPlayers.length === 0 ? (
             <div className="text-center py-20 flex flex-col items-center gap-4 transition-colors" style={{ color: 'var(--es-text-3)' }}>
               <User className="w-12 h-12 opacity-20" />
-              <div className="text-lg font-black uppercase tracking-widest">{language === 'tr' ? 'Bu filtrelere uygun oyuncu bulunamadı' : 'No players found matching these filters'}</div>
+              <div className="text-lg font-black uppercase tracking-widest">{t.noPlayersFound}</div>
             </div>
           ) : (
             <div className="rounded-xl border overflow-hidden shadow-2xl animate-fade-in transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
@@ -218,9 +238,9 @@ export default function PlayerRankingsView() {
                     ) : (
                       <>
                         <th className="p-4 text-center text-es-cyan">KDA</th>
-                        <th className="p-4 text-center">CS / {language === 'tr' ? 'Dk' : 'Min'}</th>
-                        <th className="p-4 text-center">{language === 'tr' ? 'Skor Katkısı' : 'KP'}</th>
-                        <th className="p-4 text-center">{language === 'tr' ? 'Hasar' : 'DMG'} / {language === 'tr' ? 'Dk' : 'Min'}</th>
+                        <th className="p-4 text-center">CS / {t.perMin}</th>
+                        <th className="p-4 text-center">{t.scoreContribution}</th>
+                        <th className="p-4 text-center">{t.damage} / {t.perMin}</th>
                       </>
                     )}
                     <th className="p-4 text-right">{t.profileCol}</th>

@@ -40,7 +40,7 @@ function CommunityFeed() {
     <div className="mb-6 flex-1 flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2"><MessageSquare className="w-4 h-4 text-es-cyan" /><span className="text-xs font-bold text-white uppercase tracking-widest">{t.communityForum}</span></div>
-        <span className="text-[10px] font-black text-slate-500 hover:text-white cursor-pointer transition-colors">{language === 'tr' ? 'TÜMÜ' : 'ALL'}</span>
+        <span className="text-[10px] font-black text-slate-500 hover:text-white cursor-pointer transition-colors">{t.allLabel}</span>
       </div>
       <div className="flex flex-col gap-1 bg-slate-900/50 rounded-xl border border-white/5 overflow-hidden flex-1">
         {COMMUNITY_POSTS.map((post, i) => (
@@ -69,19 +69,19 @@ export default function RightSidebar({ rankings }: { rankings?: any[] }) {
       <SponsorWidget 
         type="gear" 
         title={<>NEXUS<span className="text-es-cyan">GEAR</span> PRO</>} 
-        subtitle={language === 'tr' ? "E-Sporcular İçin Tasarlandı" : "Designed for Esports Athletes"} 
+        subtitle={t.designedForAthletes} 
         badge={t.sponsored} 
         gradient="from-indigo-900 via-slate-900 to-black"
-        inspectText={language === 'tr' ? "İncele" : "Review"}
+        inspectText={t.review}
       />
       <CommunityFeed />
       <SponsorWidget 
         type="supplement" 
         title={<>NEXUS <span className="text-orange-400">FOCUS+</span></>} 
-        subtitle={language === 'tr' ? "Performansını Zirveye Taşı" : "Take Your Performance to the Peak"} 
+        subtitle={t.performancePeak} 
         badge={t.sponsored} 
         gradient="from-orange-900/40 via-slate-900 to-black" 
-        inspectText={language === 'tr' ? "İncele" : "Review"}
+        inspectText={t.review}
       />
     </aside>
   );

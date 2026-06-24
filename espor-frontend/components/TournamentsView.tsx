@@ -22,7 +22,7 @@ const GAMES = [ { id: 'lol', short: 'LoL' }, { id: 'val', short: 'VAL' }, { id: 
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C' };
 
 export default function TournamentsView() {
-  const { t, translateApiText, language } = useLanguage(); 
+  const { t, translateApiText } = useLanguage(); 
   
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGame, setSelectedGame] = useState<string>('all');
@@ -54,13 +54,25 @@ export default function TournamentsView() {
             </div>
             <div className="relative group w-72">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--es-text-3)' }} />
-              {/* 🚀 ARAMA KUTUSU YAZI RENGİ DÜZELTİLDİ: var(--es-text-1) kullanılarak karanlık ekran sorunu kökünden çözüldü */}
               <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder} className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }} />
             </div>
           </div>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 p-1.5 rounded-xl transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-              <button onClick={() => setSelectedGame('all')} className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" style={{ background: selectedGame === 'all' ? 'var(--es-surface-2)' : 'transparent', color: selectedGame === 'all' ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>{t.all}</button>
+              
+              {/* 🚀 TIER 1 DÜZELTME: "TÜMÜ" Butonu Renk Optimizasyonu */}
+              <button 
+                onClick={() => setSelectedGame('all')} 
+                className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" 
+                style={{ 
+                  background: selectedGame === 'all' ? 'rgba(0, 212, 255, 0.1)' : 'transparent', 
+                  color: selectedGame === 'all' ? '#00D4FF' : 'var(--es-text-3)',
+                  border: selectedGame === 'all' ? '1px solid rgba(0, 212, 255, 0.2)' : '1px solid transparent'
+                }}
+              >
+                {t.all}
+              </button>
+
               {GAMES.map(game => (
                 <button key={game.id} onClick={() => setSelectedGame(game.id)} className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:opacity-80" style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>
                   <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
@@ -112,7 +124,7 @@ export default function TournamentsView() {
                       
                       {activeTab === 'completed' && tournament.results && (
                         <div className="mt-2 pt-4 border-t border-dashed space-y-2 transition-colors" style={{ borderColor: 'var(--es-border)' }}>
-                          <div className="text-[10px] font-black uppercase tracking-widest mb-2 transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Podyum Dağılımı' : 'Podium Finish'}</div>
+                          <div className="text-[10px] font-black uppercase tracking-widest mb-2 transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.podiumFinish}</div>
                           <div className="flex items-center justify-between p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
                             <div className="flex items-center gap-2"><Trophy className="w-4 h-4 text-yellow-500" /><div className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-black text-white" style={{ background: tournament.results.winner.color }}>{tournament.results.winner.short}</div><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.results.winner.name}</span></div>
                             <span className="text-xs font-black text-yellow-500">{tournament.results.winner.prize}</span>

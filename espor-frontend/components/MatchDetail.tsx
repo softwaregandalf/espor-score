@@ -14,7 +14,7 @@ function TeamLogo({ name, color, size = 'sm' }: { name: string; color: string; s
 }
 
 export default function MatchDetail({ selectedMatch, onBack }: { selectedMatch: any, onBack: () => void }) {
-  const { t, translateApiText, language } = useLanguage();
+  const { t, translateApiText } = useLanguage();
   const [viewMode, setViewMode] = useState<'standard' | 'analysis'>('standard');
   const [standardTab, setStandardTab] = useState<'overview' | 'lineups' | 'stats'>('overview');
   
@@ -135,9 +135,9 @@ export default function MatchDetail({ selectedMatch, onBack }: { selectedMatch: 
                    <h4 className="text-xs font-bold mb-4 flex items-center justify-between transition-colors">
                      <div className="flex items-center gap-2" style={{ color: 'var(--es-text-1)' }}>
                        {isLive ? <Radio className="w-4 h-4 text-red-500"/> : isCompleted ? <MonitorPlay className="w-4 h-4 text-es-cyan"/> : <Clock className="w-4 h-4" style={{ color: 'var(--es-text-3)' }}/>}
-                       {isLive ? t.liveStreams : isCompleted ? (language === 'tr' ? 'Özetler & Tekrarlar' : 'VODs & Replays') : (language === 'tr' ? 'Yayın Kanalları (Yakında)' : 'Broadcast Channels (Soon)')}
+                       {isLive ? t.liveStreams : isCompleted ? t.vodsAndReplays : t.broadcastChannelsSoon}
                      </div>
-                     {activeVideo && <span onClick={() => setActiveVideo(null)} className="text-[10px] cursor-pointer uppercase font-black transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Kapat' : 'Close'}</span>}
+                     {activeVideo && <span onClick={() => setActiveVideo(null)} className="text-[10px] cursor-pointer uppercase font-black transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}>{t.closeLabel}</span>}
                    </h4>
 
                    <div className="flex gap-4">
@@ -145,11 +145,11 @@ export default function MatchDetail({ selectedMatch, onBack }: { selectedMatch: 
                          <>
                            <div className="flex-1 flex items-center justify-between p-3 rounded-lg opacity-50 cursor-not-allowed transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
                              <div className="flex items-center gap-3"><div className="w-8 h-8 rounded flex items-center justify-center bg-purple-500/20 text-purple-500"><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>Twitch</span></div>
-                             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bekleniyor' : 'Waiting'}</span>
+                             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{t.waiting}</span>
                            </div>
                            <div className="flex-1 flex items-center justify-between p-3 rounded-lg opacity-50 cursor-not-allowed transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
                              <div className="flex items-center gap-3"><div className="w-8 h-8 rounded flex items-center justify-center bg-red-500/20 text-red-500"><MonitorPlay className="w-4 h-4"/></div><span className="text-sm font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>YouTube</span></div>
-                             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bekleniyor' : 'Waiting'}</span>
+                             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{t.waiting}</span>
                            </div>
                          </>
                       ) : (
@@ -159,7 +159,7 @@ export default function MatchDetail({ selectedMatch, onBack }: { selectedMatch: 
                              {isLive ? (
                                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold" style={{ color: 'var(--es-text-3)' }}>112K</span></div>
                              ) : (
-                                 <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-500/10 px-2 py-1 rounded">VOD {language === 'tr' ? 'İzle' : 'Watch'}</span>
+                                 <span className="text-[10px] font-black text-purple-500 uppercase tracking-widest bg-purple-500/10 px-2 py-1 rounded">VOD {t.vodWatch}</span>
                              )}
                            </button>
                            <button onClick={() => setActiveVideo('youtube')} className={`flex-1 flex items-center justify-between p-3 rounded-lg transition-all border group cursor-pointer ${activeVideo === 'youtube' ? 'bg-red-500/10 border-red-500/50' : 'hover:border-red-500/30'}`} style={{ background: activeVideo === 'youtube' ? '' : 'var(--es-surface)', borderColor: activeVideo === 'youtube' ? '' : 'var(--es-border)' }}>
@@ -167,7 +167,7 @@ export default function MatchDetail({ selectedMatch, onBack }: { selectedMatch: 
                              {isLive ? (
                                  <div className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-xs font-bold" style={{ color: 'var(--es-text-3)' }}>75K</span></div>
                              ) : (
-                                 <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-2 py-1 rounded">{language === 'tr' ? 'Özet İzle' : 'Highlights'}</span>
+                                 <span className="text-[10px] font-black text-red-500 uppercase tracking-widest bg-red-500/10 px-2 py-1 rounded">{t.highlights}</span>
                              )}
                            </button>
                          </>
@@ -182,9 +182,9 @@ export default function MatchDetail({ selectedMatch, onBack }: { selectedMatch: 
                          <MonitorPlay className="w-8 h-8 text-white" />
                        </div>
                        <span className="text-sm font-black text-white uppercase tracking-widest">
-                         {isLive ? `${activeVideo} ${language === 'tr' ? 'Yayını Başlatılıyor...' : 'Stream Starting...'}` : `${activeVideo} ${language === 'tr' ? 'Özeti Yükleniyor...' : 'VOD Loading...'}`}
+                         {isLive ? `${activeVideo} ${t.streamStarting}` : `${activeVideo} ${t.vodLoading}`}
                        </span>
-                       <span className="text-xs mt-2" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Bağlantı bekleniyor' : 'Awaiting connection'}</span>
+                       <span className="text-xs mt-2" style={{ color: 'var(--es-text-3)' }}>{t.awaitingConnection}</span>
                      </div>
                    </div>
                  )}

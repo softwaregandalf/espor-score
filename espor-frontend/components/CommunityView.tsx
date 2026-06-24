@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link"; // 🚀 TIER 1 DÜZELTME: Link Eklendi
+import Link from "next/link";
 import { useAuth } from "./AuthProvider"; 
 import { useState, useMemo, useEffect } from "react"; 
 import { useRouter } from "next/navigation"; 
-import { MessageSquare, ArrowBigUp, ArrowBigDown, Share2, MessageCircle, ShieldAlert, Sparkles, Flame, Trophy, HelpCircle, X, Loader2 } from "lucide-react"; 
+import { MessageSquare, ArrowBigUp, ArrowBigDown, Share2, MessageCircle, ShieldAlert, Sparkles, Flame, Trophy, HelpCircle, X, Loader2, Trash2 } from "lucide-react"; 
 import { GAMES } from "@/app/data/mockData";
 import { useLanguage, TranslationKeys } from "./LanguageProvider"; 
 import AuthModal from "./AuthModal";
@@ -35,6 +35,9 @@ export default function CommunityView() {
   const [newThreadCategory, setNewThreadCategory] = useState('general');
   const [newThreadGame, setNewThreadGame] = useState('all');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 🚀 TIER 1 DÜZELTME: Silme işlemi için durum yöneticisi
+  const [threadToDelete, setThreadToDelete] = useState<number | null>(null);
 
   const FORUM_CATEGORIES = [
     { id: 'all', label: t.allTopics, icon: MessageCircle },
@@ -113,6 +116,27 @@ export default function CommunityView() {
     }
   };
 
+  // 🚀 TIER 1 DÜZELTME: Doğrudan pop-up onayı ile silme
+  const executeDeleteThread = async () => {
+    if (!threadToDelete) return;
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/${threadToDelete}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id })
+      });
+      const json = await res.json();
+      if (json.success) {
+        setThreadToDelete(null); // Modalı kapat
+        fetchThreads(); // Listeyi yenile
+      } else {
+        alert(json.message);
+      }
+    } catch (error) {
+      console.error("Silme işlemi başarısız:", error);
+    }
+  };
+
   const filteredThreads = useMemo(() => {
     return threads.filter(thread => {
       const matchCategory = selectedCategory === 'all' || thread.category === selectedCategory;
@@ -175,7 +199,6 @@ export default function CommunityView() {
               {cat.label}
             </button>
           ))}
-          
         </aside>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-4">
@@ -195,17 +218,17 @@ export default function CommunityView() {
             </div>
           ) : filteredThreads.length === 0 ? (
             <div className="text-center py-20 font-bold uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>
-              {language === 'tr' ? 'Bu panoda henüz konu açılmamış' : 'No topics found in this board'}
+              {t.noTopicsInBoard}
             </div>
           ) : (
             filteredThreads.map(thread => (
-              <div key={thread.id} className="rounded-xl border shadow-sm flex overflow-hidden hover:opacity-90 transition-colors" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+              <div key={thread.id} className="rounded-xl border shadow-sm flex min-h-[105px] overflow-hidden hover:opacity-90 transition-colors" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
                 
-                <div className="w-12 border-r flex flex-col items-center pt-4 gap-1 select-none transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
+                <div className="w-14 shrink-0 border-r flex flex-col items-center justify-center py-3 gap-1 select-none transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
                   <button 
                     onClick={() => handleAction('actionVote', () => handleVote(thread.id, 1))} 
                     className="p-1 rounded hover:text-green-500 transition-colors" style={{ color: 'var(--es-text-3)' }}
-                    title={language === 'tr' ? 'Yukarı Oy' : 'Upvote'}
+                    title={t.upvoteTitle}
                   >
                     <ArrowBigUp className="w-5 h-5 fill-current" />
                   </button>
@@ -213,7 +236,7 @@ export default function CommunityView() {
                   <button 
                     onClick={() => handleAction('actionVote', () => handleVote(thread.id, -1))} 
                     className="p-1 rounded hover:text-red-500 transition-colors" style={{ color: 'var(--es-text-3)' }}
-                    title={language === 'tr' ? 'Aşağı Oy' : 'Downvote'}
+                    title={t.downvoteTitle}
                   >
                     <ArrowBigDown className="w-5 h-5 fill-current" />
                   </button>
@@ -228,7 +251,6 @@ export default function CommunityView() {
                     <span>{translateApiText(thread.timeAgo)}</span>
                   </div>
                   
-                  {/* 🚀 TIER 1 DÜZELTME: Konu başlığı Next.js Link yapısıyla sarıldı */}
                   <Link href={`/community/${thread.id}`} className="block">
                     <h2 className="text-lg font-black tracking-tight leading-snug hover:text-es-cyan transition-colors cursor-pointer" style={{ color: 'var(--es-text-1)' }}>
                       {thread.title}
@@ -236,26 +258,43 @@ export default function CommunityView() {
                   </Link>
                   <p className="text-xs line-clamp-2 leading-relaxed transition-colors" style={{ color: 'var(--es-text-3)' }}>{thread.content}</p>
                   
-                  <div className="flex items-center gap-6 mt-2 border-t pt-3 text-xs font-bold transition-colors" style={{ borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
-                    {/* 🚀 TIER 1 DÜZELTME: Yorum butonuna e.preventDefault eklendi */}
-                    <button 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAction('actionComment', () => router.push(`/community/${thread.id}`));
-                      }} 
-                      className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}
-                    >
-                      <MessageSquare className="w-4 h-4" /> {thread.commentCount} {(t as any).comment || 'Yorum'}
-                    </button>
-                    <button 
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/community/${thread.id}`);
-                        alert(language === 'tr' ? 'Konu bağlantısı kopyalandı!' : 'Thread link copied!');
-                      }}
-                      className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}
-                    >
-                      <Share2 className="w-4 h-4" /> {t.shareStr}
-                    </button>
+                  <div className="flex items-center mt-2 border-t pt-3 text-xs font-bold transition-colors" style={{ borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
+                    <div className="flex items-center gap-6">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAction('actionComment', () => router.push(`/community/${thread.id}`));
+                        }} 
+                        className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}
+                      >
+                        <MessageSquare className="w-4 h-4" /> {thread.commentCount} {(t as any).comment || 'Yorum'}
+                      </button>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/community/${thread.id}`);
+                          alert(t.threadLinkCopied);
+                        }}
+                        className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}
+                      >
+                        <Share2 className="w-4 h-4" /> {t.shareStr}
+                      </button>
+                    </div>
+
+                    {/* 🚀 TIER 1 DÜZELTME: Şıklaştırılmış SİL butonu */}
+                    {thread.authorId === user?.id && (
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setThreadToDelete(thread.id); // Modalı açar
+                        }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ml-auto shadow-sm"
+                        style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.background = '#EF4444'; e.currentTarget.style.color = '#fff'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#EF4444'; }}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> {(t as any).deleteBtn || 'Sil'}
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -270,19 +309,15 @@ export default function CommunityView() {
           <div className="p-8 rounded-2xl border max-w-md w-full shadow-2xl relative overflow-hidden text-center flex flex-col items-center transition-colors" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
             <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
             <button onClick={() => setShowAuthModal(false)} className="absolute top-4 right-4 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}><X className="w-5 h-5" /></button>
-            
             <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 flex items-center justify-center text-red-600 dark:text-red-500 mb-5 animate-pulse">
               <ShieldAlert className="w-8 h-8" />
             </div>
-
             <h3 className="text-xl font-black tracking-tight mb-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>{t.accessDenied}</h3>
-            
             <p className="text-sm mb-6 leading-relaxed transition-colors" style={{ color: 'var(--es-text-3)' }}>
               {t.authWallDesc1}
               <span className="text-es-cyan font-black">{modalReasonKey ? t[modalReasonKey] : ''}</span>
               {t.authWallDesc2}
             </p>
-
             <div className="flex flex-col gap-3 w-full">
               <button onClick={() => { setShowAuthModal(false); setAuthMode('register'); setShowRealAuthModal(true); }} className="w-full py-3 rounded-xl bg-es-cyan hover:bg-white text-black text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-es-cyan/10">
                 {t.createAccount}
@@ -300,74 +335,61 @@ export default function CommunityView() {
           <div className="p-8 rounded-2xl border max-w-2xl w-full shadow-2xl relative overflow-hidden flex flex-col transition-colors" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
             <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
             <button onClick={() => setShowCreateModal(false)} className="absolute top-4 right-4 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}><X className="w-5 h-5" /></button>
-
             <h3 className="text-xl font-black tracking-tight mb-6 transition-colors" style={{ color: 'var(--es-text-1)' }}>
-              {language === 'tr' ? 'Yeni Konu Aç' : 'Start a New Discussion'}
+              {t.newDiscussionTitle}
             </h3>
-
             <form onSubmit={handleCreateThread} className="flex flex-col gap-4 relative z-10">
-              <input
-                type="text"
-                required
-                value={newThreadTitle}
-                onChange={e => setNewThreadTitle(e.target.value)}
-                placeholder={language === 'tr' ? 'Konu Başlığı' : 'Thread Title'}
-                className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border shadow-inner"
-                style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
-              />
-
+              <input type="text" required value={newThreadTitle} onChange={e => setNewThreadTitle(e.target.value)} placeholder={t.threadTitlePlaceholder} className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border shadow-inner" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }} />
               <div className="flex gap-4">
-                <select
-                  value={newThreadCategory}
-                  onChange={e => setNewThreadCategory(e.target.value)}
-                  className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border cursor-pointer"
-                  style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
-                >
-                  {FORUM_CATEGORIES.filter(c => c.id !== 'all').map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.label}</option>
-                  ))}
+                <select value={newThreadCategory} onChange={e => setNewThreadCategory(e.target.value)} className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border cursor-pointer" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
+                  {FORUM_CATEGORIES.filter(c => c.id !== 'all').map(cat => ( <option key={cat.id} value={cat.id}>{cat.label}</option> ))}
                 </select>
-
-                <select
-                  value={newThreadGame}
-                  onChange={e => setNewThreadGame(e.target.value)}
-                  className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border cursor-pointer"
-                  style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
-                >
-                  <option value="all">{language === 'tr' ? 'Genel (Tümü)' : 'General (All)'}</option>
-                  {GAMES.map(game => (
-                    <option key={game.id} value={game.id}>{game.name}</option>
-                  ))}
+                <select value={newThreadGame} onChange={e => setNewThreadGame(e.target.value)} className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border cursor-pointer" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
+                  <option value="all">{t.generalAll}</option>
+                  {GAMES.map(game => ( <option key={game.id} value={game.id}>{game.name}</option> ))}
                 </select>
               </div>
-
-              <textarea
-                required
-                value={newThreadContent}
-                onChange={e => setNewThreadContent(e.target.value)}
-                placeholder={language === 'tr' ? 'Ne düşünüyorsun?' : 'What are your thoughts?'}
-                className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border min-h-[150px] resize-y shadow-inner custom-scrollbar"
-                style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
-              />
-
+              <textarea required value={newThreadContent} onChange={e => setNewThreadContent(e.target.value)} placeholder={t.thoughtsPlaceholder} className="w-full py-3 px-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan border min-h-[150px] resize-y shadow-inner custom-scrollbar" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }} />
               <div className="flex gap-3 mt-2">
-                <button 
-                  type="button" 
-                  onClick={() => setShowCreateModal(false)}
-                  className="flex-1 py-3 rounded-xl border text-xs font-black uppercase tracking-widest transition-all hover:opacity-80"
-                  style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}
-                >
-                  {language === 'tr' ? 'İptal' : 'Cancel'}
+                <button type="button" onClick={() => setShowCreateModal(false)} className="flex-1 py-3 rounded-xl border text-xs font-black uppercase tracking-widest transition-all hover:opacity-80" style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>
+                  {t.cancelBtn}
                 </button>
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting} 
-                  className="flex-[2] py-3 rounded-xl bg-es-cyan hover:bg-white text-black text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-es-cyan/20 flex justify-center items-center gap-2 disabled:opacity-50"
-                >
-                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (language === 'tr' ? 'Gönder' : 'Post')}
+                <button type="submit" disabled={isSubmitting} className="flex-[2] py-3 rounded-xl bg-es-cyan hover:bg-white text-black text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-es-cyan/20 flex justify-center items-center gap-2 disabled:opacity-50">
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t.postBtn}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 TIER 1 DÜZELTME: Siber-Spor Temalı Silme Pop-up'ı */}
+      {threadToDelete && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] animate-fade-in p-4">
+          <div className="p-8 rounded-2xl border max-w-sm w-full shadow-2xl relative overflow-hidden text-center flex flex-col items-center transition-colors" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+            <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+            <button onClick={() => setThreadToDelete(null)} className="absolute top-4 right-4 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}><X className="w-5 h-5" /></button>
+
+            <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 mb-5 animate-pulse">
+              <Trash2 className="w-8 h-8" />
+            </div>
+
+            <h3 className="text-xl font-black tracking-tight mb-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+              {(t as any).deleteConfirmTitle || 'Konuyu Sil'}
+            </h3>
+
+            <p className="text-sm mb-6 leading-relaxed transition-colors" style={{ color: 'var(--es-text-3)' }}>
+              {(t as any).deleteConfirmDesc || 'Bu konuyu silmek istediğinize emin misiniz? Tüm yorumlar kalıcı olarak silinecektir.'}
+            </p>
+
+            <div className="flex gap-3 w-full">
+              <button onClick={() => setThreadToDelete(null)} className="flex-1 py-3 rounded-xl border text-xs font-black uppercase tracking-widest transition-all hover:opacity-80" style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>
+                {(t as any).cancelBtn || 'İptal'}
+              </button>
+              <button onClick={executeDeleteThread} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-red-500/20">
+                {(t as any).deleteBtn || 'Sil'}
+              </button>
+            </div>
           </div>
         </div>
       )}

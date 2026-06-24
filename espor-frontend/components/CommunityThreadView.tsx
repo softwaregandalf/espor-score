@@ -1,15 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation"; // 🚀 TIER 1 DÜZELTME: useParams eklendi
+import { useParams, useRouter } from "next/navigation"; 
 import { useAuth } from "./AuthProvider";
 import { useLanguage, TranslationKeys } from "./LanguageProvider";
-import { ArrowLeft, MessageSquare, ArrowBigUp, ArrowBigDown, Share2, Loader2, Send, ShieldAlert, X } from "lucide-react";
+import { ArrowLeft, MessageSquare, ArrowBigUp, ArrowBigDown, Share2, Loader2, Send, ShieldAlert, X, Trash2 } from "lucide-react"; 
 import AuthModal from "./AuthModal";
 
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', all: '#00D4FF' };
 
-// 🚀 TIER 1 DÜZELTME: Prop kaldırıldı, ID direkt URL'den alınıyor
 export default function CommunityThreadView() {
   const params = useParams();
   const threadId = params.id as string;
@@ -28,6 +27,9 @@ export default function CommunityThreadView() {
   const [showRealAuthModal, setShowRealAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
+  // 🚀 TIER 1 DÜZELTME: Silme pop-up yöneticisi
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const fetchThreadDetails = async () => {
     if (!threadId) return;
     try {
@@ -37,8 +39,7 @@ export default function CommunityThreadView() {
       if (json.success) {
         setThread(json.data);
       } else {
-        console.error("Backend Hatası:", json.message);
-        setThread(null); // 🚀 TIER 1 DÜZELTME: Geri fırlatma (Bounce) iptal edildi.
+        setThread(null); 
       }
     } catch (error) {
       console.error("Konu detayı çekilemedi:", error);
@@ -95,6 +96,22 @@ export default function CommunityThreadView() {
     }
   };
 
+  // 🚀 TIER 1 DÜZELTME: Pop-up'tan onay gelince siler
+  const executeDeleteThread = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/community/${threadId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id })
+      });
+      if (res.ok) {
+        router.push('/community'); // Silinince listeye geri at
+      }
+    } catch (error) {
+      console.error("Silme işlemi başarısız:", error);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center h-full" style={{ background: 'var(--es-bg)' }}>
@@ -103,7 +120,6 @@ export default function CommunityThreadView() {
     );
   }
 
-  // 🚀 TIER 1 DÜZELTME: Konu bulunamazsa siyah bir boşluk yerine şık bir hata ekranı çıkacak.
   if (!thread) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center h-full gap-4" style={{ background: 'var(--es-bg)' }}>
@@ -133,10 +149,10 @@ export default function CommunityThreadView() {
       <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
         <div className="max-w-4xl mx-auto flex flex-col gap-6">
           
-          <div className="rounded-xl border shadow-lg flex overflow-hidden transition-colors relative" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+          <div className="rounded-xl border shadow-lg flex min-h-[105px] overflow-hidden transition-colors relative" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
             <div className="absolute top-0 right-0 w-64 h-64 bg-es-cyan/5 rounded-full blur-[80px] pointer-events-none" />
             
-            <div className="w-16 border-r flex flex-col items-center pt-6 gap-2 select-none transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
+            <div className="w-14 shrink-0 border-r flex flex-col items-center justify-center py-3 gap-2 select-none transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
               <button onClick={() => handleVote(1)} className="p-1 rounded hover:text-green-500 transition-colors" style={{ color: 'var(--es-text-3)' }}>
                 <ArrowBigUp className="w-6 h-6 fill-current" />
               </button>
@@ -158,13 +174,28 @@ export default function CommunityThreadView() {
               <h2 className="text-2xl font-black tracking-tight leading-snug transition-colors" style={{ color: 'var(--es-text-1)' }}>{thread.title}</h2>
               <p className="text-sm leading-relaxed transition-colors whitespace-pre-wrap" style={{ color: 'var(--es-text-3)' }}>{thread.content}</p>
               
-              <div className="flex items-center gap-6 mt-4 border-t pt-4 text-xs font-bold transition-colors" style={{ borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
-                <div className="flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>
-                  <MessageSquare className="w-4 h-4" /> {thread.comments.length} {(t as any).commentsLabel || 'Yorumlar'}
+              <div className="flex items-center mt-4 border-t pt-4 text-xs font-bold transition-colors" style={{ borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+                    <MessageSquare className="w-4 h-4" /> {thread.comments.length} {(t as any).commentsLabel || 'Yorumlar'}
+                  </div>
+                  <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Bağlantı kopyalandı!'); }} className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}>
+                    <Share2 className="w-4 h-4" /> {t.shareStr}
+                  </button>
                 </div>
-                <button onClick={() => { navigator.clipboard.writeText(window.location.href); alert('Bağlantı kopyalandı!'); }} className="flex items-center gap-2 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-1)' }}>
-                  <Share2 className="w-4 h-4" /> {t.shareStr}
-                </button>
+
+                {/* 🚀 TIER 1 DÜZELTME: Şıklaştırılmış SİL butonu */}
+                {thread.authorId === user?.id && (
+                  <button 
+                    onClick={() => setShowDeleteConfirm(true)} // Modalı açar
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ml-auto shadow-sm"
+                    style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#EF4444'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.color = '#EF4444'; }}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> {(t as any).deleteBtn || 'Sil'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -230,6 +261,37 @@ export default function CommunityThreadView() {
               </button>
               <button onClick={() => { setShowAuthModal(false); setAuthMode('login'); setShowRealAuthModal(true); }} className="w-full py-3 rounded-xl text-xs font-black uppercase transition-all border" style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>
                 {t.login}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🚀 TIER 1 DÜZELTME: Siber-Spor Temalı Silme Pop-up'ı (Detay Sayfası) */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] animate-fade-in p-4">
+          <div className="p-8 rounded-2xl border max-w-sm w-full shadow-2xl relative overflow-hidden text-center flex flex-col items-center transition-colors" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+            <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
+            <button onClick={() => setShowDeleteConfirm(false)} className="absolute top-4 right-4 transition-colors hover:opacity-80" style={{ color: 'var(--es-text-3)' }}><X className="w-5 h-5" /></button>
+
+            <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 mb-5 animate-pulse">
+              <Trash2 className="w-8 h-8" />
+            </div>
+
+            <h3 className="text-xl font-black tracking-tight mb-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+              {(t as any).deleteConfirmTitle || 'Konuyu Sil'}
+            </h3>
+
+            <p className="text-sm mb-6 leading-relaxed transition-colors" style={{ color: 'var(--es-text-3)' }}>
+              {(t as any).deleteConfirmDesc || 'Bu konuyu silmek istediğinize emin misiniz? Tüm yorumlar kalıcı olarak silinecektir.'}
+            </p>
+
+            <div className="flex gap-3 w-full">
+              <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 py-3 rounded-xl border text-xs font-black uppercase tracking-widest transition-all hover:opacity-80" style={{ background: 'var(--es-surface)', color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>
+                {(t as any).cancelBtn || 'İptal'}
+              </button>
+              <button onClick={executeDeleteThread} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white text-xs font-black uppercase tracking-widest transition-all shadow-xl shadow-red-500/20">
+                {(t as any).deleteBtn || 'Sil'}
               </button>
             </div>
           </div>

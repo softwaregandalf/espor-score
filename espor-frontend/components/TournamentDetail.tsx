@@ -56,7 +56,7 @@ const MOCK_STATS = {
 // 1. ANA BİLEŞEN (KONTROLCÜ)
 // ============================================================================
 export default function TournamentDetail({ tournament, onBack }: { tournament: any, onBack: () => void }) {
-  const { t, translateApiText, language } = useLanguage(); 
+  const { t, translateApiText } = useLanguage(); 
   const [activeTab, setActiveTab] = useState<'overview' | 'stats' | 'teams' | 'matches'>('overview');
   const [selectedMatch, setSelectedMatch] = useState<BracketMatch | null>(null); 
   
@@ -93,7 +93,7 @@ export default function TournamentDetail({ tournament, onBack }: { tournament: a
         <div className="relative z-10 px-8 py-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
           <button onClick={onBack} className="flex items-center gap-2 hover:opacity-80 transition-opacity group w-fit">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-all" style={{ background: 'var(--es-surface)' }}><ChevronLeft className="w-4 h-4" style={{ color: 'var(--es-text-1)' }} /></div>
-            <span className="text-xs font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>{language === 'tr' ? 'Turnuvalara Dön' : 'Back to Tournaments'}</span>
+            <span className="text-xs font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>{t.backToTournaments}</span>
           </button>
 
           <div className="flex items-end justify-between">
@@ -144,7 +144,7 @@ export default function TournamentDetail({ tournament, onBack }: { tournament: a
 // ============================================================================
 
 function TabOverview({ gameColor, bracket, onMatchSelect }: { gameColor: string, bracket: BracketStage[], onMatchSelect: (m: BracketMatch) => void }) {
-  const { t, language, translateApiText } = useLanguage();
+  const { t, translateApiText } = useLanguage();
 
   const renderBracketPairs = (stage: BracketStage, stageIndex: number) => {
     const pairs = [];
@@ -173,20 +173,20 @@ function TabOverview({ gameColor, bracket, onMatchSelect }: { gameColor: string,
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2 rounded-xl p-6 shadow-lg transition-colors" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
           <h3 className="text-sm font-black uppercase tracking-widest mb-4 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}><Trophy className="w-4 h-4" style={{ color: gameColor }}/> {t.format}</h3>
-          <p className="text-sm leading-relaxed transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? "Bu turnuva, resmi ligin son aşamasıdır. Grup aşamasından çıkan takımlar Çeyrek Finalden itibaren 'Single Elimination' (Tekli Eleme) sistemiyle eşleşirler." : "This tournament is the final stage of the official league. Teams advancing from the group stage are matched in a Single Elimination format."}</p>
+          <p className="text-sm leading-relaxed transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.tournamentFormatDesc}</p>
         </div>
         <div className="col-span-1 rounded-xl p-6 shadow-lg transition-colors" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-          <h3 className="text-sm font-black uppercase tracking-widest mb-4 transition-colors" style={{ color: 'var(--es-text-1)' }}>{language === 'tr' ? 'Ödül Dağılımı' : 'Prize Distribution'}</h3>
+          <h3 className="text-sm font-black uppercase tracking-widest mb-4 transition-colors" style={{ color: 'var(--es-text-1)' }}>{t.prizeDistribution}</h3>
           <div className="space-y-3">
-            <div className="flex justify-between items-center pb-2 border-b transition-colors" style={{ borderColor: 'var(--es-border)' }}><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? '1. Sıra' : '1st Place'}</span><span className="text-xs font-black text-green-500 transition-colors">50%</span></div>
-            <div className="flex justify-between items-center pb-2 border-b transition-colors" style={{ borderColor: 'var(--es-border)' }}><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? '2. Sıra' : '2nd Place'}</span><span className="text-xs font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>25%</span></div>
-            <div className="flex justify-between items-center pb-2 border-b transition-colors" style={{ borderColor: 'var(--es-border)' }}><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? '3. - 4. Sıra' : '3rd - 4th Place'}</span><span className="text-xs font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>10%</span></div>
+            <div className="flex justify-between items-center pb-2 border-b transition-colors" style={{ borderColor: 'var(--es-border)' }}><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.firstPlace}</span><span className="text-xs font-black text-green-500 transition-colors">50%</span></div>
+            <div className="flex justify-between items-center pb-2 border-b transition-colors" style={{ borderColor: 'var(--es-border)' }}><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.secondPlace}</span><span className="text-xs font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>25%</span></div>
+            <div className="flex justify-between items-center pb-2 border-b transition-colors" style={{ borderColor: 'var(--es-border)' }}><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.thirdFourthPlace}</span><span className="text-xs font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>10%</span></div>
           </div>
         </div>
       </div>
 
       <div className="rounded-xl p-8 shadow-lg overflow-x-auto custom-scrollbar transition-colors" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-        <h3 className="text-sm font-black uppercase tracking-widest mb-8 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}><GitMerge className="w-4 h-4" style={{ color: gameColor }}/> {language === 'tr' ? 'Playoff Eşleşmeleri (Bracket)' : 'Playoff Bracket'}</h3>
+        <h3 className="text-sm font-black uppercase tracking-widest mb-8 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}><GitMerge className="w-4 h-4" style={{ color: gameColor }}/> {t.playoffBracket}</h3>
         <div className="flex justify-between min-w-[900px] h-[600px] pb-12">
           {bracket.map((stage, stageIndex) => (
             <div key={stageIndex} className="flex flex-col w-64 relative">
@@ -206,7 +206,7 @@ function TabOverview({ gameColor, bracket, onMatchSelect }: { gameColor: string,
 }
 
 function BracketMatchCard({ match, stageIndex, isLastStage, onClick }: { match: BracketMatch, stageIndex: number, isLastStage: boolean, onClick: () => void }) {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const tooltipPositionClass = isLastStage ? 'right-[105%]' : 'left-[105%]';
 
   return (
@@ -240,7 +240,7 @@ function BracketMatchCard({ match, stageIndex, isLastStage, onClick }: { match: 
             <span className="text-sm font-black" style={{ color: match.team2.color }}>{match.team2.short}</span>
           </div>
 
-          <div className="text-[9px] font-black uppercase tracking-widest text-center mb-3" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Harita Skorları' : 'Map Scores'}</div>
+          <div className="text-[9px] font-black uppercase tracking-widest text-center mb-3" style={{ color: 'var(--es-text-3)' }}>{t.mapScores}</div>
           <div className="space-y-1.5 mb-5">
             {match.maps.map((m, i) => (
               <div key={i} className="flex justify-between items-center text-xs px-2 py-1 rounded transition-colors" style={{ background: 'var(--es-surface)' }}>
@@ -251,7 +251,7 @@ function BracketMatchCard({ match, stageIndex, isLastStage, onClick }: { match: 
             ))}
           </div>
 
-          <div className="text-[9px] font-black uppercase tracking-widest text-center mb-3" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Oyuncu Ratingleri' : 'Player Ratings'}</div>
+          <div className="text-[9px] font-black uppercase tracking-widest text-center mb-3" style={{ color: 'var(--es-text-3)' }}>{t.playerRatings}</div>
           <div className="space-y-1">
             {match.lineups.map((l, i) => (
               <div key={i} className="flex justify-between items-center text-[11px]">
@@ -263,7 +263,7 @@ function BracketMatchCard({ match, stageIndex, isLastStage, onClick }: { match: 
           </div>
           
           <div className={`mt-4 pt-3 border-t text-center text-[9px] font-black uppercase tracking-widest animate-pulse transition-colors`} style={{ borderColor: 'var(--es-border)', color: match.status === 'live' ? '#EF4444' : '#00D4FF' }}>
-            {match.status === 'live' ? (language === 'tr' ? 'Canlı Detaylar İçin Tıklayın' : 'Click for Live Details') : (language === 'tr' ? 'Maç Detayları İçin Tıklayın' : 'Click for Match Details')}
+            {match.status === 'live' ? t.clickForLiveDetails : t.clickForMatchDetails}
           </div>
         </div>
       )}
@@ -272,38 +272,38 @@ function BracketMatchCard({ match, stageIndex, isLastStage, onClick }: { match: 
 }
 
 function TabStats({ gameColor, category, stats }: { gameColor: string, category: 'fps' | 'moba', stats: any }) {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   const distributionData = category === 'fps' ? stats.fpsDistribution : stats.mobaDistribution;
   return (
     <div className="animate-fade-in flex flex-col gap-6">
       <div className="flex items-center gap-4 p-3 rounded-xl border transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
-        <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-slate-500"/><span className="text-[10px] font-black uppercase" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Filtre:' : 'Filter:'}</span></div>
-        <select className="border text-xs px-3 py-1.5 rounded outline-none cursor-pointer transition-colors" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}><option>{language === 'tr' ? 'Tüm Aşamalar' : 'All Stages'}</option><option>Playoff</option></select>
+        <div className="flex items-center gap-2"><Filter className="w-4 h-4 text-slate-500"/><span className="text-[10px] font-black uppercase" style={{ color: 'var(--es-text-3)' }}>{t.filterLabel}</span></div>
+        <select className="border text-xs px-3 py-1.5 rounded outline-none cursor-pointer transition-colors" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}><option>{t.allStages}</option><option>Playoff</option></select>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-xl overflow-hidden shadow-lg transition-colors" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-          <div className="p-4 border-b transition-colors" style={{ borderColor: 'var(--es-border)', background: 'var(--es-surface)' }}><h3 className="text-sm font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>{language === 'tr' ? 'En İyi Oyuncular' : 'Top Players'}</h3></div>
+          <div className="p-4 border-b transition-colors" style={{ borderColor: 'var(--es-border)', background: 'var(--es-surface)' }}><h3 className="text-sm font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>{t.topPlayer}</h3></div>
           <div className="p-2 space-y-1">
             {stats.topPlayers.map((player: any) => (
               <div key={player.rank} className="flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <div className="flex items-center gap-4"><span className="text-xs font-black w-4" style={{ color: 'var(--es-text-3)' }}>{player.rank}.</span><div className="w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-black text-white overflow-hidden" style={{ borderColor: player.color, background: `${player.color}40` }}>{player.team}</div><span className="text-sm font-bold text-es-cyan">{player.name}</span></div>
                 <div className="flex items-center gap-6">
                   <div className="text-right"><div className="text-sm font-black" style={{ color: player.rating > 1.2 ? '#22C55E' : 'var(--es-text-1)' }}>{player.rating.toFixed(2)}</div><div className="text-[9px] font-bold" style={{ color: 'var(--es-text-3)' }}>Rating</div></div>
-                  <div className="text-right w-12"><div className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.maps}</div><div className="text-[9px] font-bold" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Harita' : 'Maps'}</div></div>
+                  <div className="text-right w-12"><div className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.maps}</div><div className="text-[9px] font-bold" style={{ color: 'var(--es-text-3)' }}>{t.mapsLabel}</div></div>
                 </div>
               </div>
             ))}
           </div>
         </div>
         <div className="rounded-xl overflow-hidden shadow-lg transition-colors" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-          <div className="p-4 border-b transition-colors" style={{ borderColor: 'var(--es-border)', background: 'var(--es-surface)' }}><h3 className="text-sm font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>{language === 'tr' ? 'En İyi Takımlar' : 'Top Teams'}</h3></div>
+          <div className="p-4 border-b transition-colors" style={{ borderColor: 'var(--es-border)', background: 'var(--es-surface)' }}><h3 className="text-sm font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>{t.topTeams}</h3></div>
           <div className="p-2 space-y-1">
             {stats.topTeams.map((team: any) => (
               <div key={team.rank} className="flex items-center justify-between px-4 py-2.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                 <div className="flex items-center gap-4"><span className="text-xs font-black w-4" style={{ color: 'var(--es-text-3)' }}>{team.rank}.</span><div className="w-8 h-8 rounded flex items-center justify-center text-[10px] font-black text-white" style={{ background: team.color }}>{team.name.slice(0,3).toUpperCase()}</div><span className="text-sm font-bold text-es-cyan">{team.name}</span></div>
                 <div className="flex items-center gap-6">
                   <div className="text-right"><div className="text-sm font-black" style={{ color: team.rating > 1.1 ? '#22C55E' : 'var(--es-text-1)' }}>{team.rating.toFixed(2)}</div><div className="text-[9px] font-bold" style={{ color: 'var(--es-text-3)' }}>Rating</div></div>
-                  <div className="text-right w-12"><div className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{team.maps}</div><div className="text-[9px] font-bold" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Harita' : 'Maps'}</div></div>
+                  <div className="text-right w-12"><div className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{team.maps}</div><div className="text-[9px] font-bold" style={{ color: 'var(--es-text-3)' }}>{t.mapsLabel}</div></div>
                 </div>
               </div>
             ))}
@@ -311,17 +311,17 @@ function TabStats({ gameColor, category, stats }: { gameColor: string, category:
         </div>
       </div>
       <div className="rounded-xl p-6 shadow-lg flex flex-col items-center transition-colors" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-         <h3 className="text-sm font-black uppercase tracking-widest w-full border-b pb-4 mb-4 transition-colors" style={{ color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>{category === 'fps' ? (language === 'tr' ? 'En Çok Kullanılan Silahlar' : 'Most Used Weapons') : (language === 'tr' ? 'En Çok Seçilen Şampiyonlar' : 'Most Picked Champions')}</h3>
+         <h3 className="text-sm font-black uppercase tracking-widest w-full border-b pb-4 mb-4 transition-colors" style={{ color: 'var(--es-text-1)', borderColor: 'var(--es-border)' }}>{category === 'fps' ? t.mostUsedWeapons : t.mostPickedChampions}</h3>
          <div className="w-full max-w-md h-64 relative">
            <ResponsiveContainer width="100%" height="100%">
              <PieChart>
                <Pie data={distributionData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2} dataKey="value" stroke="none">
                  {distributionData.map((entry: any, index: number) => ( <Cell key={`cell-${index}`} fill={entry.color} /> ))}
                </Pie>
-               <RechartsTooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: 'white', fontWeight: 'bold' }} formatter={(val: any) => [`%${val}`, language === 'tr' ? 'Kullanım Oranı' : 'Pick Rate']} />
+               <RechartsTooltip contentStyle={{ backgroundColor: 'rgba(15, 23, 42, 0.9)', borderColor: 'rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: 'white', fontWeight: 'bold' }} formatter={(val: any) => [`%${val}`, t.usageRate]} />
              </PieChart>
            </ResponsiveContainer>
-           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-2xl font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>100%</span><span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Veri' : 'Data'}</span></div>
+           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"><span className="text-2xl font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>100%</span><span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--es-text-3)' }}>{t.dataLabel}</span></div>
          </div>
          <div className="flex flex-wrap justify-center gap-4 mt-4">
            {distributionData.map((entry: any, index: number) => (
@@ -334,13 +334,13 @@ function TabStats({ gameColor, category, stats }: { gameColor: string, category:
 }
 
 function TabTeams({ teams }: { teams: any[] }) {
-  const { language } = useLanguage();
+  const { t } = useLanguage();
   return (
     <div className="animate-fade-in grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {teams.map(team => (
         <div key={team.id} className="flex items-center gap-3 p-4 rounded-xl shadow-lg border hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer group" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
           <div className="w-10 h-10 rounded-lg flex items-center justify-center font-black text-white text-xs group-hover:scale-110 transition-transform shadow-md" style={{ background: team.color }}>{team.short}</div>
-          <div className="flex flex-col"><span className="text-sm font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{team.name}</span><span className="text-[10px] font-bold uppercase" style={{ color: 'var(--es-text-3)' }}>{language === 'tr' ? 'Kadro Hazır' : 'Roster Ready'}</span></div>
+          <div className="flex flex-col"><span className="text-sm font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{team.name}</span><span className="text-[10px] font-bold uppercase" style={{ color: 'var(--es-text-3)' }}>{t.rosterReady}</span></div>
         </div>
       ))}
     </div>

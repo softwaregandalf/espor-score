@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { User, Settings, MessageSquare, ArrowBigUp, Shield, LogOut, Medal, Flame, History, Loader2 } from "lucide-react";
 
 import { useAuth } from "./AuthProvider";
-import { useLanguage } from "./LanguageProvider"; 
+import { useLanguage } from "./LanguageProvider";
+import { LOCALE_MAP } from "@/i18n"; 
 import { supabase } from "@/app/utils/supabaseClient"; 
 
 export default function UserProfileView() {
@@ -90,7 +91,7 @@ export default function UserProfileView() {
   const liveUsername = user.user_metadata?.nickname || user.email?.split('@')[0];
   const liveAvatarLetter = user.user_metadata?.avatar_url || user.email?.charAt(0).toUpperCase();
   const liveEmail = user.email;
-  const joinDate = new Date(user.created_at).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US', { month: 'long', year: 'numeric' });
+  const joinDate = new Date(user.created_at).toLocaleDateString(LOCALE_MAP[language], { month: 'long', year: 'numeric' });
   const isPro = true; 
 
   return (
@@ -120,7 +121,7 @@ export default function UserProfileView() {
                   </span>
                 )}
               </div>
-              <span className="text-sm text-slate-400 font-semibold">{liveEmail} • {language === 'tr' ? 'Katılım' : 'Joined'}: {joinDate}</span>
+              <span className="text-sm text-slate-400 font-semibold">{liveEmail} • {t.joined}: {joinDate}</span>
             </div>
           </div>
 

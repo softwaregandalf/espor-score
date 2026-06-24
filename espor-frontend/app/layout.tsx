@@ -5,6 +5,7 @@ import MainLayout from "@/components/MainLayout";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { LanguageProvider } from "@/components/LanguageProvider"; 
 import { AuthProvider } from "@/components/AuthProvider"; // 🚀 AUTH BEYNİ EKLENDİ
+import { AccentColorProvider } from "@/components/AccentColorProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,10 +29,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            {/* 🚀 TÜM SİSTEM GERÇEK KİMLİK DOĞRULAMA (SESSION) İLE SARMALANDI */}
-            <AuthProvider>
-              <MainLayout>{children}</MainLayout>
-            </AuthProvider>
+            <AccentColorProvider>
+              {/* 🚀 TÜM SİSTEM GERÇEK KİMLİK DOĞRULAMA (SESSION) İLE SARMALANDI */}
+              <AuthProvider>
+                <MainLayout>{children}</MainLayout>
+              </AuthProvider>
+            </AccentColorProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

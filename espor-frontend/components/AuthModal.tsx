@@ -7,7 +7,7 @@ import { signUpWithEmail, signInWithEmail } from "@/app/actions/authActions";
 
 // 🚀 TIER 1 DÜZELTME: initialMode adında yeni bir prop eklendi
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { isOpen: boolean; onClose: () => void; initialMode?: 'login' | 'register' }) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   
   // 🚀 TIER 1 DÜZELTME: State artık dışarıdan gelen initialMode ile başlıyor
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
@@ -51,15 +51,15 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
       } else {
         setStatus({ 
           type: "success", 
-          message: language === "tr" ? "Kayıt başarılı! Lütfen e-postanızı onaylayın." : "Sign up successful! Please confirm your email." 
+          message: t.signUpSuccessMsg
         });
       }
     } else {
       const result = await signInWithEmail(email, password);
       if (!result.success) {
-        setStatus({ type: "error", message: language === "tr" ? "Giriş başarısız. Bilgilerinizi kontrol edin." : "Login failed. Check your credentials." });
+        setStatus({ type: "error", message: t.loginFailedMsg });
       } else {
-        setStatus({ type: "success", message: language === "tr" ? "Giriş başarılı! Yönlendiriliyorsunuz..." : "Login successful! Redirecting..." });
+        setStatus({ type: "success", message: t.loginSuccessMsg });
         setTimeout(() => {
           onClose(); 
         }, 1500);
@@ -84,14 +84,10 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
             <ShieldCheck className="w-6 h-6 text-es-cyan" />
           </div>
           <h2 className="text-2xl font-black tracking-tight transition-colors" style={{ color: 'var(--es-text-1)' }}>
-            {mode === 'login' 
-              ? (language === 'tr' ? 'NEXUS PRO\'ya Giriş Yap' : 'Log in to NEXUS PRO') 
-              : (language === 'tr' ? 'NEXUS PRO Hesabı Oluştur' : 'Create a NEXUS PRO Account')}
+            {mode === 'login' ? t.authLoginTitle : t.authRegisterTitle}
           </h2>
           <p className="text-xs mt-2 text-center transition-colors" style={{ color: 'var(--es-text-3)' }}>
-            {mode === 'login' 
-              ? (language === 'tr' ? 'Espor ekosistemine geri dön ve tartışmalara katıl.' : 'Return to the esports ecosystem and join discussions.') 
-              : (language === 'tr' ? 'Tier 1 espor topluluğunun bir parçası ol.' : 'Become part of the Tier 1 esports community.')}
+            {mode === 'login' ? t.authLoginDesc : t.authRegisterDesc}
           </p>
         </div>
 
@@ -112,7 +108,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
                 required
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                placeholder={language === 'tr' ? 'Topluluk Kullanıcı Adı' : 'Community Username'} 
+                placeholder={t.communityUsername} 
                 className="w-full border text-sm rounded-xl pl-11 pr-4 py-3 outline-none focus:border-es-cyan transition-colors shadow-inner" 
                 style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
               />
@@ -126,7 +122,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={language === 'tr' ? 'E-posta Adresi' : 'Email Address'} 
+              placeholder={t.emailPlaceholder} 
               className="w-full border text-sm rounded-xl pl-11 pr-4 py-3 outline-none focus:border-es-cyan transition-colors shadow-inner" 
               style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
             />
@@ -139,7 +135,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder={language === 'tr' ? 'Şifre' : 'Password'} 
+              placeholder={t.passwordPlaceholder} 
               className="w-full border text-sm rounded-xl pl-11 pr-4 py-3 outline-none focus:border-es-cyan transition-colors shadow-inner" 
               style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
             />
@@ -148,7 +144,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
           {mode === 'login' && (
             <div className="flex justify-end">
               <a href="#" className="text-[10px] font-bold hover:text-es-cyan transition-colors" style={{ color: 'var(--es-text-3)' }}>
-                {language === 'tr' ? 'Şifremi Unuttum' : 'Forgot Password?'}
+                {t.forgotPassword}
               </a>
             </div>
           )}
@@ -162,9 +158,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                {mode === 'login' 
-                  ? (language === 'tr' ? 'Giriş Yap' : 'Log In') 
-                  : (language === 'tr' ? 'Hesabımı Oluştur' : 'Create Account')} 
+                {mode === 'login' ? t.login : t.createAccountBtn} 
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -173,17 +167,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }: { 
 
         <div className="mt-6 text-center relative z-10 border-t pt-5 transition-colors" style={{ borderColor: 'var(--es-border)' }}>
           <span className="text-xs transition-colors" style={{ color: 'var(--es-text-3)' }}>
-            {mode === 'login' 
-              ? (language === 'tr' ? 'Henüz hesabın yok mu? ' : 'Don\'t have an account yet? ') 
-              : (language === 'tr' ? 'Zaten bir hesabın var mı? ' : 'Already have an account? ')}
+            {mode === 'login' ? t.noAccountYet : t.alreadyHaveAccount}
           </span>
           <button 
             onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setStatus({type: null, message: ""}); }}
             className="text-xs font-black text-es-cyan hover:opacity-80 transition-colors"
           >
-            {mode === 'login' 
-              ? (language === 'tr' ? 'Hemen Kayıt Ol' : 'Sign Up Now') 
-              : (language === 'tr' ? 'Giriş Yap' : 'Log In')}
+            {mode === 'login' ? t.signUpNow : t.login}
           </button>
         </div>
 

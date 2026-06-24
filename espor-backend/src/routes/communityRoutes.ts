@@ -4,8 +4,7 @@ import { PrismaClient } from '@prisma/client';
 export default function communityRoutes(prisma: PrismaClient) {
   const router = Router();
 
-  // 🌍 1. TÜM KONULARI GETİR (Community Hub Listesi İçin)
-  // GET /api/community
+  // 🌍 1. TÜM KONULARI GETİR
   router.get('/', async (req, res) => {
     try {
       const threads = await prisma.thread.findMany({
@@ -19,6 +18,7 @@ export default function communityRoutes(prisma: PrismaClient) {
 
       const formattedThreads = threads.map(thread => ({
         id: thread.id,
+        authorId: thread.authorId, // 🚀 DÜZELTME: Konu sahibinin kimliği eklendi
         title: thread.title,
         content: thread.content,
         category: thread.category,
@@ -38,7 +38,6 @@ export default function communityRoutes(prisma: PrismaClient) {
   });
 
   // ✍️ 2. YENİ KONU OLUŞTUR
-  // POST /api/community
   router.post('/', async (req, res) => {
     const { title, content, category, gameSlug, authorId } = req.body;
 
@@ -68,8 +67,7 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
   });
 
-  // 📖 3. TEK BİR KONUYU VE YORUMLARINI GETİR (Konu Detay Sayfası İçin) YENİ! 🚀
-  // GET /api/community/:id
+  // 📖 3. TEK BİR KONUYU VE YORUMLARINI GETİR
   router.get('/:id', async (req, res) => {
     const threadId = parseInt(req.params.id);
 
@@ -84,7 +82,7 @@ export default function communityRoutes(prisma: PrismaClient) {
           author: { select: { nickname: true, avatarUrl: true, role: true } },
           votes: true,
           comments: {
-            orderBy: { createdAt: 'asc' }, // Eski yorumlar üstte (geleneksel forum mantığı)
+            orderBy: { createdAt: 'asc' }, 
             include: {
               author: { select: { nickname: true, avatarUrl: true, role: true } }
             }
@@ -96,9 +94,9 @@ export default function communityRoutes(prisma: PrismaClient) {
         return res.status(404).json({ success: false, message: 'Konu bulunamadı.' });
       }
 
-      // Frontend'in okuyacağı şık formata çeviriyoruz
       const formattedThread = {
         id: thread.id,
+        authorId: thread.authorId, // 🚀 DÜZELTME: Konu sahibinin kimliği eklendi
         title: thread.title,
         content: thread.content,
         category: thread.category,
@@ -123,8 +121,7 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
   });
 
-  // 💬 4. KONUYA YENİ YORUM EKLE YENİ! 🚀
-  // POST /api/community/:id/comments
+  // 💬 4. KONUYA YENİ YORUM EKLE
   router.post('/:id/comments', async (req, res) => {
     const threadId = parseInt(req.params.id);
     const { content, authorId } = req.body;
@@ -135,17 +132,10 @@ export default function communityRoutes(prisma: PrismaClient) {
 
     try {
       const newComment = await prisma.comment.create({
-        data: {
-          content,
-          threadId,
-          authorId
-        },
-        include: {
-          author: { select: { nickname: true, avatarUrl: true, role: true } }
-        }
+        data: { content, threadId, authorId },
+        include: { author: { select: { nickname: true, avatarUrl: true, role: true } } }
       });
 
-      // Yorum eklendikten sonra anında ekrana basılması için formatlanmış haliyle geri dönüyoruz
       const formattedComment = {
         id: newComment.id,
         content: newComment.content,
@@ -161,8 +151,7 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
   });
 
-  // ⬆️⬇️ 5. OY KULLANMA (UPVOTE / DOWNVOTE)
-  // POST /api/community/:id/vote
+  // ⬆️⬇️ 5. OY KULLANMA
   router.post('/:id/vote', async (req, res) => {
     const threadId = parseInt(req.params.id);
     const { userId, value } = req.body; 
@@ -195,6 +184,41 @@ export default function communityRoutes(prisma: PrismaClient) {
     } catch (error: any) {
       console.error("Oy verme işleminde hata:", error.message);
       res.status(500).json({ success: false, message: 'Oy işlemi tamamlanamadı.' });
+    }
+  });
+
+  // 🗑️ 6. KONUYU SİL YENİ! 🚀
+  // DELETE /api/community/:id
+  router.delete('/:id', async (req, res) => {
+    const threadId = parseInt(req.params.id);
+    const { userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'Kullanıcı kimliği doğrulanmadı.' });
+    }
+
+    try {
+      const thread = await prisma.thread.findUnique({ where: { id: threadId } });
+      if (!thread) {
+        return res.status(404).json({ success: false, message: 'Konu bulunamadı.' });
+      }
+
+      // Güvenlik: Sadece konuyu açan kişi silebilir
+      if (thread.authorId !== userId) {
+        return res.status(403).json({ success: false, message: 'Bu konuyu silme yetkiniz yok.' });
+      }
+
+      // 1. Konuya ait oyları sil
+      await prisma.vote.deleteMany({ where: { threadId } });
+      // 2. Konuya ait yorumları sil
+      await prisma.comment.deleteMany({ where: { threadId } });
+      // 3. Konunun kendisini sil
+      await prisma.thread.delete({ where: { id: threadId } });
+
+      res.status(200).json({ success: true, message: 'Konu ve bağlı veriler başarıyla silindi.' });
+    } catch (error: any) {
+      console.error("Konu silinirken hata:", error.message);
+      res.status(500).json({ success: false, message: 'Konu silinemedi.' });
     }
   });
 

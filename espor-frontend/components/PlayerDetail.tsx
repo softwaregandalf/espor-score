@@ -101,7 +101,7 @@ export default function PlayerDetail({ player, gameColor, category, onBack }: { 
                   {game === 'val' ? t.mostPlayedAgents : game === 'cs2' ? t.mostPlayedRoles : t.mostPlayedChampions}
                 </h3>
                 <div className="flex items-center gap-1 rounded-lg p-1 border transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
-                  {[{id:'30d', label: language === 'tr' ? '30G' : '30D'}, {id:'60d', label: language === 'tr' ? '60G' : '60D'}, {id:'90d', label: language === 'tr' ? '90G' : '90D'}, {id:'all', label: language === 'tr' ? 'TÜMÜ' : 'ALL'}].map(tObj => (
+                  {[{id:'30d', label: t.days30}, {id:'60d', label: t.days60}, {id:'90d', label: t.days90}, {id:'all', label: t.allLabel}].map(tObj => (
                     <button key={tObj.id} onClick={() => setTimeFilter(tObj.id as any)} className={`px-3 py-1 text-[10px] font-black uppercase rounded transition-all`} style={{ background: timeFilter === tObj.id ? 'var(--es-text-1)' : 'transparent', color: timeFilter === tObj.id ? 'var(--es-bg)' : 'var(--es-text-3)' }}>
                       {tObj.label}
                     </button>

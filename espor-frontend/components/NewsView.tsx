@@ -102,7 +102,7 @@ export default function NewsView() {
               )}
               <div className="flex items-center justify-between mt-auto pt-2">
                 <div className="flex items-center gap-4 text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>
-                  <div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /><span>{featuredNews.author || (language === 'tr' ? 'Editör' : 'Editor')}</span></div>
+                  <div className="flex items-center gap-1.5"><User className="w-3.5 h-3.5" /><span>{featuredNews.author || t.editor}</span></div>
                   <div className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /><span>{translateApiText(featuredNews.time)}</span></div>
                   {/* 🚀 TpeScript Hatası Çözüldü: (|| '') eklendi */}
                   {'readTime' in featuredNews && <span>• {translateApiText(featuredNews.readTime || '')}</span>}

@@ -5,11 +5,15 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import {
-  Trophy, MonitorPlay, Swords, Newspaper, Users, Settings,
-  Bell, Search, ChevronDown, BarChart2, Radio, X, Menu, History, Sun, Moon, LogIn, LogOut, User // 🚀 LogOut ve User ikonları eklendi
+  Trophy, MonitorPlay, Swords, Newspaper, Users,
+  Bell, Search, ChevronDown, BarChart2, Radio, X, Menu, History, Sun, Moon, LogIn, LogOut, User
 } from "lucide-react";
 import LiveEventToast from "./LiveEventToast";
 import { useLanguage, TranslationKeys } from "./LanguageProvider";
+import { LANGUAGES } from "@/i18n";
+import FlagIcon from "./FlagIcon";
+import { useAccentColor } from "./AccentColorProvider";
+import SettingsPanel from "./SettingsPanel";
 
 import { useAuth } from "./AuthProvider";
 import AuthModal from "./AuthModal";
@@ -24,17 +28,6 @@ const NAV_ITEMS = [
   { id: "community", icon: Users, path: "/community", accent: "#00D4FF" },
 ];
 
-const GAMES = [
-  { id: 'lol', name: 'League of Legends', short: 'LoL' },
-  { id: 'val', name: 'VALORANT', short: 'VAL' },
-  { id: 'cs2', name: 'Counter-Strike 2', short: 'CS2' },
-  { id: 'dota2', name: 'Dota 2', short: 'DOTA' },
-];
-
-const GAME_COLORS: Record<string, string> = {
-  lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', default: '#4D7CFE'
-};
-
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -44,9 +37,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   
   // 🚀 GERÇEK KULLANICI VERİSİ VE ÇIKIŞ YAPMA FONKSİYONU
   const { user, isLoading, signOut } = useAuth();
+  const { accentColor } = useAccentColor();
 
   const [mounted, setMounted] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
@@ -61,7 +54,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   const currentTheme = theme === 'system' ? systemTheme : theme;
   const isDark = currentTheme === 'dark';
-  const themeColor = selectedGame ? GAME_COLORS[selectedGame] : GAME_COLORS.default;
+  const themeColor = accentColor;
 
   const handleLogoClick = () => {
     if (pathname === '/') {
@@ -125,24 +118,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               );
             })}
           </nav>
-
-          {!sidebarCollapsed && (
-            <div className="flex flex-col gap-1 px-3">
-              <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2 flex justify-between items-center text-slate-500">
-                <span>{t.games}</span>
-                <Settings className="w-3 h-3 cursor-pointer hover:text-white transition-colors" />
-              </div>
-              {GAMES.map((game) => {
-                const isSelected = selectedGame === game.id;
-                return (
-                  <button key={game.id} onClick={() => setSelectedGame(isSelected ? null : game.id)} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 w-full text-left group" style={{ background: isSelected ? `${GAME_COLORS[game.id]}15` : 'transparent', color: isSelected ? GAME_COLORS[game.id] : 'var(--es-text-3)' }}>
-                    <div className="w-2 h-2 rounded-full shrink-0 transition-all duration-500" style={{ background: GAME_COLORS[game.id], boxShadow: isSelected ? `0 0 10px ${GAME_COLORS[game.id]}` : 'none' }} />
-                    <span className="text-sm font-semibold flex-1 group-hover:text-white transition-colors">{game.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* 🚀 DİNAMİK KULLANICI PROFİLİ VE AÇILIR MENÜ */}
@@ -231,23 +206,31 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           <div className="flex items-center gap-3">
+            {mounted && <SettingsPanel />}
+
             {mounted && (
               <div className="relative group">
                 <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all hover:scale-105" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
-                  <span className="text-sm">{language === 'tr' ? '🇹🇷' : '🇬🇧'}</span>
+                  <FlagIcon language={language} />
                   <span className="text-[10px] font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>
-                    {language === 'tr' ? 'TR' : 'EN'}
+                    {LANGUAGES.find((l) => l.id === language)?.label ?? language.toUpperCase()}
                   </span>
                   <ChevronDown className="w-3 h-3 transition-colors" style={{ color: 'var(--es-text-3)' }} />
                 </button>
 
-                <div className="absolute right-0 top-full mt-2 w-32 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden border" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
-                  <button onClick={() => setLanguage('en')} className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold transition-colors ${language === 'en' ? 'bg-es-cyan/10 text-es-cyan' : 'hover:bg-black/5 dark:hover:bg-white/5'}`} style={{ color: language === 'en' ? '' : 'var(--es-text-1)' }}>
-                    <span className="text-base">🇬🇧</span> English
-                  </button>
-                  <button onClick={() => setLanguage('tr')} className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold transition-colors ${language === 'tr' ? 'bg-es-cyan/10 text-es-cyan' : 'hover:bg-black/5 dark:hover:bg-white/5'}`} style={{ color: language === 'tr' ? '' : 'var(--es-text-1)' }}>
-                    <span className="text-base">🇹🇷</span> Türkçe
-                  </button>
+                <div className="absolute right-0 top-full mt-2 w-40 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden border" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.id}
+                      onClick={() => setLanguage(lang.id)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold transition-colors ${language === lang.id ? 'bg-es-cyan/10 text-es-cyan' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                      style={{ color: language === lang.id ? '' : 'var(--es-text-1)' }}
+                    >
+                      <FlagIcon language={lang.id} className="w-5 h-3.5" />
+                      <span className="font-black uppercase tracking-widest">{lang.label}</span>
+                      <span className="text-[10px] font-semibold opacity-70">{lang.nativeName}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             )}

@@ -3,35 +3,35 @@
 import { useState, useEffect } from "react";
 import { Trophy, Target, Shield, Swords, X } from "lucide-react";
 import { useLanguage } from "./LanguageProvider";
+import type { TranslationKeys } from "@/i18n";
 
-// 🚀 DİNAMİK ÇEVİRİ İÇİN MOCK DATA GÜNCELLENDİ
 const FAKE_EVENTS = [
-  { 
+  {
     id: 1, game: "CS2", icon: Target, color: "#F59E0B",
-    titleTr: "1. HARİTA - İLK YARI SONUCU", titleEn: "MAP 1 - HALFTIME RESULT",
-    desc: "G2 Esports  7 - 5  FaZe Clan (Mirage)"
+    titleKey: "eventMap1Halftime" as TranslationKeys,
+    desc: "G2 Esports  7 - 5  FaZe Clan (Mirage)",
   },
-  { 
+  {
     id: 2, game: "LoL", icon: Trophy, color: "#22C55E",
-    titleTr: "MAÇ SONUCU", titleEn: "MATCH RESULT",
-    desc: "T1  2 - 0  Gen.G"
+    titleKey: "eventMatchResult" as TranslationKeys,
+    desc: "T1  2 - 0  Gen.G",
   },
-  { 
+  {
     id: 3, game: "VAL", icon: Shield, color: "#FF4655",
-    titleTr: "1. HARİTA SONUCU", titleEn: "MAP 1 RESULT",
-    desc: "Sentinels  13 - 9  Fnatic (Haven)"
+    titleKey: "eventMap1Result" as TranslationKeys,
+    desc: "Sentinels  13 - 9  Fnatic (Haven)",
   },
-  { 
+  {
     id: 4, game: "DOTA2", icon: Swords, color: "#B9202C",
-    titleTr: "OYUN SONUCU", titleEn: "GAME RESULT",
-    desc: "Team Spirit  1 - 0  Team Liquid"
-  }
+    titleKey: "eventGameResult" as TranslationKeys,
+    desc: "Team Spirit  1 - 0  Team Liquid",
+  },
 ];
 
 export default function LiveEventToast() {
-  const { t, language } = useLanguage(); 
+  const { t } = useLanguage();
 
-  const [currentEvent, setCurrentEvent] = useState<any>(null);
+  const [currentEvent, setCurrentEvent] = useState<(typeof FAKE_EVENTS)[number] | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -65,10 +65,9 @@ export default function LiveEventToast() {
             </span>
             <span className="text-[10px] text-slate-400 font-mono transition-colors">{t.now}</span>
           </div>
-          
-          {/* 🚀 DİNAMİK MOCK DATA BAĞLANTISI */}
+
           <h4 className="text-sm font-black text-white leading-tight mb-1 tracking-wide transition-colors">
-            {language === 'tr' ? currentEvent.titleTr : currentEvent.titleEn}
+            {t[currentEvent.titleKey]}
           </h4>
           <p className="text-xs text-slate-300 leading-relaxed font-medium transition-colors">
             {currentEvent.desc}
