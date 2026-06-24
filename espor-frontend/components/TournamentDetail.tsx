@@ -155,7 +155,7 @@ export default function TournamentDetail({ tournament, onBack }: { tournament: a
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-3 md:p-8">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-3 pb-12 md:p-8 md:pb-8 min-h-0">
         <div className="max-w-7xl mx-auto min-w-0">
           {activeTab === 'overview' && <TabOverview gameColor={gameColor} bracket={MOCK_BRACKET} onMatchSelect={setSelectedMatch} />}
           {activeTab === 'stats' && <TabStats gameColor={gameColor} category={category} stats={MOCK_STATS} />}
@@ -178,18 +178,18 @@ function TabOverview({ gameColor, bracket, onMatchSelect }: { gameColor: string,
     for (let i = 0; i < stage.matches.length; i += 2) { pairs.push([stage.matches[i], stage.matches[i + 1]]); }
     
     return pairs.map((pair, pairIndex) => (
-      <div key={pairIndex} className="flex flex-col justify-around relative flex-1 gap-6 py-4 min-h-[220px]">
+      <div key={pairIndex} className="flex flex-col justify-around relative flex-1 gap-6 py-4 min-h-[180px] md:min-h-[220px]">
         {pair[0] && <BracketMatchCard match={pair[0]} stageIndex={stageIndex} isLastStage={stageIndex === bracket.length - 1} onClick={() => onMatchSelect(pair[0])} />}
         {pair[1] && <BracketMatchCard match={pair[1]} stageIndex={stageIndex} isLastStage={stageIndex === bracket.length - 1} onClick={() => onMatchSelect(pair[1])} />}
         
         {pair[1] && stageIndex < bracket.length - 1 && (
           <>
-            <div className="absolute right-[-1.5rem] w-[1.5rem] border-t-2 border-b-2 border-r-2 rounded-r-lg pointer-events-none transition-colors" style={{ top: '25%', bottom: '25%', borderColor: 'var(--es-border)' }} />
-            <div className="absolute right-[-3rem] top-1/2 w-[1.5rem] h-[2px] pointer-events-none transition-colors" style={{ background: 'var(--es-border)' }} />
+            <div className="absolute right-[-1.5rem] w-[1.5rem] border-t-2 border-b-2 border-r-2 rounded-r-lg pointer-events-none transition-colors hidden md:block" style={{ top: '25%', bottom: '25%', borderColor: 'var(--es-border)' }} />
+            <div className="absolute right-[-3rem] top-1/2 w-[1.5rem] h-[2px] pointer-events-none transition-colors hidden md:block" style={{ background: 'var(--es-border)' }} />
           </>
         )}
         {!pair[1] && stageIndex < bracket.length - 1 && (
-           <div className="absolute right-[-3rem] top-1/2 w-[3rem] h-[2px] pointer-events-none transition-colors" style={{ background: 'var(--es-border)' }} />
+           <div className="absolute right-[-3rem] top-1/2 w-[3rem] h-[2px] pointer-events-none transition-colors hidden md:block" style={{ background: 'var(--es-border)' }} />
         )}
       </div>
     ));
@@ -223,21 +223,50 @@ function TabOverview({ gameColor, bracket, onMatchSelect }: { gameColor: string,
         </div>
       </div>
 
-      <div className="rounded-xl p-3 md:p-8 shadow-lg overflow-x-auto scrollbar-hide transition-colors min-w-0" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
+      <div className="rounded-xl p-3 md:p-8 shadow-lg transition-colors min-w-0 overflow-x-hidden" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
         <h3 className="text-xs md:text-sm font-black uppercase tracking-widest mb-4 md:mb-8 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>
           <GitMerge className="w-4 h-4 shrink-0" style={{ color: gameColor }}/> {t.playoffBracket}
         </h3>
-        <div className="flex justify-between min-w-[900px] h-[500px] md:h-[600px] pb-8 md:pb-12">
+
+        {/* Mobil: aşamalar alt alta, tüm maçlar kaydırılabilir */}
+        <div className="flex flex-col gap-5 md:hidden min-w-0 pb-2">
           {bracket.map((stage, stageIndex) => (
-            <div key={stageIndex} className="flex flex-col w-64 relative shrink-0">
-              <div className="text-[10px] font-black uppercase tracking-widest text-center mb-4 md:mb-6 h-4 truncate px-1" style={{ color: 'var(--es-text-3)' }}>
-                 {translateApiText(stage.title)}
+            <div key={stageIndex} className="flex flex-col gap-3 min-w-0">
+              <div
+                className="text-[10px] font-black uppercase tracking-widest text-center px-2 py-1.5 rounded-lg truncate"
+                style={{ color: gameColor, background: `${gameColor}15` }}
+              >
+                {translateApiText(stage.title)}
               </div>
-              <div className="flex flex-col justify-around flex-1 relative">
-                {renderBracketPairs(stage, stageIndex)}
+              <div className="flex flex-col gap-2.5 min-w-0">
+                {stage.matches.map((match) => (
+                  <BracketMatchCard
+                    key={match.id}
+                    match={match}
+                    stageIndex={stageIndex}
+                    isLastStage={stageIndex === bracket.length - 1}
+                    onClick={() => onMatchSelect(match)}
+                  />
+                ))}
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Masaüstü: yatay bracket ağacı */}
+        <div className="hidden md:block overflow-x-auto scrollbar-hide pr-4">
+          <div className="flex justify-between min-w-[900px] h-[600px] pb-12">
+            {bracket.map((stage, stageIndex) => (
+              <div key={stageIndex} className="flex flex-col w-64 relative shrink-0">
+                <div className="text-[10px] font-black uppercase tracking-widest text-center mb-6 h-4 truncate px-1" style={{ color: 'var(--es-text-3)' }}>
+                   {translateApiText(stage.title)}
+                </div>
+                <div className="flex flex-col justify-around flex-1 relative">
+                  {renderBracketPairs(stage, stageIndex)}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

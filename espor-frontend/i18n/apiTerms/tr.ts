@@ -57,6 +57,8 @@ const trApiTerms: Record<string, string> = {
 
   "hours ago": "saat önce",
   "hour ago": "saat önce",
+  "mins ago": "dk önce",
+  "min ago": "dk önce",
   "days ago": "gün önce",
   "day ago": "gün önce",
   "min read": "dk okuma",

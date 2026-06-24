@@ -8,6 +8,7 @@ import { useAuth } from "./AuthProvider";
 import { useLanguage } from "./LanguageProvider";
 import { LOCALE_MAP } from "@/i18n"; 
 import { supabase } from "@/app/utils/supabaseClient"; 
+import { fetchUserProfile } from "@/lib/api/users";
 
 export default function UserProfileView() {
   const [activeTab, setActiveTab] = useState<'activity' | 'settings'>('activity');
@@ -37,13 +38,9 @@ export default function UserProfileView() {
       
       try {
         setIsStatsLoading(true);
-        const res = await fetch(`http://localhost:5000/api/users/${user.id}/profile`);
-        const json = await res.json();
-
-        if (json.success) {
-          setUserStats(json.data.stats);
-          setRecentActivities(json.data.recentActivity);
-        }
+        const data = await fetchUserProfile(user.id);
+        setUserStats(data.stats);
+        setRecentActivities(data.recentActivity);
       } catch (error) {
         console.error("Profil istatistikleri çekilemedi:", error);
       } finally {

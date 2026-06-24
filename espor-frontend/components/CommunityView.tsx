@@ -8,6 +8,12 @@ import { MessageSquare, ArrowBigUp, ArrowBigDown, Share2, MessageCircle, ShieldA
 import { GAMES } from "@/app/data/mockData";
 import { useLanguage, TranslationKeys } from "./LanguageProvider"; 
 import AuthModal from "./AuthModal";
+import {
+  createCommunityThread,
+  deleteCommunityThread,
+  fetchCommunityThreads,
+  voteCommunityThread,
+} from "@/lib/api/community";
 
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', all: '#00D4FF' };
 
@@ -50,11 +56,8 @@ export default function CommunityView() {
   const fetchThreads = async () => {
     setIsThreadsLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/community');
-      const json = await res.json();
-      if (json.success) {
-        setThreads(json.data);
-      }
+      const data = await fetchCommunityThreads();
+      setThreads(data);
     } catch (error) {
       console.error("Topluluk verileri çekilemedi:", error);
     } finally {
@@ -72,27 +75,19 @@ export default function CommunityView() {
     
     setIsSubmitting(true);
     try {
-      const res = await fetch('http://localhost:5000/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: newThreadTitle,
-          content: newThreadContent,
-          category: newThreadCategory,
-          gameSlug: newThreadGame,
-          authorId: user.id
-        })
+      await createCommunityThread({
+        title: newThreadTitle,
+        content: newThreadContent,
+        category: newThreadCategory,
+        gameSlug: newThreadGame,
+        authorId: user.id,
       });
-      
-      const json = await res.json();
-      if (json.success) {
-        setShowCreateModal(false);
-        setNewThreadTitle('');
-        setNewThreadContent('');
-        setNewThreadCategory('general');
-        setNewThreadGame('all');
-        fetchThreads(); 
-      }
+      setShowCreateModal(false);
+      setNewThreadTitle('');
+      setNewThreadContent('');
+      setNewThreadCategory('general');
+      setNewThreadGame('all');
+      fetchThreads();
     } catch (error) {
       console.error("Konu oluşturulamadı:", error);
     } finally {
@@ -103,14 +98,8 @@ export default function CommunityView() {
   const handleVote = async (threadId: number, value: number) => {
     if (!user) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/community/${threadId}/vote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, value })
-      });
-      if (res.ok) {
-        fetchThreads(); 
-      }
+      await voteCommunityThread(threadId, user.id, value);
+      fetchThreads();
     } catch (error) {
       console.error("Oy işlemi başarısız:", error);
     }
@@ -118,19 +107,14 @@ export default function CommunityView() {
 
   // 🚀 TIER 1 DÜZELTME: Doğrudan pop-up onayı ile silme
   const executeDeleteThread = async () => {
-    if (!threadToDelete) return;
+    if (!threadToDelete || !user) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/community/${threadToDelete}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user?.id })
-      });
-      const json = await res.json();
-      if (json.success) {
-        setThreadToDelete(null); // Modalı kapat
-        fetchThreads(); // Listeyi yenile
-      } else {
-        alert(json.message);
+      const result = await deleteCommunityThread(threadToDelete, user.id);
+      if (result.success) {
+        setThreadToDelete(null);
+        fetchThreads();
+      } else if (result.message) {
+        alert(result.message);
       }
     } catch (error) {
       console.error("Silme işlemi başarısız:", error);
@@ -225,9 +209,9 @@ export default function CommunityView() {
             </div>
           ) : (
             filteredThreads.map(thread => (
-              <div key={thread.id} className="rounded-xl border shadow-sm flex min-h-[90px] sm:min-h-[105px] hover:opacity-90 transition-colors min-w-0 overflow-hidden" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+              <div key={thread.id} className="rounded-xl border shadow-sm flex hover:opacity-90 transition-colors min-w-0" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
                 
-                <div className="w-9 sm:w-12 md:w-14 shrink-0 border-r flex flex-col items-center justify-center py-2 sm:py-3 gap-0.5 sm:gap-1 select-none transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
+                <div className="w-9 sm:w-12 md:w-14 shrink-0 border-r flex flex-col items-center justify-center py-3 sm:py-4 gap-0.5 sm:gap-1 select-none self-stretch transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
                   <button 
                     onClick={() => handleAction('actionVote', () => handleVote(thread.id, 1))} 
                     className="p-0.5 sm:p-1 rounded hover:text-green-500 transition-colors" style={{ color: 'var(--es-text-3)' }}
@@ -245,7 +229,7 @@ export default function CommunityView() {
                   </button>
                 </div>
 
-                <div className="flex-1 min-w-0 p-2.5 sm:p-4 md:p-5 flex flex-col gap-1 sm:gap-1.5 md:gap-2 overflow-hidden">
+                <div className="flex-1 min-w-0 p-2.5 sm:p-4 md:p-5 flex flex-col gap-2 sm:gap-2.5">
                   <div className="flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[10px] font-bold transition-colors flex-wrap min-w-0 leading-tight" style={{ color: 'var(--es-text-3)' }}>
                     <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: GAME_COLORS[thread.gameSlug] || GAME_COLORS.all }} />
                     <span className="uppercase tracking-widest shrink-0">{thread.gameSlug.toUpperCase()}</span>
@@ -254,14 +238,29 @@ export default function CommunityView() {
                     <span className="shrink-0 truncate">{translateApiText(thread.timeAgo)}</span>
                   </div>
                   
-                  <Link href={`/community/${thread.id}`} className="block min-w-0">
-                    <h2 className="text-sm sm:text-base md:text-lg font-black tracking-tight leading-snug hover:text-es-cyan transition-colors cursor-pointer break-words whitespace-normal line-clamp-2" style={{ color: 'var(--es-text-1)' }}>
+                  <Link href={`/community/${thread.id}`} className="block min-w-0 group/title">
+                    <h2 className="text-sm sm:text-base md:text-lg font-black tracking-tight leading-snug group-hover/title:text-es-cyan transition-colors break-words whitespace-normal line-clamp-2" style={{ color: 'var(--es-text-1)' }}>
                       {thread.title}
                     </h2>
                   </Link>
-                  <p className="text-[11px] sm:text-xs line-clamp-2 leading-relaxed transition-colors whitespace-normal min-w-0" style={{ color: 'var(--es-text-3)' }}>{thread.content}</p>
+
+                  {thread.content?.trim() ? (
+                    <Link href={`/community/${thread.id}`} className="block min-w-0 group/preview">
+                      <div
+                        className="rounded-lg border px-3 py-2 sm:px-3.5 sm:py-2.5 min-w-0 transition-colors group-hover/preview:border-es-cyan/30"
+                        style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}
+                      >
+                        <p
+                          className="text-xs sm:text-sm md:text-[0.9375rem] leading-relaxed line-clamp-2 md:line-clamp-3 break-words [overflow-wrap:anywhere] whitespace-pre-wrap min-w-0"
+                          style={{ color: 'var(--es-text-2)' }}
+                        >
+                          {thread.content}
+                        </p>
+                      </div>
+                    </Link>
+                  ) : null}
                   
-                  <div className="mt-1 sm:mt-1.5 border-t pt-2 sm:pt-2.5 w-full min-w-0" style={{ borderColor: 'var(--es-border)' }}>
+                  <div className="mt-auto border-t pt-2 sm:pt-2.5 w-full min-w-0" style={{ borderColor: 'var(--es-border)' }}>
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full min-w-0">
                       <div className="flex items-center gap-2.5 sm:gap-4 md:gap-6 min-w-0">
                         <button 

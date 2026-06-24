@@ -70,6 +70,8 @@ const ruApiTerms: Record<string, string> = {
 
   "hours ago": "ч. назад",
   "hour ago": "ч. назад",
+  "mins ago": "мин. назад",
+  "min ago": "мин. назад",
   "days ago": "дн. назад",
   "day ago": "дн. назад",
   "min read": "мин чтения",

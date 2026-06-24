@@ -5,6 +5,7 @@ import { Search, Calendar, Filter, ChevronLeft, BarChart3, Info, Layers3, ListFi
 import { COMPLETED_MATCHES, GAMES } from "@/app/data/mockData";
 import MatchScoreboard from "./MatchScoreboard"; 
 import MatchAnalytics from "./MatchAnalytics";   
+import StreamPlatformButtons, { StreamPlatform, getStreamVideoBg } from "./StreamPlatformButtons";
 import { useLanguage } from "./LanguageProvider"; 
 
 const ALLOWED_GAMES = ['lol', 'val', 'cs2', 'dota2'];
@@ -30,7 +31,7 @@ export default function ResultsView() {
   const [viewMode, setViewMode] = useState<'list' | 'detail' | 'analysis'>('list');
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [standardTab, setStandardTab] = useState<'overview' | 'lineups' | 'stats'>('overview');
-  const [activeVideo, setActiveVideo] = useState<'twitch' | 'youtube' | null>(null);
+  const [activeVideo, setActiveVideo] = useState<StreamPlatform | null>(null);
 
   const filteredMatches = ENRICHED_MATCHES.filter(match => {
     const matchesSearch = match.team1.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -181,46 +182,23 @@ export default function ResultsView() {
                          {activeVideo && <span onClick={() => setActiveVideo(null)} className="text-[9px] sm:text-[10px] cursor-pointer uppercase font-black transition-colors hover:opacity-80 shrink-0" style={{ color: 'var(--es-text-3)' }}>{t.closeLabel}</span>}
                        </h4>
 
-                       <div className="flex flex-col sm:flex-row gap-2 md:gap-4 min-w-0">
-                          {!isLive && !isCompleted ? (
-                             <>
-                               <div className="flex-1 flex items-center justify-between gap-1.5 sm:gap-2 p-2 sm:p-2.5 md:p-3 rounded-lg opacity-50 cursor-not-allowed transition-colors min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-                                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 flex-1 overflow-hidden"><div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded flex items-center justify-center bg-purple-500/20 text-purple-500 shrink-0"><MonitorPlay className="w-3.5 h-3.5 sm:w-4 sm:h-4"/></div><span className="text-[11px] sm:text-xs md:text-sm font-bold transition-colors truncate" style={{ color: 'var(--es-text-1)' }}>Twitch</span></div>
-                                 <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest shrink-0" style={{ color: 'var(--es-text-3)' }}>{t.waiting}</span>
-                               </div>
-                               <div className="flex-1 flex items-center justify-between gap-1.5 sm:gap-2 p-2 sm:p-2.5 md:p-3 rounded-lg opacity-50 cursor-not-allowed transition-colors min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-                                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 flex-1 overflow-hidden"><div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded flex items-center justify-center bg-red-500/20 text-red-500 shrink-0"><MonitorPlay className="w-3.5 h-3.5 sm:w-4 sm:h-4"/></div><span className="text-[11px] sm:text-xs md:text-sm font-bold transition-colors truncate" style={{ color: 'var(--es-text-1)' }}>YouTube</span></div>
-                                 <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-widest shrink-0" style={{ color: 'var(--es-text-3)' }}>{t.waiting}</span>
-                               </div>
-                             </>
-                          ) : (
-                             <>
-                               <button onClick={() => setActiveVideo('twitch')} className={`flex-1 flex items-center justify-between gap-1.5 sm:gap-2 p-2 sm:p-2.5 md:p-3 rounded-lg transition-all border group cursor-pointer min-w-0 ${activeVideo === 'twitch' ? 'bg-purple-500/10 border-purple-500/50' : 'hover:border-purple-500/30'}`} style={{ background: activeVideo === 'twitch' ? '' : 'var(--es-surface)', borderColor: activeVideo === 'twitch' ? '' : 'var(--es-border)' }}>
-                                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 flex-1 overflow-hidden"><div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded flex items-center justify-center transition-colors shrink-0 ${activeVideo === 'twitch' ? 'bg-purple-500 text-white' : 'bg-purple-500/20 text-purple-500 group-hover:bg-purple-500 group-hover:text-white'}`}><MonitorPlay className="w-3.5 h-3.5 sm:w-4 sm:h-4"/></div><span className="text-[11px] sm:text-xs md:text-sm font-bold transition-colors truncate" style={{ color: 'var(--es-text-1)' }}>Twitch</span></div>
-                                 {isLive ? (
-                                     <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-[10px] sm:text-[11px] md:text-xs font-bold" style={{ color: 'var(--es-text-3)' }}>112K</span></div>
-                                 ) : (
-                                     <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black text-purple-500 uppercase tracking-wider sm:tracking-widest bg-purple-500/10 px-1 sm:px-1.5 md:px-2 py-0.5 md:py-1 rounded shrink-0 whitespace-nowrap">VOD {t.vodWatch}</span>
-                                 )}
-                               </button>
-                               <button onClick={() => setActiveVideo('youtube')} className={`flex-1 flex items-center justify-between gap-1.5 sm:gap-2 p-2 sm:p-2.5 md:p-3 rounded-lg transition-all border group cursor-pointer min-w-0 ${activeVideo === 'youtube' ? 'bg-red-500/10 border-red-500/50' : 'hover:border-red-500/30'}`} style={{ background: activeVideo === 'youtube' ? '' : 'var(--es-surface)', borderColor: activeVideo === 'youtube' ? '' : 'var(--es-border)' }}>
-                                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0 flex-1 overflow-hidden"><div className={`w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded flex items-center justify-center transition-colors shrink-0 ${activeVideo === 'youtube' ? 'bg-red-500 text-white' : 'bg-red-500/20 text-red-500 group-hover:bg-red-500 group-hover:text-white'}`}><MonitorPlay className="w-3.5 h-3.5 sm:w-4 sm:h-4"/></div><span className="text-[11px] sm:text-xs md:text-sm font-bold transition-colors truncate" style={{ color: 'var(--es-text-1)' }}>YouTube</span></div>
-                                 {isLive ? (
-                                     <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0"><span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-500 animate-pulse"/><span className="text-[10px] sm:text-[11px] md:text-xs font-bold" style={{ color: 'var(--es-text-3)' }}>75K</span></div>
-                                 ) : (
-                                     <span className="text-[8px] sm:text-[9px] md:text-[10px] font-black text-red-500 uppercase tracking-wider sm:tracking-widest bg-red-500/10 px-1 sm:px-1.5 md:px-2 py-0.5 md:py-1 rounded shrink-0 whitespace-nowrap">{t.highlights}</span>
-                                 )}
-                               </button>
-                             </>
-                          )}
-                       </div>
+                       <StreamPlatformButtons
+                         isLive={isLive}
+                         isCompleted={isCompleted}
+                         activeVideo={activeVideo}
+                         onSelect={setActiveVideo}
+                         waitingLabel={t.waiting}
+                         vodWatchLabel={t.vodWatch}
+                         highlightsLabel={t.highlights}
+                         replayLabel={t.replay}
+                       />
                      </div>
                      
                      {activeVideo && (
                        <div className="rounded-xl overflow-hidden shadow-2xl animate-fade-in relative pt-[56.25%] transition-colors min-w-0" style={{ background: '#000', border: '1px solid var(--es-border)' }}>
                          <div className="absolute inset-0 flex flex-col items-center justify-center px-3 sm:px-4">
-                           <div className={`w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-2 sm:mb-3 md:mb-4 shrink-0 ${activeVideo === 'twitch' ? 'bg-purple-500' : 'bg-red-500'}`}>
-                             <MonitorPlay className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
+                           <div className={`w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center mb-2 sm:mb-3 md:mb-4 shrink-0 ${getStreamVideoBg(activeVideo)}`}>
+                             <MonitorPlay className={`w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 ${activeVideo === 'kick' ? 'text-black' : 'text-white'}`} />
                            </div>
                            <span className="text-[10px] sm:text-xs md:text-sm font-black text-white uppercase tracking-wider sm:tracking-widest text-center px-2">
                              {isLive ? `${activeVideo} ${t.streamStarting}` : `${activeVideo} ${t.vodLoading}`}

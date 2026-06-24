@@ -6,6 +6,13 @@ import { useAuth } from "./AuthProvider";
 import { useLanguage, TranslationKeys } from "./LanguageProvider";
 import { ArrowLeft, MessageSquare, ArrowBigUp, ArrowBigDown, Share2, Loader2, Send, ShieldAlert, X, Trash2 } from "lucide-react"; 
 import AuthModal from "./AuthModal";
+import {
+  deleteCommunityComment,
+  deleteCommunityThread,
+  fetchCommunityThread,
+  postCommunityComment,
+  voteCommunityThread,
+} from "@/lib/api/community";
 
 const GAME_COLORS: Record<string, string> = { lol: '#22C55E', val: '#FF4655', cs2: '#F59E0B', dota2: '#B9202C', all: '#00D4FF' };
 
@@ -35,13 +42,8 @@ export default function CommunityThreadView() {
     if (!threadId) return;
     try {
       setIsLoading(true);
-      const res = await fetch(`http://localhost:5000/api/community/${threadId}`);
-      const json = await res.json();
-      if (json.success) {
-        setThread(json.data);
-      } else {
-        setThread(null); 
-      }
+      const data = await fetchCommunityThread(threadId);
+      setThread(data);
     } catch (error) {
       console.error("Konu detayı çekilemedi:", error);
     } finally {
@@ -63,16 +65,9 @@ export default function CommunityThreadView() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/community/${threadId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: commentContent, authorId: user.id })
-      });
-      const json = await res.json();
-      if (json.success) {
-        setCommentContent('');
-        fetchThreadDetails(); 
-      }
+      await postCommunityComment(threadId, commentContent, user.id);
+      setCommentContent('');
+      fetchThreadDetails();
     } catch (error) {
       console.error("Yorum eklenemedi:", error);
     } finally {
@@ -86,12 +81,8 @@ export default function CommunityThreadView() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/community/${threadId}/vote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id, value })
-      });
-      if (res.ok) fetchThreadDetails();
+      await voteCommunityThread(threadId, user.id, value);
+      fetchThreadDetails();
     } catch (error) {
       console.error("Oy işlemi başarısız:", error);
     }
@@ -99,13 +90,10 @@ export default function CommunityThreadView() {
 
   // 🚀 TIER 1 DÜZELTME: Pop-up'tan onay gelince siler
   const executeDeleteThread = async () => {
+    if (!user) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/community/${threadId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user?.id })
-      });
-      if (res.ok) {
+      const result = await deleteCommunityThread(threadId, user.id);
+      if (result.success) {
         router.push('/community');
       }
     } catch (error) {
@@ -117,18 +105,13 @@ export default function CommunityThreadView() {
     if (!commentToDelete || !user) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/community/${threadId}/comments/${commentToDelete}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id })
-      });
-      const json = await res.json();
+      const result = await deleteCommunityComment(threadId, commentToDelete, user.id);
 
-      if (json.success) {
+      if (result.success) {
         setCommentToDelete(null);
         fetchThreadDetails();
-      } else {
-        alert(json.message || 'Yorum silinemedi.');
+      } else if (result.message) {
+        alert(result.message || 'Yorum silinemedi.');
       }
     } catch (error) {
       console.error("Yorum silme işlemi başarısız:", error);
@@ -172,7 +155,7 @@ export default function CommunityThreadView() {
       <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-3 sm:p-4 md:p-8 min-w-0">
         <div className="max-w-4xl mx-auto flex flex-col gap-4 sm:gap-5 md:gap-6 min-w-0">
           
-          <div className="rounded-xl border shadow-lg flex min-h-[90px] sm:min-h-[105px] overflow-hidden transition-colors relative min-w-0" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+          <div className="rounded-xl border shadow-lg flex overflow-hidden transition-colors relative min-w-0" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
             <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-es-cyan/5 rounded-full blur-[80px] pointer-events-none" />
             
             <div className="w-9 sm:w-12 md:w-14 shrink-0 border-r flex flex-col items-center justify-center py-2 sm:py-3 gap-1 sm:gap-2 select-none transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
@@ -185,7 +168,7 @@ export default function CommunityThreadView() {
               </button>
             </div>
 
-            <div className="flex-1 min-w-0 p-2.5 sm:p-4 md:p-6 flex flex-col gap-2 sm:gap-3 md:gap-4 relative z-10 overflow-hidden">
+            <div className="flex-1 min-w-0 p-2.5 sm:p-4 md:p-6 flex flex-col gap-2 sm:gap-3 md:gap-4 relative z-10">
               <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold transition-colors flex-wrap min-w-0 leading-tight" style={{ color: 'var(--es-text-3)' }}>
                 <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shadow-[0_0_8px_currentColor] shrink-0" style={{ background: GAME_COLORS[thread.gameSlug] || GAME_COLORS.all, color: GAME_COLORS[thread.gameSlug] || GAME_COLORS.all }} />
                 <span className="uppercase tracking-widest shrink-0">{thread.gameSlug.toUpperCase()}</span>
@@ -195,7 +178,20 @@ export default function CommunityThreadView() {
               </div>
               
               <h2 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight leading-snug transition-colors break-words whitespace-normal min-w-0" style={{ color: 'var(--es-text-1)' }}>{thread.title}</h2>
-              <p className="text-xs sm:text-sm leading-relaxed transition-colors whitespace-pre-wrap break-words min-w-0" style={{ color: 'var(--es-text-3)' }}>{thread.content}</p>
+
+              {thread.content?.trim() ? (
+                <div
+                  className="rounded-lg border px-3 py-3 sm:px-4 sm:py-4 min-w-0"
+                  style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}
+                >
+                  <p
+                    className="text-sm sm:text-base leading-relaxed break-words [overflow-wrap:anywhere] whitespace-pre-wrap min-w-0"
+                    style={{ color: 'var(--es-text-2)' }}
+                  >
+                    {thread.content}
+                  </p>
+                </div>
+              ) : null}
               
               <div className="mt-1 sm:mt-2 md:mt-4 border-t pt-2 sm:pt-3 md:pt-4 w-full min-w-0" style={{ borderColor: 'var(--es-border)' }}>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between w-full min-w-0">

@@ -12,7 +12,7 @@ import {
   fetchFavoriteMatchIds,
   mergeLocalFavoritesToUser,
   toggleFavoriteMatch,
-} from "@/services/favoriteMatchesService";
+} from "@/lib/api/favorites";
 
 function getUserProfile(user: User) {
   const nickname =

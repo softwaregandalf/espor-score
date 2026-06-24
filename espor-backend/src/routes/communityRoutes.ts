@@ -1,43 +1,28 @@
 import { Router } from 'express';
 import { PrismaClient } from '@prisma/client';
+import {
+  listThreads,
+  createThread,
+  getThreadById,
+  addComment,
+  voteThread,
+  deleteComment,
+  deleteThread,
+} from '../services/communityService';
 
 export default function communityRoutes(prisma: PrismaClient) {
   const router = Router();
 
-  // 🌍 1. TÜM KONULARI GETİR
-  router.get('/', async (req, res) => {
+  router.get('/', async (_req, res) => {
     try {
-      const threads = await prisma.thread.findMany({
-        orderBy: { createdAt: 'desc' }, 
-        include: {
-          author: { select: { nickname: true, avatarUrl: true, role: true } },
-          _count: { select: { comments: true } },
-          votes: true 
-        }
-      });
-
-      const formattedThreads = threads.map(thread => ({
-        id: thread.id,
-        authorId: thread.authorId, // 🚀 DÜZELTME: Konu sahibinin kimliği eklendi
-        title: thread.title,
-        content: thread.content,
-        category: thread.category,
-        gameSlug: thread.gameSlug,
-        createdAt: thread.createdAt,
-        timeAgo: new Date(thread.createdAt).toLocaleDateString(), 
-        author: thread.author,
-        commentCount: thread._count.comments,
-        upvotes: thread.votes.reduce((total, vote) => total + vote.value, 0)
-      }));
-
-      res.status(200).json({ success: true, data: formattedThreads });
+      const data = await listThreads(prisma);
+      res.status(200).json({ success: true, data });
     } catch (error: any) {
-      console.error("Konular çekilirken hata:", error.message);
+      console.error('Konular çekilirken hata:', error.message);
       res.status(500).json({ success: false, message: 'Topluluk verileri çekilemedi.' });
     }
   });
 
-  // ✍️ 2. YENİ KONU OLUŞTUR
   router.post('/', async (req, res) => {
     const { title, content, category, gameSlug, authorId } = req.body;
 
@@ -46,28 +31,14 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
 
     try {
-      const newThread = await prisma.thread.create({
-        data: {
-          title,
-          content,
-          category: category || 'general', 
-          gameSlug: gameSlug || 'all',     
-          authorId: authorId,
-        }
-      });
-
-      await prisma.vote.create({
-        data: { value: 1, threadId: newThread.id, userId: authorId }
-      });
-
-      res.status(201).json({ success: true, data: newThread });
+      const data = await createThread(prisma, { title, content, category, gameSlug, authorId });
+      res.status(201).json({ success: true, data });
     } catch (error: any) {
-      console.error("Konu oluşturulurken hata:", error.message);
+      console.error('Konu oluşturulurken hata:', error.message);
       res.status(500).json({ success: false, message: 'Konu oluşturulamadı.' });
     }
   });
 
-  // 📖 3. TEK BİR KONUYU VE YORUMLARINI GETİR
   router.get('/:id', async (req, res) => {
     const threadId = parseInt(req.params.id);
 
@@ -76,53 +47,17 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
 
     try {
-      const thread = await prisma.thread.findUnique({
-        where: { id: threadId },
-        include: {
-          author: { select: { nickname: true, avatarUrl: true, role: true } },
-          votes: true,
-          comments: {
-            orderBy: { createdAt: 'asc' }, 
-            include: {
-              author: { select: { nickname: true, avatarUrl: true, role: true } }
-            }
-          }
-        }
-      });
-
-      if (!thread) {
+      const data = await getThreadById(prisma, threadId);
+      if (!data) {
         return res.status(404).json({ success: false, message: 'Konu bulunamadı.' });
       }
-
-      const formattedThread = {
-        id: thread.id,
-        authorId: thread.authorId, // 🚀 DÜZELTME: Konu sahibinin kimliği eklendi
-        title: thread.title,
-        content: thread.content,
-        category: thread.category,
-        gameSlug: thread.gameSlug,
-        createdAt: thread.createdAt,
-        timeAgo: new Date(thread.createdAt).toLocaleDateString(),
-        author: thread.author,
-        upvotes: thread.votes.reduce((total, vote) => total + vote.value, 0),
-        comments: thread.comments.map(c => ({
-          id: c.id,
-          authorId: c.authorId,
-          content: c.content,
-          createdAt: c.createdAt,
-          timeAgo: new Date(c.createdAt).toLocaleDateString(),
-          author: c.author
-        }))
-      };
-
-      res.status(200).json({ success: true, data: formattedThread });
+      res.status(200).json({ success: true, data });
     } catch (error: any) {
-      console.error("Konu detayı çekilirken hata:", error.message);
+      console.error('Konu detayı çekilirken hata:', error.message);
       res.status(500).json({ success: false, message: 'Konu detayı çekilemedi.' });
     }
   });
 
-  // 💬 4. KONUYA YENİ YORUM EKLE
   router.post('/:id/comments', async (req, res) => {
     const threadId = parseInt(req.params.id);
     const { content, authorId } = req.body;
@@ -132,65 +67,31 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
 
     try {
-      const newComment = await prisma.comment.create({
-        data: { content, threadId, authorId },
-        include: { author: { select: { nickname: true, avatarUrl: true, role: true } } }
-      });
-
-      const formattedComment = {
-        id: newComment.id,
-        authorId: newComment.authorId,
-        content: newComment.content,
-        createdAt: newComment.createdAt,
-        timeAgo: new Date(newComment.createdAt).toLocaleDateString(),
-        author: newComment.author
-      };
-
-      res.status(201).json({ success: true, data: formattedComment });
+      const data = await addComment(prisma, threadId, content, authorId);
+      res.status(201).json({ success: true, data });
     } catch (error: any) {
-      console.error("Yorum eklenirken hata:", error.message);
+      console.error('Yorum eklenirken hata:', error.message);
       res.status(500).json({ success: false, message: 'Yorum eklenemedi.' });
     }
   });
 
-  // ⬆️⬇️ 5. OY KULLANMA
   router.post('/:id/vote', async (req, res) => {
     const threadId = parseInt(req.params.id);
-    const { userId, value } = req.body; 
+    const { userId, value } = req.body;
 
     if (!userId || !value) {
       return res.status(400).json({ success: false, message: 'Kullanıcı ID ve Oy değeri zorunludur.' });
     }
 
     try {
-      const existingVote = await prisma.vote.findUnique({
-        where: { threadId_userId: { threadId, userId } }
-      });
-
-      if (existingVote) {
-        if (existingVote.value === value) {
-          await prisma.vote.delete({ where: { id: existingVote.id } });
-        } else {
-          await prisma.vote.update({
-            where: { id: existingVote.id },
-            data: { value }
-          });
-        }
-      } else {
-        await prisma.vote.create({
-          data: { value, threadId, userId }
-        });
-      }
-
+      await voteThread(prisma, threadId, userId, value);
       res.status(200).json({ success: true, message: 'Oy işlemi başarılı.' });
     } catch (error: any) {
-      console.error("Oy verme işleminde hata:", error.message);
+      console.error('Oy verme işleminde hata:', error.message);
       res.status(500).json({ success: false, message: 'Oy işlemi tamamlanamadı.' });
     }
   });
 
-  // 🗑️ 6. YORUMU SİL
-  // DELETE /api/community/:id/comments/:commentId
   router.delete('/:id/comments/:commentId', async (req, res) => {
     const threadId = parseInt(req.params.id);
     const commentId = parseInt(req.params.commentId);
@@ -205,27 +106,20 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
 
     try {
-      const comment = await prisma.comment.findUnique({ where: { id: commentId } });
-
-      if (!comment || comment.threadId !== threadId) {
-        return res.status(404).json({ success: false, message: 'Yorum bulunamadı.' });
-      }
-
-      if (comment.authorId !== userId) {
-        return res.status(403).json({ success: false, message: 'Bu yorumu silme yetkiniz yok.' });
-      }
-
-      await prisma.comment.delete({ where: { id: commentId } });
-
+      await deleteComment(prisma, threadId, commentId, userId);
       res.status(200).json({ success: true, message: 'Yorum başarıyla silindi.' });
     } catch (error: any) {
-      console.error("Yorum silinirken hata:", error.message);
+      if (error.message === 'COMMENT_NOT_FOUND') {
+        return res.status(404).json({ success: false, message: 'Yorum bulunamadı.' });
+      }
+      if (error.message === 'FORBIDDEN') {
+        return res.status(403).json({ success: false, message: 'Bu yorumu silme yetkiniz yok.' });
+      }
+      console.error('Yorum silinirken hata:', error.message);
       res.status(500).json({ success: false, message: 'Yorum silinemedi.' });
     }
   });
 
-  // 🗑️ 7. KONUYU SİL
-  // DELETE /api/community/:id
   router.delete('/:id', async (req, res) => {
     const threadId = parseInt(req.params.id);
     const { userId } = req.body;
@@ -235,26 +129,16 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
 
     try {
-      const thread = await prisma.thread.findUnique({ where: { id: threadId } });
-      if (!thread) {
-        return res.status(404).json({ success: false, message: 'Konu bulunamadı.' });
-      }
-
-      // Güvenlik: Sadece konuyu açan kişi silebilir
-      if (thread.authorId !== userId) {
-        return res.status(403).json({ success: false, message: 'Bu konuyu silme yetkiniz yok.' });
-      }
-
-      // 1. Konuya ait oyları sil
-      await prisma.vote.deleteMany({ where: { threadId } });
-      // 2. Konuya ait yorumları sil
-      await prisma.comment.deleteMany({ where: { threadId } });
-      // 3. Konunun kendisini sil
-      await prisma.thread.delete({ where: { id: threadId } });
-
+      await deleteThread(prisma, threadId, userId);
       res.status(200).json({ success: true, message: 'Konu ve bağlı veriler başarıyla silindi.' });
     } catch (error: any) {
-      console.error("Konu silinirken hata:", error.message);
+      if (error.message === 'THREAD_NOT_FOUND') {
+        return res.status(404).json({ success: false, message: 'Konu bulunamadı.' });
+      }
+      if (error.message === 'FORBIDDEN') {
+        return res.status(403).json({ success: false, message: 'Bu konuyu silme yetkiniz yok.' });
+      }
+      console.error('Konu silinirken hata:', error.message);
       res.status(500).json({ success: false, message: 'Konu silinemedi.' });
     }
   });
