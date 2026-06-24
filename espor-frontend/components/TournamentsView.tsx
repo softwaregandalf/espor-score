@@ -43,29 +43,34 @@ export default function TournamentsView() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in transition-colors" style={{ background: 'var(--es-bg)' }}>
-      <div className="shrink-0 p-8 border-b relative overflow-hidden transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
+    <div className="flex flex-col w-full h-full overflow-hidden overflow-x-hidden animate-fade-in transition-colors" style={{ background: 'var(--es-bg)' }}>
+      <div className="shrink-0 p-3 md:p-8 border-b relative overflow-hidden overflow-x-hidden transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
         <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
-        <div className="relative z-10 flex flex-col gap-6 max-w-7xl mx-auto w-full">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-black tracking-tight mb-1 transition-colors" style={{ color: 'var(--es-text-1)' }}>{t.tournamentsTitle}</h1>
-              <p className="text-sm transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.tournamentsDesc}</p>
+        <div className="relative z-10 flex flex-col gap-4 md:gap-6 max-w-7xl mx-auto w-full min-w-0">
+          <div className="flex flex-col gap-3 md:gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-xl md:text-3xl font-black tracking-tight mb-0.5 md:mb-1 transition-colors" style={{ color: 'var(--es-text-1)' }}>{t.tournamentsTitle}</h1>
+              <p className="text-xs md:text-sm transition-colors leading-relaxed" style={{ color: 'var(--es-text-3)' }}>{t.tournamentsDesc}</p>
             </div>
-            <div className="relative group w-72">
-              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--es-text-3)' }} />
-              <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder} className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }} />
+            <div className="relative group w-full md:w-72 shrink-0 min-w-0">
+              <Search className="w-3.5 md:w-4 h-3.5 md:h-4 absolute left-3 top-1/2 -translate-y-1/2 transition-colors shrink-0" style={{ color: 'var(--es-text-3)' }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder={t.searchPlaceholder}
+                className="w-full py-2 md:py-2.5 pl-9 md:pl-10 pr-3 md:pr-4 rounded-xl text-xs md:text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500"
+                style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }}
+              />
             </div>
           </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 p-1.5 rounded-xl transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-              
-              {/* 🚀 TIER 1 DÜZELTME: "TÜMÜ" Butonu Renk Optimizasyonu */}
-              <button 
-                onClick={() => setSelectedGame('all')} 
-                className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all" 
-                style={{ 
-                  background: selectedGame === 'all' ? 'rgba(0, 212, 255, 0.1)' : 'transparent', 
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 w-full min-w-0">
+            <div className="flex items-center gap-1.5 md:gap-3 p-1 md:p-1.5 rounded-xl transition-colors w-full md:w-auto md:flex-wrap overflow-x-auto md:overflow-visible whitespace-nowrap scrollbar-hide pr-4 md:pr-1.5 min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
+              <button
+                onClick={() => setSelectedGame('all')}
+                className="px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shrink-0"
+                style={{
+                  background: selectedGame === 'all' ? 'rgba(0, 212, 255, 0.1)' : 'transparent',
                   color: selectedGame === 'all' ? '#00D4FF' : 'var(--es-text-3)',
                   border: selectedGame === 'all' ? '1px solid rgba(0, 212, 255, 0.2)' : '1px solid transparent'
                 }}
@@ -74,15 +79,31 @@ export default function TournamentsView() {
               </button>
 
               {GAMES.map(game => (
-                <button key={game.id} onClick={() => setSelectedGame(game.id)} className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:opacity-80" style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>
-                  <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
+                <button
+                  key={game.id}
+                  onClick={() => setSelectedGame(game.id)}
+                  className="px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 md:gap-2 hover:opacity-80 whitespace-nowrap shrink-0"
+                  style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}
+                >
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: GAME_COLORS[game.id] }} />
+                  {game.short}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2 p-1.5 rounded-xl transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-              {[ { id: 'live', label: t.ongoingTourneys, icon: PlayCircle, color: '#EF4444' }, { id: 'upcoming', label: t.upcomingTourneys, icon: Calendar, color: '#4D7CFE' }, { id: 'completed', label: t.completedTourneys, icon: Trophy, color: '#F59E0B' } ].map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} className="px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:opacity-80" style={{ background: activeTab === tab.id ? `${tab.color}20` : 'transparent', color: activeTab === tab.id ? tab.color : 'var(--es-text-3)' }}>
-                  <tab.icon className="w-4 h-4" /> {tab.label}
+            <div className="flex items-center gap-1.5 md:gap-3 p-1 md:p-1.5 rounded-xl transition-colors w-full md:w-auto md:flex-wrap overflow-x-auto md:overflow-visible whitespace-nowrap scrollbar-hide pr-4 md:pr-1.5 min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
+              {[
+                { id: 'live', label: t.ongoingTourneys, icon: PlayCircle, color: '#EF4444' },
+                { id: 'upcoming', label: t.upcomingTourneys, icon: Calendar, color: '#4D7CFE' },
+                { id: 'completed', label: t.completedTourneys, icon: Trophy, color: '#F59E0B' },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className="px-2.5 md:px-4 py-1.5 md:py-2 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 md:gap-2 hover:opacity-80 whitespace-nowrap shrink-0"
+                  style={{ background: activeTab === tab.id ? `${tab.color}20` : 'transparent', color: activeTab === tab.id ? tab.color : 'var(--es-text-3)' }}
+                >
+                  <tab.icon className="w-3.5 md:w-4 h-3.5 md:h-4 shrink-0" />
+                  {tab.label}
                 </button>
               ))}
             </div>
@@ -90,56 +111,110 @@ export default function TournamentsView() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-3 md:p-8">
+        <div className="max-w-7xl mx-auto min-w-0">
           {filteredTournaments.length === 0 ? (
-             <div className="text-center py-32 flex flex-col items-center justify-center opacity-50 transition-colors" style={{ color: 'var(--es-text-3)' }}>
-               <Shield className="w-16 h-16 mb-4" />
-               <h3 className="text-xl font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>Turnuva Bulunamadı</h3>
-               <p className="mt-2">Bu kriterlere uygun bir etkinlik veritabanında yer almıyor.</p>
-             </div>
+            <div className="text-center py-16 md:py-32 flex flex-col items-center justify-center opacity-50 transition-colors px-2" style={{ color: 'var(--es-text-3)' }}>
+              <Shield className="w-12 h-12 md:w-16 md:h-16 mb-3 md:mb-4" />
+              <h3 className="text-base md:text-xl font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-1)' }}>Turnuva Bulunamadı</h3>
+              <p className="mt-2 text-xs md:text-sm">Bu kriterlere uygun bir etkinlik veritabanında yer almıyor.</p>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-3 md:gap-6">
               {filteredTournaments.map(tournament => {
                 const color = GAME_COLORS[tournament.game];
                 return (
-                  <div key={tournament.id} className="rounded-2xl overflow-hidden flex flex-col shadow-xl transition-transform hover:-translate-y-1 group cursor-pointer" style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}>
-                    <div className="h-24 p-5 relative overflow-hidden flex flex-col justify-between" style={{ background: `${color}15`, borderBottom: `1px solid ${color}30` }}>
+                  <div
+                    key={tournament.id}
+                    className="rounded-xl md:rounded-2xl overflow-hidden flex flex-col shadow-xl transition-transform hover:-translate-y-1 group cursor-pointer min-w-0"
+                    style={{ background: 'var(--es-card)', border: '1px solid var(--es-border)' }}
+                  >
+                    <div className="h-[88px] md:h-24 p-3 sm:p-5 relative overflow-hidden flex flex-col justify-between min-w-0" style={{ background: `${color}15`, borderBottom: `1px solid ${color}30` }}>
                       <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full blur-2xl opacity-40" style={{ background: color }} />
-                      <div className="flex items-center justify-between relative z-10">
-                        <span className="px-2.5 py-1 rounded text-[10px] font-black tracking-widest text-white shadow-sm" style={{ background: color }}>{tournament.game.toUpperCase()}</span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
-                          <Shield className="w-3 h-3" style={{ color }}/> {translateApiText(tournament.tier)}
+                      <div className="flex items-center justify-between gap-2 relative z-10 min-w-0">
+                        <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-black tracking-widest text-white shadow-sm shrink-0" style={{ background: color }}>
+                          {tournament.game.toUpperCase()}
+                        </span>
+                        <span className="flex items-center gap-1 sm:gap-1.5 text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-1.5 sm:px-2 py-0.5 sm:py-1 rounded border transition-colors shrink-0 max-w-[50%] truncate" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
+                          <Shield className="w-3 h-3 shrink-0" style={{ color }} />
+                          <span className="truncate">{translateApiText(tournament.tier)}</span>
                         </span>
                       </div>
-                      <h3 className="text-lg font-black truncate relative z-10 transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.name}</h3>
+                      <h3 className="text-sm sm:text-lg font-black truncate relative z-10 min-w-0 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+                        {tournament.name}
+                      </h3>
                     </div>
-                    <div className="p-5 flex-1 flex flex-col gap-4">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors" style={{ color: 'var(--es-text-3)' }}><MapPin className="w-3 h-3"/> {t.location}</span><span className="text-xs font-semibold truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.location}</span></div>
-                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors" style={{ color: 'var(--es-text-3)' }}><Calendar className="w-3 h-3"/> {t.date}</span><span className="text-xs font-semibold truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>{translateApiText(tournament.startDate)} - {translateApiText(tournament.endDate)}</span></div>
-                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors" style={{ color: 'var(--es-text-3)' }}><DollarSign className="w-3 h-3 text-green-500"/> {t.prizePool}</span><span className="text-xs font-bold text-green-500 truncate transition-colors">{translateApiText(tournament.prizePool)}</span></div>
-                        <div className="flex flex-col gap-1"><span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors" style={{ color: 'var(--es-text-3)' }}><Users className="w-3 h-3"/> {t.teamCount}</span><span className="text-xs font-semibold truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.teamsCount} {t.teamsText}</span></div>
+
+                    <div className="p-3 sm:p-5 flex-1 flex flex-col gap-2.5 sm:gap-4 min-w-0">
+                      <div className="grid grid-cols-2 gap-2 sm:gap-4">
+                        <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0">
+                          <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors leading-tight" style={{ color: 'var(--es-text-3)' }}>
+                            <MapPin className="w-3 h-3 shrink-0" /> {t.location}
+                          </span>
+                          <span className="text-xs sm:text-sm font-semibold truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.location}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0">
+                          <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors leading-tight" style={{ color: 'var(--es-text-3)' }}>
+                            <Calendar className="w-3 h-3 shrink-0" /> {t.date}
+                          </span>
+                          <span className="text-xs sm:text-sm font-semibold truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>
+                            {translateApiText(tournament.startDate)} - {translateApiText(tournament.endDate)}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0">
+                          <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors leading-tight whitespace-normal" style={{ color: 'var(--es-text-3)' }}>
+                            <DollarSign className="w-3 h-3 shrink-0 text-green-500" /> {t.prizePool}
+                          </span>
+                          <span className="text-xs sm:text-sm font-bold text-green-500 truncate transition-colors">{translateApiText(tournament.prizePool)}</span>
+                        </div>
+                        <div className="flex flex-col gap-0.5 sm:gap-1 min-w-0">
+                          <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1 transition-colors leading-tight" style={{ color: 'var(--es-text-3)' }}>
+                            <Users className="w-3 h-3 shrink-0" /> {t.teamCount}
+                          </span>
+                          <span className="text-xs sm:text-sm font-semibold truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.teamsCount} {t.teamsText}</span>
+                        </div>
                       </div>
-                      
+
                       {activeTab === 'completed' && tournament.results && (
-                        <div className="mt-2 pt-4 border-t border-dashed space-y-2 transition-colors" style={{ borderColor: 'var(--es-border)' }}>
-                          <div className="text-[10px] font-black uppercase tracking-widest mb-2 transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.podiumFinish}</div>
-                          <div className="flex items-center justify-between p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
-                            <div className="flex items-center gap-2"><Trophy className="w-4 h-4 text-yellow-500" /><div className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-black text-white" style={{ background: tournament.results.winner.color }}>{tournament.results.winner.short}</div><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.results.winner.name}</span></div>
-                            <span className="text-xs font-black text-yellow-500">{tournament.results.winner.prize}</span>
+                        <div className="mt-1 md:mt-2 pt-3 md:pt-4 border-t border-dashed space-y-1.5 md:space-y-2 transition-colors min-w-0" style={{ borderColor: 'var(--es-border)' }}>
+                          <div className="text-[10px] font-black uppercase tracking-widest mb-1 md:mb-2 transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.podiumFinish}</div>
+                          <div className="flex items-center justify-between gap-2 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/20 min-w-0">
+                            <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1">
+                              <Trophy className="w-3.5 md:w-4 h-3.5 md:h-4 text-yellow-500 shrink-0" />
+                              <div className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-black text-white shrink-0" style={{ background: tournament.results.winner.color }}>
+                                {tournament.results.winner.short}
+                              </div>
+                              <span className="text-[11px] md:text-xs font-bold truncate min-w-0 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+                                {tournament.results.winner.name}
+                              </span>
+                            </div>
+                            <span className="text-[11px] md:text-xs font-black text-yellow-500 shrink-0">{tournament.results.winner.prize}</span>
                           </div>
-                          <div className="flex items-center justify-between p-2 rounded-lg border transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
-                            <div className="flex items-center gap-2"><span className="w-4 h-4 flex items-center justify-center text-[10px] font-black transition-colors" style={{ color: 'var(--es-text-3)' }}>2.</span><div className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-black text-white" style={{ background: tournament.results.runnerUp.color }}>{tournament.results.runnerUp.short}</div><span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{tournament.results.runnerUp.name}</span></div>
-                            <span className="text-xs font-black transition-colors" style={{ color: 'var(--es-text-3)' }}>{tournament.results.runnerUp.prize}</span>
+                          <div className="flex items-center justify-between gap-2 p-2 rounded-lg border transition-colors min-w-0" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
+                            <div className="flex items-center gap-1.5 md:gap-2 min-w-0 flex-1">
+                              <span className="w-4 h-4 flex items-center justify-center text-[10px] font-black transition-colors shrink-0" style={{ color: 'var(--es-text-3)' }}>2.</span>
+                              <div className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-black text-white shrink-0" style={{ background: tournament.results.runnerUp.color }}>
+                                {tournament.results.runnerUp.short}
+                              </div>
+                              <span className="text-[11px] md:text-xs font-bold truncate min-w-0 transition-colors" style={{ color: 'var(--es-text-1)' }}>
+                                {tournament.results.runnerUp.name}
+                              </span>
+                            </div>
+                            <span className="text-[11px] md:text-xs font-black shrink-0 transition-colors" style={{ color: 'var(--es-text-3)' }}>{tournament.results.runnerUp.prize}</span>
                           </div>
                         </div>
                       )}
                     </div>
-                    <div className="p-4 border-t transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
-                       <button onClick={() => { setSelectedTournament(tournament); setViewMode('detail'); }} className="w-full py-2.5 rounded-lg text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all group-hover:border-es-cyan/50 border hover:opacity-80" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}>
-                         {t.tournamentDetails} <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                       </button>
+
+                    <div className="p-3 md:p-4 border-t transition-colors" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)' }}>
+                      <button
+                        onClick={() => { setSelectedTournament(tournament); setViewMode('detail'); }}
+                        className="w-full py-2 md:py-2.5 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center justify-center gap-1.5 md:gap-2 transition-all group-hover:border-es-cyan/50 border hover:opacity-80"
+                        style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }}
+                      >
+                        <span className="truncate">{t.tournamentDetails}</span>
+                        <ArrowRight className="w-3.5 md:w-4 h-3.5 md:h-4 shrink-0 transition-transform group-hover:translate-x-1" />
+                      </button>
                     </div>
                   </div>
                 );

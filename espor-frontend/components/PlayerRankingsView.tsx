@@ -31,7 +31,7 @@ const MOCK_PLAYERS = [
 ];
 
 function TeamLogo({ name, color }: { name: string; color: string }) {
-  return <div className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-white text-[10px] shadow-sm" style={{ background: color }}>{name.slice(0, 3).toUpperCase()}</div>;
+  return <div className="w-6 h-6 md:w-8 md:h-8 rounded-lg flex items-center justify-center font-black text-white text-[8px] md:text-[10px] shadow-sm shrink-0" style={{ background: color }}>{name.slice(0, 3).toUpperCase()}</div>;
 }
 
 export default function PlayerRankingsView() {
@@ -120,45 +120,46 @@ export default function PlayerRankingsView() {
   }
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in transition-colors" style={{ background: 'var(--es-bg)' }}>
+    <div className="flex flex-col w-full h-full overflow-hidden overflow-x-hidden min-w-0 animate-fade-in transition-colors" style={{ background: 'var(--es-bg)' }}>
       
-      <div className="shrink-0 p-8 border-b relative overflow-hidden flex flex-col gap-6 transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
+      <div className="shrink-0 p-3 sm:p-4 md:p-8 border-b relative overflow-hidden flex flex-col gap-3 sm:gap-4 md:gap-6 transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
         <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-colors duration-700" style={{ background: gameColor, transform: 'translate(30%, -30%)' }} />
         
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight mb-1 flex items-center gap-3 transition-colors" style={{ color: 'var(--es-text-1)' }}>
-              {t.globalPlayerRankings} <Medal className="w-6 h-6" style={{ color: gameColor }} />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 min-w-0">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight mb-0.5 sm:mb-1 flex items-center gap-2 sm:gap-3 transition-colors min-w-0" style={{ color: 'var(--es-text-1)' }}>
+              <span className="truncate min-w-0">{t.globalPlayerRankings}</span>
+              <Medal className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" style={{ color: gameColor }} />
             </h1>
-            <p className="text-sm transition-colors" style={{ color: 'var(--es-text-3)' }}>{gameName} {t.playerRankingsDesc}</p>
+            <p className="text-xs sm:text-sm transition-colors line-clamp-2 sm:line-clamp-none" style={{ color: 'var(--es-text-3)' }}>{gameName} {t.playerRankingsDesc}</p>
           </div>
-          <div className="relative group w-72">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--es-text-3)' }} />
-            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchPlayerInput} className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500 dark:placeholder:text-slate-400" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }} />
+          <div className="relative group w-full md:w-72 shrink-0">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 transition-colors shrink-0" style={{ color: 'var(--es-text-3)' }} />
+            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchPlayerInput} className="w-full py-2 sm:py-2.5 pl-9 sm:pl-10 pr-3 sm:pr-4 rounded-xl text-xs sm:text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500 dark:placeholder:text-slate-400" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }} />
           </div>
         </div>
         
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2 p-1.5 rounded-xl transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 w-full min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 rounded-xl transition-colors overflow-x-auto scrollbar-hide w-full whitespace-nowrap pr-2 sm:pr-4" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
             {GAMES.filter(g => ALLOWED_GAMES.includes(g.id)).map(game => (
-              <button key={game.id} onClick={() => handleGameChange(game.id)} className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:opacity-80`} style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>
-                <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
+              <button key={game.id} onClick={() => handleGameChange(game.id)} className={`px-2.5 sm:px-3 md:px-5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all flex items-center gap-1.5 sm:gap-2 hover:opacity-80 whitespace-nowrap shrink-0`} style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}>
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0" style={{ background: GAME_COLORS[game.id] }} />{game.short}
               </button>
             ))}
           </div>
           
           <button 
             onClick={() => setIsFilterOpen(!isFilterOpen)} 
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-black uppercase tracking-widest transition-all shadow-lg hover:opacity-80`}
+            className={`flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-xl border text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all shadow-lg hover:opacity-80 w-full md:w-auto shrink-0`}
             style={{ background: isFilterOpen ? 'var(--es-text-1)' : 'var(--es-surface)', color: isFilterOpen ? 'var(--es-bg)' : 'var(--es-text-3)', borderColor: 'var(--es-border)' }}
           >
-            <Filter className="w-3.5 h-3.5" /> {t.detailedFilter}
+            <Filter className="w-3.5 h-3.5 shrink-0" /> {t.detailedFilter}
           </button>
         </div>
 
         {isFilterOpen && (
-          <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-4 p-5 rounded-2xl border animate-fade-in shadow-2xl backdrop-blur-md transition-colors" style={{ background: 'var(--es-surface-2)', borderColor: 'var(--es-border)' }}>
+          <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4 p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl border animate-fade-in shadow-2xl backdrop-blur-md transition-colors min-w-0" style={{ background: 'var(--es-surface-2)', borderColor: 'var(--es-border)' }}>
             
             <div className="flex flex-col gap-2">
               <label className="text-[10px] font-black uppercase tracking-widest pl-1 transition-colors" style={{ color: 'var(--es-text-3)' }}>{gameName} {t.roleLabel}</label>
@@ -211,84 +212,102 @@ export default function PlayerRankingsView() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-        <div className="max-w-6xl mx-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-3 sm:p-4 md:p-8 min-w-0">
+        <div className="max-w-6xl mx-auto min-w-0">
           
           {filteredPlayers.length === 0 ? (
-            <div className="text-center py-20 flex flex-col items-center gap-4 transition-colors" style={{ color: 'var(--es-text-3)' }}>
-              <User className="w-12 h-12 opacity-20" />
-              <div className="text-lg font-black uppercase tracking-widest">{t.noPlayersFound}</div>
+            <div className="text-center py-12 sm:py-20 flex flex-col items-center gap-3 sm:gap-4 transition-colors" style={{ color: 'var(--es-text-3)' }}>
+              <User className="w-10 h-10 sm:w-12 sm:h-12 opacity-20" />
+              <div className="text-sm sm:text-lg font-black uppercase tracking-widest">{t.noPlayersFound}</div>
             </div>
           ) : (
-            <div className="rounded-xl border overflow-hidden shadow-2xl animate-fade-in transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
-              <table className="w-full text-left border-collapse">
+            <div className="rounded-xl border overflow-hidden shadow-2xl animate-fade-in transition-colors min-w-0" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
+              <div className="overflow-x-auto md:overflow-x-auto scrollbar-hide">
+                <table className="w-full text-left border-collapse table-fixed md:table-auto md:min-w-[800px]">
                 <thead>
-                  <tr className="text-[10px] font-black uppercase tracking-widest border-b transition-colors" style={{ background: 'var(--es-surface)', color: 'var(--es-text-3)', borderColor: 'var(--es-border)' }}>
-                    <th className="p-4 w-16 text-center">{t.rankCol}</th>
-                    <th className="p-4">{t.playerCol}</th>
-                    <th className="p-4">{t.teamCol}</th>
+                  <tr className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest border-b transition-colors" style={{ background: 'var(--es-surface)', color: 'var(--es-text-3)', borderColor: 'var(--es-border)' }}>
+                    <th className="p-2 sm:p-3 md:p-4 w-10 sm:w-12 md:w-16 text-center shrink-0">{t.rankCol}</th>
+                    <th className="p-2 sm:p-3 md:p-4 min-w-0">{t.playerCol}</th>
+                    <th className="p-2 sm:p-3 md:p-4 min-w-0 w-[28%] sm:w-auto">{t.teamCol}</th>
                     
                     {isFPS ? (
                       <>
-                        <th className="p-4 text-center text-es-cyan">OVR Rating</th>
-                        <th className="p-4 text-center">{selectedGame === 'cs2' ? 'ADR' : 'ACS'}</th>
-                        <th className="p-4 text-center">K:D</th>
-                        <th className="p-4 text-center">HS %</th>
+                        <th className="hidden md:table-cell p-4 text-center text-es-cyan">OVR Rating</th>
+                        <th className="hidden md:table-cell p-4 text-center">{selectedGame === 'cs2' ? 'ADR' : 'ACS'}</th>
+                        <th className="hidden md:table-cell p-4 text-center">K:D</th>
+                        <th className="hidden md:table-cell p-4 text-center">HS %</th>
                       </>
                     ) : (
                       <>
-                        <th className="p-4 text-center text-es-cyan">KDA</th>
-                        <th className="p-4 text-center">CS / {t.perMin}</th>
-                        <th className="p-4 text-center">{t.scoreContribution}</th>
-                        <th className="p-4 text-center">{t.damage} / {t.perMin}</th>
+                        <th className="hidden md:table-cell p-4 text-center text-es-cyan">KDA</th>
+                        <th className="hidden md:table-cell p-4 text-center">CS / {t.perMin}</th>
+                        <th className="hidden md:table-cell p-4 text-center">{t.scoreContribution}</th>
+                        <th className="hidden md:table-cell p-4 text-center">{t.damage} / {t.perMin}</th>
                       </>
                     )}
-                    <th className="p-4 text-right">{t.profileCol}</th>
+                    <th className="hidden md:table-cell p-4 text-right">{t.profileCol}</th>
                   </tr>
                 </thead>
-                <tbody className="text-sm font-semibold transition-colors" style={{ color: 'var(--es-text-1)' }}>
+                <tbody className="text-xs sm:text-sm font-semibold transition-colors" style={{ color: 'var(--es-text-1)' }}>
                   {filteredPlayers.map((player) => (
                     <tr key={player.id} onClick={() => setSelectedPlayer(player)} className="border-b transition-colors cursor-pointer group hover:opacity-80" style={{ borderColor: 'var(--es-border)' }}>
-                      <td className={`p-4 text-center text-lg ${getRankStyle(player.rank)}`}>{player.rank}</td>
+                      <td className={`p-2 sm:p-3 md:p-4 text-center text-base sm:text-lg shrink-0 ${getRankStyle(player.rank)}`}>{player.rank}</td>
                       
-                      <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{player.nationality}</span>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-black group-hover:text-es-cyan transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.nickname}</span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              {/* 🚀 OYUNCU ROLÜ ARTIK TÜM OYUNLAR İÇİN ÇEVRİLİYOR (Örn: Sniper -> Keskin Nişancı, Mid -> Orta Koridor) */}
-                              <span className="px-1.5 py-0.5 rounded border text-[8px] font-black uppercase transition-colors" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>{translateApiText(player.role)}</span>
-                              <span className="text-[10px] uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.realName}</span>
+                      <td className="p-2 sm:p-3 md:p-4 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 min-w-0">
+                          <span className="text-base sm:text-xl md:text-2xl shrink-0 leading-none">{player.nationality}</span>
+                          <div className="flex flex-col min-w-0 flex-1">
+                            <span className="text-xs sm:text-sm font-black group-hover:text-es-cyan transition-colors truncate min-w-0" style={{ color: 'var(--es-text-1)' }}>{player.nickname}</span>
+                            <div className="flex items-center gap-1 sm:gap-1.5 mt-0.5 min-w-0 flex-wrap sm:flex-nowrap">
+                              <span className="px-1 sm:px-1.5 py-0.5 rounded border text-[7px] sm:text-[8px] font-black uppercase transition-colors shrink-0" style={{ background: 'var(--es-bg)', borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>{translateApiText(player.role)}</span>
+                              <span className="text-[9px] sm:text-[10px] uppercase tracking-widest transition-colors truncate min-w-0 hidden sm:inline" style={{ color: 'var(--es-text-3)' }}>{player.realName}</span>
+                            </div>
+                            {/* Mobil: istatistik özeti */}
+                            <div className="flex items-center gap-2 mt-1 md:hidden text-[9px] font-bold tabular-nums" style={{ color: 'var(--es-text-3)' }}>
+                              {isFPS ? (
+                                <>
+                                  <span style={{ color: gameColor }}>{player.rating?.toFixed(2)}</span>
+                                  <span>·</span>
+                                  <span>{player.acs}</span>
+                                  <span>·</span>
+                                  <span>{player.kd} K:D</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span style={{ color: gameColor }}>{player.kda} KDA</span>
+                                  <span>·</span>
+                                  <span>{player.kp}</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
+                      <td className="p-2 sm:p-3 md:p-4 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                           <TeamLogo name={player.teamShort} color={player.teamColor} />
-                          <span className="text-xs font-bold transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.teamName}</span>
+                          <span className="text-[10px] sm:text-xs font-bold transition-colors truncate min-w-0" style={{ color: 'var(--es-text-1)' }}>{player.teamName}</span>
                         </div>
                       </td>
 
                       {isFPS ? (
                         <>
-                          <td className="p-4 text-center font-black tabular-nums text-base transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.rating?.toFixed(2)}</td>
-                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.acs}</td>
-                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.kd}</td>
-                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.hs}</td>
+                          <td className="hidden md:table-cell p-4 text-center font-black tabular-nums text-base transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.rating?.toFixed(2)}</td>
+                          <td className="hidden md:table-cell p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.acs}</td>
+                          <td className="hidden md:table-cell p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.kd}</td>
+                          <td className="hidden md:table-cell p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.hs}</td>
                         </>
                       ) : (
                         <>
-                          <td className="p-4 text-center font-black tabular-nums text-base transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.kda}</td>
-                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.csm}</td>
-                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.kp}</td>
-                          <td className="p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.dpm}</td>
+                          <td className="hidden md:table-cell p-4 text-center font-black tabular-nums text-base transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.kda}</td>
+                          <td className="hidden md:table-cell p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.csm}</td>
+                          <td className="hidden md:table-cell p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{player.kp}</td>
+                          <td className="hidden md:table-cell p-4 text-center tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{player.dpm}</td>
                         </>
                       )}
 
-                      <td className="p-4 text-right">
+                      <td className="hidden md:table-cell p-4 text-right">
                         <button className="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest group-hover:bg-es-cyan group-hover:text-black transition-colors" style={{ background: 'var(--es-surface)', color: 'var(--es-text-3)' }}>
                           {t.inspect}
                         </button>
@@ -297,6 +316,7 @@ export default function PlayerRankingsView() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
 

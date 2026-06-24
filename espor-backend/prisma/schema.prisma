@@ -100,9 +100,10 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  threads   Thread[]
-  comments  Comment[]
-  votes     Vote[]
+  threads         Thread[]
+  comments        Comment[]
+  votes           Vote[]
+  matchFavorites  MatchFavorite[]
 }
 
 model Thread {
@@ -147,4 +148,14 @@ model Vote {
 
   // Bir kullanıcı bir konuya sadece bir kez oy verebilir
   @@unique([threadId, userId]) 
+}
+
+model MatchFavorite {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, matchId])
 }

@@ -48,9 +48,9 @@ export default function LiveEventToast() {
   if (!currentEvent) return null;
 
   return (
-    <div className={`fixed bottom-8 right-8 z-[100] transition-all duration-700 ease-out transform ${isVisible ? "translate-x-0 opacity-100 scale-100" : "translate-x-full opacity-0 scale-95"}`}>
+    <div className={`fixed bottom-4 right-4 md:bottom-8 md:right-8 z-[100] transition-all duration-700 ease-out transform ${isVisible ? "translate-x-0 opacity-100 scale-100" : "translate-x-full opacity-0 scale-95"}`}>
       <div
-        className="flex items-start gap-4 p-4 rounded-xl shadow-2xl relative overflow-hidden w-[340px] group cursor-pointer bg-slate-950 border border-white/10 transition-colors duration-300"
+        className="flex items-start gap-3 md:gap-4 p-3 md:p-4 rounded-xl shadow-2xl relative overflow-hidden w-[calc(100vw-2rem)] md:w-[340px] max-w-[340px] group cursor-pointer bg-slate-950 border border-white/10 transition-colors duration-300"
         style={{ borderLeft: `4px solid ${currentEvent.color}`, boxShadow: `0 10px 40px -10px ${currentEvent.color}50` }}
       >
         <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none transition-opacity" />

@@ -87,34 +87,37 @@ export default function TeamsView() {
     if (!regionConfig || regionTeams.length === 0) return null;
 
     return (
-      <div key={regionId} className="flex flex-col animate-fade-in">
-        <div className="flex items-center justify-between mb-4 border-b pb-2 transition-colors" style={{ borderColor: 'var(--es-border)' }}>
-          <h2 className="text-sm font-black uppercase tracking-widest flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}>
-            <span className="text-lg">{regionConfig.flag}</span> {translateApiText(regionConfig.label)}
+      <div key={regionId} className="flex flex-col animate-fade-in min-w-0">
+        <div className="flex items-center justify-between mb-2 sm:mb-3 md:mb-4 border-b pb-1.5 sm:pb-2 transition-colors min-w-0 gap-2" style={{ borderColor: 'var(--es-border)' }}>
+          <h2 className="text-xs sm:text-sm font-black uppercase tracking-wider sm:tracking-widest flex items-center gap-1.5 sm:gap-2 transition-colors min-w-0 truncate" style={{ color: 'var(--es-text-1)' }}>
+            <span className="text-base sm:text-lg shrink-0">{regionConfig.flag}</span>
+            <span className="truncate">{translateApiText(regionConfig.label)}</span>
           </h2>
-          <span className="text-[10px] font-bold uppercase transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.points}</span>
+          <span className="text-[9px] sm:text-[10px] font-bold uppercase shrink-0 transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.points}</span>
         </div>
         
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1 sm:gap-1.5 min-w-0">
           {regionTeams.map((team) => (
-            <div key={team.id} onClick={() => setSelectedTeam(team)} className="flex items-center justify-between p-3.5 rounded-xl border hover:opacity-80 transition-opacity cursor-pointer group shadow-sm" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
-              <div className="flex items-center gap-5">
-                <span className={`w-4 text-center ${getRankStyle(team.rank)}`}>{team.rank}</span>
-                <TeamLogo name={team.short} color={team.color} size="md" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-bold group-hover:text-es-cyan transition-colors" style={{ color: 'var(--es-text-1)' }}>{team.name}</span>
-                  <span className="text-[10px] font-semibold transition-colors" style={{ color: 'var(--es-text-3)' }}>{translateApiText(team.country)}</span>
+            <div key={team.id} onClick={() => setSelectedTeam(team)} className="flex items-center justify-between gap-2 sm:gap-3 p-2.5 sm:p-3 md:p-3.5 rounded-xl border hover:opacity-80 transition-opacity cursor-pointer group shadow-sm min-w-0" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
+              <div className="flex items-center gap-2 sm:gap-3 md:gap-5 min-w-0 flex-1 overflow-hidden">
+                <span className={`w-4 sm:w-5 text-center text-sm sm:text-base shrink-0 tabular-nums ${getRankStyle(team.rank)}`}>{team.rank}</span>
+                <div className="md:hidden"><TeamLogo name={team.short} color={team.color} size="sm" /></div>
+                <div className="hidden md:block"><TeamLogo name={team.short} color={team.color} size="md" /></div>
+                <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                  <span className="text-xs sm:text-sm font-bold group-hover:text-es-cyan transition-colors truncate" style={{ color: 'var(--es-text-1)' }}>{team.name}</span>
+                  <span className="text-[9px] sm:text-[10px] font-semibold transition-colors truncate" style={{ color: 'var(--es-text-3)' }}>{translateApiText(team.country)}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-black tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{team.points}</span>
-                <ChevronRight className="w-4 h-4 transition-colors" style={{ color: 'var(--es-text-3)' }} />
+              <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 shrink-0">
+                <span className="text-xs sm:text-sm font-black tabular-nums transition-colors whitespace-nowrap" style={{ color: 'var(--es-text-1)' }}>{team.points}</span>
+                <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 transition-colors shrink-0" style={{ color: 'var(--es-text-3)' }} />
               </div>
             </div>
           ))}
           {selectedRegion === 'world' && (
-            <button onClick={() => setSelectedRegion(regionId)} className="mt-2 w-full py-3 rounded-xl border text-xs font-black uppercase tracking-widest hover:opacity-80 transition-opacity flex items-center justify-center gap-2" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
-              <TrendingUp className="w-3.5 h-3.5" /> {t.seeAllRegion} {translateApiText(regionConfig.label)} {t.rankingsStr}
+            <button onClick={() => setSelectedRegion(regionId)} className="mt-1.5 sm:mt-2 w-full py-2.5 sm:py-3 rounded-xl border text-[10px] sm:text-xs font-black uppercase tracking-wider sm:tracking-widest hover:opacity-80 transition-opacity flex items-center justify-center gap-1.5 sm:gap-2 min-w-0 px-2" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-3)' }}>
+              <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
+              <span className="truncate">{t.seeAllRegion} {translateApiText(regionConfig.label)} {t.rankingsStr}</span>
             </button>
           )}
         </div>
@@ -123,71 +126,72 @@ export default function TeamsView() {
   };
 
   return (
-    <div className="flex flex-col w-full h-full overflow-hidden animate-fade-in transition-colors" style={{ background: 'var(--es-bg)' }}>
-      <div className="shrink-0 p-8 border-b relative overflow-hidden flex flex-col gap-6 transition-colors" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
+    <div className="flex flex-col w-full h-full overflow-hidden overflow-x-hidden animate-fade-in transition-colors min-w-0" style={{ background: 'var(--es-bg)' }}>
+      <div className="shrink-0 p-3 sm:p-4 md:p-8 border-b relative overflow-hidden overflow-x-hidden flex flex-col gap-3 sm:gap-4 md:gap-6 transition-colors min-w-0" style={{ background: 'var(--es-bg-2)', borderColor: 'var(--es-border)' }}>
         <div className="absolute inset-0 cyber-grid opacity-10 pointer-events-none" />
         <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full blur-[120px] opacity-10 pointer-events-none transition-colors duration-700" style={{ background: gameColor, transform: 'translate(30%, -30%)' }} />
         
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-black tracking-tight mb-1 flex items-center gap-3 transition-colors" style={{ color: 'var(--es-text-1)' }}>
-              {t.worldTeamRankings} <Trophy className="w-6 h-6" style={{ color: gameColor }} />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-start md:justify-between gap-3 md:gap-4 min-w-0">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight mb-0.5 sm:mb-1 flex items-center gap-2 sm:gap-3 transition-colors min-w-0" style={{ color: 'var(--es-text-1)' }}>
+              <span className="truncate">{t.worldTeamRankings}</span>
+              <Trophy className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" style={{ color: gameColor }} />
             </h1>
-            <p className="text-sm transition-colors" style={{ color: 'var(--es-text-3)' }}>{gameName} {t.teamRankingsDesc}</p>
+            <p className="text-xs sm:text-sm transition-colors leading-relaxed" style={{ color: 'var(--es-text-3)' }}>{gameName} {t.teamRankingsDesc}</p>
           </div>
-          <div className="relative group w-72">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--es-text-3)' }} />
-            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTeamInput} className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500 dark:placeholder:text-slate-400" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }} />
+          <div className="relative group w-full md:w-72 shrink-0">
+            <Search className="w-4 h-4 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 transition-colors shrink-0" style={{ color: 'var(--es-text-3)' }} />
+            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.searchTeamInput} className="w-full py-2 sm:py-2.5 pl-9 sm:pl-10 pr-3 sm:pr-4 rounded-xl text-xs sm:text-sm outline-none transition-all focus:border-es-cyan shadow-lg placeholder:text-slate-500 dark:placeholder:text-slate-400 min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)', color: 'var(--es-text-1)' }} />
           </div>
         </div>
         
-        <div className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2 p-1.5 rounded-xl transition-colors" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 p-1 sm:p-1.5 rounded-xl transition-colors overflow-x-auto scrollbar-hide whitespace-nowrap w-full sm:w-auto min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
             {GAMES.filter(g => ALLOWED_GAMES.includes(g.id)).map(game => (
               <button 
                 key={game.id} 
                 onClick={() => setSelectedGame(game.id)} 
-                className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 hover:opacity-80`} 
+                className="px-2.5 sm:px-3 md:px-5 py-1.5 sm:py-2 rounded-lg text-[10px] sm:text-xs font-black uppercase tracking-wider sm:tracking-widest transition-all flex items-center gap-1.5 sm:gap-2 hover:opacity-80 shrink-0" 
                 style={{ background: selectedGame === game.id ? `${GAME_COLORS[game.id]}30` : 'transparent', color: selectedGame === game.id ? 'var(--es-text-1)' : 'var(--es-text-3)' }}
               >
-                <div className="w-2 h-2 rounded-full" style={{ background: GAME_COLORS[game.id] }} />{game.short}
+                <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full shrink-0" style={{ background: GAME_COLORS[game.id] }} />{game.short}
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-4 text-xs font-bold transition-colors" style={{ color: 'var(--es-text-3)' }}>
-            <span className="flex items-center gap-1.5 cursor-pointer transition-opacity hover:opacity-80"><Filter className="w-3.5 h-3.5" /> {t.detailedFilter}</span>
+          <div className="hidden sm:flex items-center gap-4 text-xs font-bold transition-colors shrink-0" style={{ color: 'var(--es-text-3)' }}>
+            <span className="flex items-center gap-1.5 cursor-pointer transition-opacity hover:opacity-80 whitespace-nowrap"><Filter className="w-3.5 h-3.5 shrink-0" /> {t.detailedFilter}</span>
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-1 overflow-x-auto custom-scrollbar pt-2 border-t transition-colors" style={{ borderColor: 'var(--es-border)' }}>
+        <div className="relative z-10 flex items-center gap-0.5 sm:gap-1 overflow-x-auto scrollbar-hide whitespace-nowrap pt-2 border-t pr-4 md:pr-0 min-w-0 transition-colors" style={{ borderColor: 'var(--es-border)' }}>
           {REGIONS.map(reg => (
             <button
               key={reg.id}
               onClick={() => setSelectedRegion(reg.id)}
-              className="shrink-0 px-5 py-3 text-xs font-black uppercase tracking-widest transition-all border-b-2 flex items-center gap-2 hover:opacity-80"
+              className="shrink-0 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 text-[10px] sm:text-xs font-black uppercase tracking-wider sm:tracking-widest transition-all border-b-2 flex items-center gap-1.5 sm:gap-2 hover:opacity-80"
               style={{ borderColor: selectedRegion === reg.id ? gameColor : 'transparent', color: selectedRegion === reg.id ? 'var(--es-text-1)' : 'var(--es-text-3)', background: 'transparent' }}
             >
-              <span className="text-base">{reg.flag}</span> {translateApiText(reg.label)}
+              <span className="text-sm sm:text-base shrink-0">{reg.flag}</span> {translateApiText(reg.label)}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar p-2.5 sm:p-3 md:p-8 min-w-0">
+        <div className="max-w-7xl mx-auto min-w-0">
           {filteredTeams.length === 0 ? (
-            <div className="text-center py-20 flex flex-col items-center gap-4 transition-colors" style={{ color: 'var(--es-text-3)' }}>
-              <Shield className="w-12 h-12 opacity-20" />
-              <div className="text-lg font-black uppercase tracking-widest">Bu kriterlere uygun takım bulunamadı</div>
+            <div className="text-center py-12 sm:py-16 md:py-20 flex flex-col items-center gap-3 sm:gap-4 transition-colors px-3" style={{ color: 'var(--es-text-3)' }}>
+              <Shield className="w-10 h-10 sm:w-12 sm:h-12 opacity-20" />
+              <div className="text-sm sm:text-base md:text-lg font-black uppercase tracking-wider sm:tracking-widest">Bu kriterlere uygun takım bulunamadı</div>
             </div>
           ) : (
             <>
               {selectedRegion === 'world' ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8 min-w-0">
                   {['eu', 'na', 'ap', 'kr', 'br', 'cn'].map(regionId => renderRegionColumn(regionId))}
                 </div>
               ) : (
-                <div className="max-w-3xl mx-auto">
+                <div className="max-w-3xl mx-auto min-w-0">
                   {renderRegionColumn(selectedRegion)}
                 </div>
               )}

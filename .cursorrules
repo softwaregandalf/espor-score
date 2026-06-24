@@ -1,0 +1,60 @@
+# Responsive / Mobile-First Standartları
+
+Bu projede en dar mobil ekranlardan (örn: iPhone SE — 375px) geniş masaüstü ekranlarına kadar kusursuz çalışan, **Mobile-First** (önce mobil) yaklaşımıyla yazılmış bir responsive yapı hedeflenir. Tailwind CSS kullanılır.
+
+Aşağıdaki kurallar tüm sayfalarda ve bileşenlerde (components) standart olarak kabul edilir.
+
+---
+
+## 1. Sıfır Yatay Taşma
+
+- Mobilde sayfa genelinde **hiçbir zaman** yatay kaydırma olmamalı.
+- Kök kapsayıcılar ve ana layout alanlarına `overflow-x-hidden` uygula.
+- Filtreler, menüler veya yatay kaydırması gereken alt alanlarda yalnızca **ilgili kapsayıcıya** şu sınıfları ver:
+  - `overflow-x-auto`
+  - `whitespace-nowrap`
+  - `scrollbar-hide`
+- Kaydırılabilir kapsayıcılarda sağ kenarda rahat görünüm için `pr-4` kullan; buton/etiketlere `shrink-0` ekle.
+
+---
+
+## 2. Flexbox Çökmeleri
+
+- Dar ekranlarda metinlerin flex yapısını bozmasını engellemek için esnek alanlara daima `min-w-0` ve gerektiğinde `flex-1` ekle.
+- Uzun metinlerde mutlaka `truncate` kullan.
+- Sabit genişlikte kalması gereken ikon, rozet ve butonlara `shrink-0` ekle.
+
+---
+
+## 3. Grid ve Flex Yönleri
+
+- Mobilde (`md` altı ekranlarda) karmaşık yan yana duran elemanları `flex-col` ile alt alta al veya `grid-cols-1` kullan.
+- Tablet (`md`) ve masaüstü (`lg`, `xl`, `2xl`) kırılımlarında yapıyı kademeli genişlet.
+- Örnek grid deseni: `grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4`
+- Örnek flex deseni: `flex flex-col gap-4 md:flex-row md:items-center md:justify-between`
+
+---
+
+## 4. Orantılı Küçülme
+
+- Mobilde padding, gap ve font boyutlarını küçük tut:
+  - Padding: `p-2`, `p-3`, `p-4`
+  - Gap: `gap-2`, `gap-3`
+  - Metin: `text-[10px]`, `text-xs`, `text-sm`
+- Masaüstünde daha ferah boşluklar kullan:
+  - Padding: `md:p-6`, `md:p-8`
+  - Gap: `md:gap-4`, `md:gap-6`
+  - Metin: `sm:text-sm`, `md:text-base`, `md:text-lg`
+- Responsive ölçekleme deseni: `text-xs sm:text-sm`, `p-4 sm:p-5`, `gap-2 sm:gap-4`
+
+---
+
+## Uygulama Kontrol Listesi
+
+Yeni veya güncellenen her bileşende şunları doğrula:
+
+- [ ] Sayfa kökünde `overflow-x-hidden` var mı?
+- [ ] Yatay kaydırma yalnızca gerekli alt kapsayıcıda mı?
+- [ ] Flex/grid çocuklarında `min-w-0` + `truncate` kullanıldı mı?
+- [ ] Mobil önce yazıldı mı, masaüstü `md:` / `lg:` / `xl:` ile genişletildi mi?
+- [ ] iPhone SE (375px) genişliğinde metin taşması veya layout kırılması var mı?

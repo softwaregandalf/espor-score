@@ -10,6 +10,7 @@ import { Server } from 'socket.io';
 import axios from 'axios'; // Dışarıdan veri çekmek için eklendi
 import userRoutes from './routes/userRoutes';
 import communityRoutes from './routes/communityRoutes';
+import favoriteRoutes from './routes/favoriteRoutes';
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/users', userRoutes(prisma));
+app.use('/api/users/:userId/favorites', favoriteRoutes(prisma));
 app.use('/api/community', communityRoutes(prisma));
 
 // WebSockets Bağlantı Dinleyicisi

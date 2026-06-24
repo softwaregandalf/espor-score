@@ -107,6 +107,7 @@ export default function communityRoutes(prisma: PrismaClient) {
         upvotes: thread.votes.reduce((total, vote) => total + vote.value, 0),
         comments: thread.comments.map(c => ({
           id: c.id,
+          authorId: c.authorId,
           content: c.content,
           createdAt: c.createdAt,
           timeAgo: new Date(c.createdAt).toLocaleDateString(),
@@ -138,6 +139,7 @@ export default function communityRoutes(prisma: PrismaClient) {
 
       const formattedComment = {
         id: newComment.id,
+        authorId: newComment.authorId,
         content: newComment.content,
         createdAt: newComment.createdAt,
         timeAgo: new Date(newComment.createdAt).toLocaleDateString(),
@@ -187,7 +189,42 @@ export default function communityRoutes(prisma: PrismaClient) {
     }
   });
 
-  // 🗑️ 6. KONUYU SİL YENİ! 🚀
+  // 🗑️ 6. YORUMU SİL
+  // DELETE /api/community/:id/comments/:commentId
+  router.delete('/:id/comments/:commentId', async (req, res) => {
+    const threadId = parseInt(req.params.id);
+    const commentId = parseInt(req.params.commentId);
+    const { userId } = req.body;
+
+    if (isNaN(threadId) || isNaN(commentId)) {
+      return res.status(400).json({ success: false, message: 'Geçersiz konu veya yorum ID.' });
+    }
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'Kullanıcı kimliği doğrulanmadı.' });
+    }
+
+    try {
+      const comment = await prisma.comment.findUnique({ where: { id: commentId } });
+
+      if (!comment || comment.threadId !== threadId) {
+        return res.status(404).json({ success: false, message: 'Yorum bulunamadı.' });
+      }
+
+      if (comment.authorId !== userId) {
+        return res.status(403).json({ success: false, message: 'Bu yorumu silme yetkiniz yok.' });
+      }
+
+      await prisma.comment.delete({ where: { id: commentId } });
+
+      res.status(200).json({ success: true, message: 'Yorum başarıyla silindi.' });
+    } catch (error: any) {
+      console.error("Yorum silinirken hata:", error.message);
+      res.status(500).json({ success: false, message: 'Yorum silinemedi.' });
+    }
+  });
+
+  // 🗑️ 7. KONUYU SİL
   // DELETE /api/community/:id
   router.delete('/:id', async (req, res) => {
     const threadId = parseInt(req.params.id);

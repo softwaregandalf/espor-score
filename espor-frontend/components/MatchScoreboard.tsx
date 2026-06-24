@@ -16,7 +16,7 @@ const DEFAULT_MOBA_STATS = {
 };
 
 function ScoreTeamLogo({ name, color }: { name: string; color: string }) {
-  return <div className="w-6 h-6 text-[9px] rounded-lg flex items-center justify-center font-black text-white shrink-0" style={{ background: color }}>{name.slice(0, 3).toUpperCase()}</div>;
+  return <div className="w-5 h-5 md:w-6 md:h-6 text-[8px] md:text-[9px] rounded-lg flex items-center justify-center font-black text-white shrink-0" style={{ background: color }}>{name.slice(0, 3).toUpperCase()}</div>;
 }
 
 export default function MatchScoreboard({ match, gameColor }: { match: any, gameColor: string }) {
@@ -27,7 +27,6 @@ export default function MatchScoreboard({ match, gameColor }: { match: any, game
   const category = GAME_CATEGORIES[match.game] || 'fps';
   const matchData = category === 'fps' ? DEFAULT_FPS_STATS : DEFAULT_MOBA_STATS;
 
-  // 🚀 OYUNA GÖRE DİNAMİK BAŞLIK GETİREN FONKSİYON
   const getRoleHeader = () => {
     switch(match.game) {
       case 'val': return t.agent;
@@ -41,17 +40,17 @@ export default function MatchScoreboard({ match, gameColor }: { match: any, game
   const renderPickBan = () => {
     if (category === 'fps') {
       return (
-        <div className="flex flex-wrap items-center gap-2 mb-6 p-4 rounded-xl" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-          {/* 🚀 VETO AŞAMASI DİNAMİK YAPILDI */}
-          <div className="text-xs font-black uppercase tracking-widest mr-4 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}><ShieldBan className="w-4 h-4" style={{ color: 'var(--es-text-3)' }}/> {t.vetoStage}</div>
+        <div className="flex flex-wrap items-center gap-1.5 md:gap-2 mb-4 md:mb-6 p-3 md:p-4 rounded-xl min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
+          <div className="text-[11px] md:text-xs font-black uppercase tracking-widest w-full md:w-auto md:mr-2 flex items-center gap-2 transition-colors shrink-0" style={{ color: 'var(--es-text-1)' }}>
+            <ShieldBan className="w-3.5 md:w-4 h-3.5 md:h-4 shrink-0" style={{ color: 'var(--es-text-3)' }}/> {t.vetoStage}
+          </div>
           {(matchData.veto as any[]).map((v, i) => {
             const actionText = v.action === 'Banned' ? t.banned : v.action === 'Picked' ? t.picked : t.left;
             const teamName = v.team === 'Team 1' ? match.team1.short : v.team === 'Team 2' ? match.team2.short : v.team;
             return (
-              <span key={i} className={`px-2.5 py-1 text-[10px] font-bold rounded flex items-center gap-1.5 ${v.action === 'Banned' ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500 border border-red-200 dark:border-red-500/20' : v.action === 'Picked' ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-500 border border-green-200 dark:border-green-500/20' : 'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-400 border border-slate-200 dark:border-slate-500/20'}`}>
-                 {v.action === 'Banned' ? <ShieldBan className="w-3 h-3"/> : v.action === 'Picked' ? <CheckCircle2 className="w-3 h-3"/> : null}
-                 {/* 🚀 TÜRKÇE VE İNGİLİZCE GRAMER YAPISINA GÖRE FORMATLAMA */}
-                 {formatTranslation(language === 'tr' ? t.vetoLogTr : t.vetoLogDefault, { team: teamName, map: v.map, action: actionText })}
+              <span key={i} className={`px-2 md:px-2.5 py-0.5 md:py-1 text-[9px] md:text-[10px] font-bold rounded flex items-center gap-1 md:gap-1.5 shrink-0 ${v.action === 'Banned' ? 'bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500 border border-red-200 dark:border-red-500/20' : v.action === 'Picked' ? 'bg-green-100 text-green-600 dark:bg-green-500/10 dark:text-green-500 border border-green-200 dark:border-green-500/20' : 'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-400 border border-slate-200 dark:border-slate-500/20'}`}>
+                 {v.action === 'Banned' ? <ShieldBan className="w-3 h-3 shrink-0"/> : v.action === 'Picked' ? <CheckCircle2 className="w-3 h-3 shrink-0"/> : null}
+                 <span className="whitespace-normal md:whitespace-nowrap">{formatTranslation(language === 'tr' ? t.vetoLogTr : t.vetoLogDefault, { team: teamName, map: v.map, action: actionText })}</span>
               </span>
             );
           })}
@@ -60,16 +59,22 @@ export default function MatchScoreboard({ match, gameColor }: { match: any, game
     } else {
       const veto = matchData.veto as any;
       return (
-        <div className="grid grid-cols-2 gap-6 mb-6 p-4 rounded-xl" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
-           <div>
-             <div className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}><ScoreTeamLogo name={match.team1.short} color={match.team1.color}/> {match.team1.name} {t.picks}</div>
-             <div className="flex gap-2 mb-2">{veto.team1Bans.map((ban: string, i: number) => <div key={`b1-${i}`} className="px-2 py-1 bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500 border border-red-200 dark:border-red-500/20 text-[9px] font-bold rounded">{ban}</div>)}</div>
-             <div className="flex gap-2">{veto.team1Picks.map((pick: string, i: number) => <div key={`p1-${i}`} className="px-2 py-1 bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-500 border border-blue-200 dark:border-blue-500/20 text-[9px] font-bold rounded">{pick}</div>)}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-4 md:mb-6 p-3 md:p-4 rounded-xl min-w-0" style={{ background: 'var(--es-surface)', border: '1px solid var(--es-border)' }}>
+           <div className="min-w-0">
+             <div className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2 transition-colors min-w-0" style={{ color: 'var(--es-text-1)' }}>
+               <ScoreTeamLogo name={match.team1.short} color={match.team1.color}/>
+               <span className="truncate min-w-0">{match.team1.name} {t.picks}</span>
+             </div>
+             <div className="flex flex-wrap gap-1.5 md:gap-2 mb-2">{veto.team1Bans.map((ban: string, i: number) => <div key={`b1-${i}`} className="px-1.5 md:px-2 py-0.5 md:py-1 bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500 border border-red-200 dark:border-red-500/20 text-[9px] font-bold rounded shrink-0">{ban}</div>)}</div>
+             <div className="flex flex-wrap gap-1.5 md:gap-2">{veto.team1Picks.map((pick: string, i: number) => <div key={`p1-${i}`} className="px-1.5 md:px-2 py-0.5 md:py-1 bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-500 border border-blue-200 dark:border-blue-500/20 text-[9px] font-bold rounded shrink-0">{pick}</div>)}</div>
            </div>
-           <div>
-             <div className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2 transition-colors" style={{ color: 'var(--es-text-1)' }}><ScoreTeamLogo name={match.team2.short} color={match.team2.color}/> {match.team2.name} {t.picks}</div>
-             <div className="flex gap-2 mb-2">{veto.team2Bans.map((ban: string, i: number) => <div key={`b2-${i}`} className="px-2 py-1 bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500 border border-red-200 dark:border-red-500/20 text-[9px] font-bold rounded">{ban}</div>)}</div>
-             <div className="flex gap-2">{veto.team2Picks.map((pick: string, i: number) => <div key={`p2-${i}`} className="px-2 py-1 bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-500 border border-blue-200 dark:border-blue-500/20 text-[9px] font-bold rounded">{pick}</div>)}</div>
+           <div className="min-w-0">
+             <div className="text-[10px] font-black uppercase tracking-widest mb-2 flex items-center gap-2 transition-colors min-w-0" style={{ color: 'var(--es-text-1)' }}>
+               <ScoreTeamLogo name={match.team2.short} color={match.team2.color}/>
+               <span className="truncate min-w-0">{match.team2.name} {t.picks}</span>
+             </div>
+             <div className="flex flex-wrap gap-1.5 md:gap-2 mb-2">{veto.team2Bans.map((ban: string, i: number) => <div key={`b2-${i}`} className="px-1.5 md:px-2 py-0.5 md:py-1 bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-500 border border-red-200 dark:border-red-500/20 text-[9px] font-bold rounded shrink-0">{ban}</div>)}</div>
+             <div className="flex flex-wrap gap-1.5 md:gap-2">{veto.team2Picks.map((pick: string, i: number) => <div key={`p2-${i}`} className="px-1.5 md:px-2 py-0.5 md:py-1 bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:text-blue-500 border border-blue-200 dark:border-blue-500/20 text-[9px] font-bold rounded shrink-0">{pick}</div>)}</div>
            </div>
         </div>
       );
@@ -78,61 +83,89 @@ export default function MatchScoreboard({ match, gameColor }: { match: any, game
 
   const renderTable = (players: any[], color: string, teamName: string, teamShort: string) => {
     return (
-      <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--es-border)', background: 'var(--es-card)' }}>
-        <div className="flex items-center gap-2 px-4 py-3" style={{ borderBottom: '1px solid var(--es-border)', background: `${color}15` }}>
+      <div className="rounded-xl overflow-hidden min-w-0" style={{ border: '1px solid var(--es-border)', background: 'var(--es-card)' }}>
+        <div className="flex items-center gap-2 px-3 md:px-4 py-2.5 md:py-3 min-w-0" style={{ borderBottom: '1px solid var(--es-border)', background: `${color}15` }}>
           <ScoreTeamLogo name={teamShort} color={color} />
-          <span className="text-xs font-black uppercase tracking-wider transition-colors" style={{ color: 'var(--es-text-1)' }}>{teamName}</span>
+          <span className="text-[11px] md:text-xs font-black uppercase tracking-wider truncate min-w-0 flex-1 transition-colors" style={{ color: 'var(--es-text-1)' }}>{teamName}</span>
         </div>
-        <div className="grid grid-cols-12 gap-1 px-4 py-2 text-[10px] font-black tracking-wider uppercase transition-colors" style={{ borderBottom: '1px solid var(--es-border)', background: 'var(--es-surface)' }}>
-          <div className="col-span-3" style={{ color: 'var(--es-text-3)' }}>{t.player}</div>
-          {/* 🚀 OYUNA GÖRE DEĞİŞEN BAŞLIK SÜTUNU */}
-          <div className="col-span-2" style={{ color: 'var(--es-text-3)' }}>{getRoleHeader()}</div>
-          <div className="col-span-2 text-center" style={{ color: 'var(--es-text-3)' }}>K / D / A</div>
-          {category === 'fps' ? ( <><div className="col-span-2 text-center" style={{ color: 'var(--es-text-3)' }}>ADR</div><div className="col-span-1 text-center" style={{ color: 'var(--es-text-3)' }}>HS%</div><div className="col-span-2 text-right" style={{ color: 'var(--es-text-3)' }}>Rating</div></> ) : ( <><div className="col-span-2 text-right" style={{ color: 'var(--es-text-3)' }}>CS / M</div><div className="col-span-2 text-right" style={{ color: 'var(--es-text-3)' }}>{t.gold}</div><div className="col-span-1 text-right" style={{ color: 'var(--es-text-3)' }}>{t.vision}</div></> )}
-        </div>
-        <div className="p-1 space-y-0.5">
-          {players.map((p: any, i: number) => {
-            const kdDiff = p.kills - p.deaths;
-            const kdColor = kdDiff > 0 ? 'text-green-600 dark:text-green-500' : kdDiff < 0 ? 'text-red-600 dark:text-red-500' : 'text-slate-500';
-            return (
-              <div key={i} className="grid grid-cols-12 gap-1 items-center px-3 py-2 rounded-lg hover:opacity-80 transition-opacity cursor-default">
-                <div className="col-span-3 flex items-center gap-2.5">
-                  <div className="w-5 h-5 rounded flex items-center justify-center font-bold text-[9px] text-white shrink-0" style={{ background: `${color}40` }}>{p.name.slice(0, 2).toUpperCase()}</div>
-                  <span className="text-xs font-semibold truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>{p.name}</span>
-                </div>
-                <div className="col-span-2 text-[10px] font-medium transition-colors" style={{ color: 'var(--es-text-3)' }}>{p.champ}</div>
-                <div className="col-span-2 text-center text-[11px] font-mono tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>
-                  {p.kills} <span style={{ color: 'var(--es-text-3)' }}>/</span> {p.deaths} <span style={{ color: 'var(--es-text-3)' }}>/</span> {p.assists} <span className={`ml-1.5 text-[9px] font-bold ${kdColor}`}>({kdDiff > 0 ? `+${kdDiff}` : kdDiff})</span>
-                </div>
-                {category === 'fps' ? ( <><div className="col-span-2 text-center text-[11px] tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{p.adr}</div><div className="col-span-1 text-center text-[11px] tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{p.hs}%</div><div className="col-span-2 text-right text-xs font-black tabular-nums transition-colors" style={{ color: p.rating >= 1.2 ? '#22C55E' : p.rating >= 1.0 ? 'var(--es-text-1)' : '#EF4444' }}>{p.rating.toFixed(2)}</div></> ) : ( <><div className="col-span-2 text-right text-[11px] tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{p.cs} <span className="text-[9px] opacity-70" style={{ color: 'var(--es-text-3)' }}>/ 9.5</span></div><div className="col-span-2 text-right text-[11px] font-bold tabular-nums flex items-center gap-1.5 justify-end" style={{ color: '#F59E0B' }}><Coins className="w-3.5 h-3.5" /> {p.nw.toLocaleString('tr-TR')}</div><div className="col-span-1 text-right text-[11px] font-bold tabular-nums" style={{ color: '#4D7CFE' }}>{p.vision}</div></> )}
-              </div>
-            );
-          })}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="min-w-[580px]">
+            <div className="grid grid-cols-12 gap-1 px-3 md:px-4 py-2 text-[9px] md:text-[10px] font-black tracking-wider uppercase transition-colors" style={{ borderBottom: '1px solid var(--es-border)', background: 'var(--es-surface)' }}>
+              <div className="col-span-3" style={{ color: 'var(--es-text-3)' }}>{t.player}</div>
+              <div className="col-span-2" style={{ color: 'var(--es-text-3)' }}>{getRoleHeader()}</div>
+              <div className="col-span-2 text-center" style={{ color: 'var(--es-text-3)' }}>K / D / A</div>
+              {category === 'fps' ? (
+                <>
+                  <div className="col-span-2 text-center" style={{ color: 'var(--es-text-3)' }}>ADR</div>
+                  <div className="col-span-1 text-center" style={{ color: 'var(--es-text-3)' }}>HS%</div>
+                  <div className="col-span-2 text-right" style={{ color: 'var(--es-text-3)' }}>Rating</div>
+                </>
+              ) : (
+                <>
+                  <div className="col-span-2 text-right" style={{ color: 'var(--es-text-3)' }}>CS / M</div>
+                  <div className="col-span-2 text-right" style={{ color: 'var(--es-text-3)' }}>{t.gold}</div>
+                  <div className="col-span-1 text-right" style={{ color: 'var(--es-text-3)' }}>{t.vision}</div>
+                </>
+              )}
+            </div>
+            <div className="p-1 space-y-0.5">
+              {players.map((p: any, i: number) => {
+                const kdDiff = p.kills - p.deaths;
+                const kdColor = kdDiff > 0 ? 'text-green-600 dark:text-green-500' : kdDiff < 0 ? 'text-red-600 dark:text-red-500' : 'text-slate-500';
+                return (
+                  <div key={i} className="grid grid-cols-12 gap-1 items-center px-2 md:px-3 py-1.5 md:py-2 rounded-lg hover:opacity-80 transition-opacity cursor-default">
+                    <div className="col-span-3 flex items-center gap-1.5 md:gap-2.5 min-w-0">
+                      <div className="w-5 h-5 rounded flex items-center justify-center font-bold text-[9px] text-white shrink-0" style={{ background: `${color}40` }}>{p.name.slice(0, 2).toUpperCase()}</div>
+                      <span className="text-[11px] md:text-xs font-semibold truncate min-w-0 transition-colors" style={{ color: 'var(--es-text-1)' }}>{p.name}</span>
+                    </div>
+                    <div className="col-span-2 text-[10px] font-medium truncate min-w-0 transition-colors" style={{ color: 'var(--es-text-3)' }}>{p.champ}</div>
+                    <div className="col-span-2 text-center text-[10px] md:text-[11px] font-mono tabular-nums transition-colors whitespace-nowrap" style={{ color: 'var(--es-text-1)' }}>
+                      {p.kills} <span style={{ color: 'var(--es-text-3)' }}>/</span> {p.deaths} <span style={{ color: 'var(--es-text-3)' }}>/</span> {p.assists} <span className={`ml-1 text-[8px] md:text-[9px] font-bold ${kdColor}`}>({kdDiff > 0 ? `+${kdDiff}` : kdDiff})</span>
+                    </div>
+                    {category === 'fps' ? (
+                      <>
+                        <div className="col-span-2 text-center text-[10px] md:text-[11px] tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{p.adr}</div>
+                        <div className="col-span-1 text-center text-[10px] md:text-[11px] tabular-nums transition-colors" style={{ color: 'var(--es-text-3)' }}>{p.hs}%</div>
+                        <div className="col-span-2 text-right text-[11px] md:text-xs font-black tabular-nums transition-colors" style={{ color: p.rating >= 1.2 ? '#22C55E' : p.rating >= 1.0 ? 'var(--es-text-1)' : '#EF4444' }}>{p.rating.toFixed(2)}</div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="col-span-2 text-right text-[10px] md:text-[11px] tabular-nums transition-colors whitespace-nowrap" style={{ color: 'var(--es-text-3)' }}>{p.cs} <span className="text-[9px] opacity-70" style={{ color: 'var(--es-text-3)' }}>/ 9.5</span></div>
+                        <div className="col-span-2 text-right text-[10px] md:text-[11px] font-bold tabular-nums flex items-center gap-1 md:gap-1.5 justify-end whitespace-nowrap" style={{ color: '#F59E0B' }}>
+                          <Coins className="w-3 h-3 md:w-3.5 md:h-3.5 shrink-0" /> {p.nw.toLocaleString('tr-TR')}
+                        </div>
+                        <div className="col-span-1 text-right text-[10px] md:text-[11px] font-bold tabular-nums" style={{ color: '#4D7CFE' }}>{p.vision}</div>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="animate-fade-in space-y-6">
+    <div className="animate-fade-in space-y-4 md:space-y-6 overflow-x-hidden min-w-0">
       {renderPickBan()}
       {Object.entries(matchData.maps).map(([key, mapData]: any) => (
-        <div key={key} className="space-y-4 rounded-xl p-6 shadow-xl transition-colors" style={{ border: '1px solid var(--es-border)', background: 'var(--es-bg-2)' }}>
-          <div className="flex items-center justify-between border-b pb-4 transition-colors" style={{ borderColor: 'var(--es-border)' }}>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg border-2 transition-colors" style={{ background: 'var(--es-surface)', borderColor: `${gameColor}30` }}></div>
-              <div>
-                {/* 🚀 HARİTA YAZISI DİNAMİK YAPILDI */}
+        <div key={key} className="space-y-3 md:space-y-4 rounded-xl p-3 md:p-6 shadow-xl transition-colors min-w-0" style={{ border: '1px solid var(--es-border)', background: 'var(--es-bg-2)' }}>
+          <div className="flex items-center justify-between gap-3 border-b pb-3 md:pb-4 transition-colors min-w-0" style={{ borderColor: 'var(--es-border)' }}>
+            <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg border-2 transition-colors shrink-0" style={{ background: 'var(--es-surface)', borderColor: `${gameColor}30` }}></div>
+              <div className="min-w-0">
                 <span className="text-[10px] font-bold uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>{category === 'fps' ? t.map : t.gameStr}</span>
-                <div className="text-xl font-black transition-colors" style={{ color: 'var(--es-text-1)' }}>{category === 'fps' ? mapData.name : `${mapData.name}. ${t.gameStr}`}</div>
+                <div className="text-base md:text-xl font-black truncate transition-colors" style={{ color: 'var(--es-text-1)' }}>{category === 'fps' ? mapData.name : `${mapData.name}. ${t.gameStr}`}</div>
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-black tracking-tighter score-display tabular-nums transition-colors" style={{ color: 'var(--es-text-1)' }}>{mapData.score}</div>
+            <div className="text-center shrink-0">
+              <div className="text-xl md:text-3xl font-black tracking-tighter score-display tabular-nums transition-colors whitespace-nowrap" style={{ color: 'var(--es-text-1)' }}>{mapData.score}</div>
               <span className="text-[10px] font-bold uppercase transition-colors" style={{ color: 'var(--es-text-3)' }}>{t.completed}</span>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-6 pt-2">
+          <div className="grid grid-cols-1 gap-4 md:gap-6 pt-1 md:pt-2">
              {renderTable(mapData.team1Players, match.team1.color, match.team1.name, match.team1.short)}
              {renderTable(mapData.team2Players, match.team2.color, match.team2.name, match.team2.short)}
           </div>

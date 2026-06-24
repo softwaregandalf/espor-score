@@ -45,8 +45,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   
-  // 🚀 PROFİL AÇILIR MENÜSÜ İÇİN STATE
+  // 🚀 PROFİL AÇİLIR MENÜSÜ İÇİN STATE
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  
+  // 🚀 MOBİL MENÜ STATE
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // 🚀 DİL SEÇİCİ MENÜ STATE
+  const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -57,16 +63,34 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const themeColor = accentColor;
 
   const handleLogoClick = () => {
-    if (pathname === '/') {
-      window.location.href = '/';
+    router.push('/');
+  };
+
+  const handleNavClick = (path: string) => {
+    setIsMobileMenuOpen(false);
+    if (path === '/') {
+      if (pathname === '/') {
+        window.dispatchEvent(new CustomEvent('open-mobile-match-list'));
+        router.replace('/?showMatchList=true', { scroll: false });
+      } else {
+        router.push('/?showMatchList=true');
+      }
     } else {
-      router.push('/');
+      router.push(path);
     }
   };
 
   return (
-    <div className="flex h-screen overflow-hidden transition-colors duration-500" style={{ background: 'var(--es-bg)' }}>
-      <aside className="flex flex-col shrink-0 transition-all duration-300 relative z-20" style={{ width: sidebarCollapsed ? '64px' : '240px', background: 'var(--es-bg-2)', borderRight: '1px solid var(--es-border)' }}>
+    <div className="flex h-screen overflow-hidden transition-colors duration-500 w-full max-w-full" style={{ background: 'var(--es-bg)' }}>
+      {/* 🚀 MOBİL OVERLAY */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+      
+      <aside className={`flex flex-col shrink-0 transition-all duration-300 relative z-20 ${isMobileMenuOpen ? 'fixed inset-y-0 left-0 z-50 max-w-[280px] w-[280px]' : 'hidden md:flex'} md:relative md:max-w-none md:w-auto`} style={{ width: sidebarCollapsed ? '64px' : '240px', background: 'var(--es-bg-2)', borderRight: '1px solid var(--es-border)' }}>
         <div className="h-[70px] flex items-center justify-between px-5 shrink-0 border-b border-white/5">
           {!sidebarCollapsed ? (
             <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity" onClick={handleLogoClick}>
@@ -81,11 +105,19 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               <Radio className="w-4 h-4 text-white" />
             </div>
           )}
-          {!sidebarCollapsed && (
-            <button onClick={() => setSidebarCollapsed(true)} className="p-1.5 rounded-lg transition-colors hover:bg-white/5 text-slate-500">
+          <div className="flex items-center gap-2">
+            {!sidebarCollapsed && (
+              <button onClick={() => setSidebarCollapsed(true)} className="p-1.5 rounded-lg transition-colors hover:bg-white/5 text-slate-500">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)} 
+              className="md:hidden p-1.5 rounded-lg transition-colors hover:bg-white/5 text-slate-500"
+            >
               <X className="w-4 h-4" />
             </button>
-          )}
+          </div>
         </div>
 
         {sidebarCollapsed && (
@@ -99,22 +131,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             {!sidebarCollapsed && <div className="text-[10px] font-bold uppercase tracking-widest px-2 mb-2 text-slate-500">{t.menu}</div>}
             
             {NAV_ITEMS.map((item) => {
-              const isActive = pathname === item.path;
+              const isActive = item.path === '/' ? pathname === '/' : pathname === item.path;
               const label = t[item.id as TranslationKeys];
-              
-              const handleNavClick = (e: React.MouseEvent) => {
-                if (isActive) {
-                  e.preventDefault();
-                  window.location.href = item.path;
-                }
-              };
 
               return (
-                <Link key={item.id} href={item.path} onClick={handleNavClick} title={sidebarCollapsed ? label : undefined} className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${sidebarCollapsed ? 'justify-center' : ''} ${isActive ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`} style={isActive ? { background: `${themeColor}15`, color: themeColor } : {}}>
+                <button 
+                  key={item.id} 
+                  onClick={() => handleNavClick(item.path)}
+                  title={sidebarCollapsed ? label : undefined} 
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group relative ${sidebarCollapsed ? 'justify-center' : ''} ${isActive ? 'text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`} 
+                  style={isActive ? { background: `${themeColor}15`, color: themeColor } : {}}
+                >
                   {isActive && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 rounded-r-full transition-colors duration-700" style={{ background: themeColor }} />}
                   <item.icon className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" style={isActive ? { color: themeColor } : {}} />
                   {!sidebarCollapsed && <span className="text-sm font-semibold">{label}</span>}
-                </Link>
+                </button>
               );
             })}
           </nav>
@@ -197,54 +228,68 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <div className="absolute top-[-10%] left-[10%] w-[600px] h-[600px] rounded-full pointer-events-none transition-colors duration-1000 ease-in-out opacity-40" style={{ background: `radial-gradient(circle, ${themeColor}20 0%, transparent 60%)`, filter: 'blur(60px)' }} />
         <div className="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] rounded-full pointer-events-none transition-colors duration-1000 ease-in-out delay-75 opacity-30" style={{ background: `radial-gradient(circle, ${themeColor}15 0%, transparent 60%)`, filter: 'blur(50px)' }} />
 
-        <header className="h-[70px] flex items-center justify-between px-8 z-30 shrink-0 border-b border-white/5 bg-slate-900/50 backdrop-blur-md transition-colors" style={{ borderColor: 'var(--es-border)' }}>
-          <div className="flex items-center gap-4 flex-1 max-w-xl">
+        <header className="h-[70px] flex items-center justify-between px-4 md:px-8 z-30 shrink-0 border-b border-white/5 bg-slate-900/50 backdrop-blur-md transition-colors" style={{ borderColor: 'var(--es-border)' }}>
+          {/* 🚀 MOBİL HAMBURGER MENÜ */}
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-2 rounded-lg transition-colors hover:bg-white/5 text-slate-400 mr-2"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          
+          <div className="flex items-center gap-4 flex-1 max-w-xl hidden md:flex">
             <div className="relative group w-full">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: 'var(--es-text-3)' }} />
               <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t.searchPlaceholder} className="w-full py-2.5 pl-10 pr-4 rounded-xl text-sm outline-none transition-all shadow-sm" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', color: 'var(--es-text-1)' }} />
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {mounted && <SettingsPanel />}
+          <div className="flex items-center gap-1 md:gap-3">
+            {mounted && <div className="hidden md:block"><SettingsPanel /></div>}
 
             {mounted && (
-              <div className="relative group">
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all hover:scale-105" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+              <div className="relative">
+                <button 
+                  onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+                  className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-xl border transition-all hover:scale-105" 
+                  style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                >
                   <FlagIcon language={language} />
-                  <span className="text-[10px] font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>
+                  <span className="text-[10px] font-black uppercase tracking-widest transition-colors hidden sm:inline" style={{ color: 'var(--es-text-3)' }}>
                     {LANGUAGES.find((l) => l.id === language)?.label ?? language.toUpperCase()}
                   </span>
-                  <ChevronDown className="w-3 h-3 transition-colors" style={{ color: 'var(--es-text-3)' }} />
+                  <ChevronDown className="w-3 h-3 transition-colors hidden sm:inline" style={{ color: 'var(--es-text-3)' }} />
                 </button>
 
-                <div className="absolute right-0 top-full mt-2 w-40 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 overflow-hidden border" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.id}
-                      onClick={() => setLanguage(lang.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold transition-colors ${language === lang.id ? 'bg-es-cyan/10 text-es-cyan' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
-                      style={{ color: language === lang.id ? '' : 'var(--es-text-1)' }}
-                    >
-                      <FlagIcon language={lang.id} className="w-5 h-3.5" />
-                      <span className="font-black uppercase tracking-widest">{lang.label}</span>
-                      <span className="text-[10px] font-semibold opacity-70">{lang.nativeName}</span>
-                    </button>
-                  ))}
-                </div>
+                {isLanguageMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-40 rounded-xl shadow-xl transition-all z-50 overflow-hidden border" style={{ background: 'var(--es-card)', borderColor: 'var(--es-border)' }}>
+                    {LANGUAGES.map((lang) => (
+                      <button
+                        key={lang.id}
+                        onClick={() => { setLanguage(lang.id); setIsLanguageMenuOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold transition-colors ${language === lang.id ? 'bg-es-cyan/10 text-es-cyan' : 'hover:bg-black/5 dark:hover:bg-white/5'}`}
+                        style={{ color: language === lang.id ? '' : 'var(--es-text-1)' }}
+                      >
+                        <FlagIcon language={lang.id} className="w-5 h-3.5" />
+                        <span className="font-black uppercase tracking-widest">{lang.label}</span>
+                        <span className="text-[10px] font-semibold opacity-70">{lang.nativeName}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {mounted && (
-              <button onClick={() => setTheme(isDark ? 'light' : 'dark')} className="flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all hover:scale-105 active:scale-95 group" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+              <button onClick={() => setTheme(isDark ? 'light' : 'dark')} className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-xl border transition-all hover:scale-105 active:scale-95 group" style={{ background: 'var(--es-surface)', borderColor: 'var(--es-border)', boxShadow: isDark ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                 {isDark ? <Moon className="w-4 h-4 text-es-cyan group-hover:-rotate-12 transition-transform" /> : <Sun className="w-4 h-4 text-orange-500 group-hover:rotate-45 transition-transform" />}
-                <span className="text-[10px] font-black uppercase tracking-widest transition-colors" style={{ color: 'var(--es-text-3)' }}>
+                <span className="text-[10px] font-black uppercase tracking-widest transition-colors hidden sm:inline" style={{ color: 'var(--es-text-3)' }}>
                   {isDark ? t.nightOn : t.dayOn}
                 </span>
               </button>
             )}
 
-            <button className="p-2 rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/10 relative" style={{ color: 'var(--es-text-3)' }}>
+            <button className="p-2 rounded-xl transition-colors hover:bg-black/5 dark:hover:bg-white/10 relative hidden sm:block" style={{ color: 'var(--es-text-3)' }}>
               <Bell className="w-5 h-5" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border-2" style={{ borderColor: 'var(--es-bg)' }} />
             </button>
